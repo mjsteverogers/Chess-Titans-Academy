@@ -622,20 +622,13 @@ a:focus {
   margin-bottom: 0px;
   font-weight: bold;
 }
- a.phone-link {
-            display: inline-block;
-            background-color: #28a745;
-            color: white;
-            padding: 20px 40px;
-            font-size: 28px;
-            font-weight: bold;
-            border-radius: 10px;
+  a.phone-link {
+            font-size: 24px;
+            color: #007bff;
             text-decoration: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: background-color 0.3s, transform 0.2s;
+            font-weight: bold;
         }
 
         a.phone-link:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-        }
+            color: #0056b3;
+            text-decoration: underline;
