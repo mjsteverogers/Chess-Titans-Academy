@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chess Titans Academy - Homework Login</title>
-    <!-- Site Metas -->
   <link rel="icon" href="images/logo.png">
   <meta name="keywords" content="" />
   <meta name="description" content="" />
@@ -26,7 +25,6 @@
       overflow-x: hidden;
     }
 
-    /* ✅ LOGIN SECTION */
     #loginSection {
       background: url('images/chess titans academy logo.png') no-repeat center center/cover;
       height: 100vh;
@@ -123,7 +121,6 @@
       margin-bottom: 8px;
     }
 
-    /* ✅ LOADING ANIMATION */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -178,7 +175,6 @@
       }
     }
 
-    /* ✅ HOMEWORK SECTION */
     #homeworkSection {
       display: none;
       animation: slideIn 1s ease-in-out;
@@ -265,22 +261,10 @@
         font-size: 22px;
       }
     }
-    header {
-  background: linear-gradient(90deg, #000000, #2c2c54);
-}
-.btn-logout {
-  border-radius: 8px;
-  transition: 0.3s;
-}
-.btn-logout:hover {
-  background-color: #c82333 !important;
-  transform: scale(1.05);
-}
-.homework-card {
-  max-width: 600px;
-  border-radius: 15px;
-}
 
+    header {
+      background: linear-gradient(90deg, #000000, #2c2c54);
+    }
   </style>
 </head>
 
@@ -292,7 +276,7 @@
       <h3>Students Login</h3>
       <form id="loginForm">
         <input type="text" id="username" class="form-control mb-3" placeholder="Enter Username" required>
-        <input type="date" id="password" class="form-control mb-3" placeholder="D.O.B"required>
+        <input type="date" id="password" class="form-control mb-3" placeholder="D.O.B" required>
         <button type="submit" class="btn btn-login">Login</button>
         <p id="message" class="mt-3"></p>
       </form>
@@ -315,101 +299,91 @@
   </div>
 
   <!-- ✅ HOMEWORK SECTION -->
-   
   <section id="homeworkSection">
-  <!-- Header Title -->
-  <header class="bg-dark text-white text-center py-3 shadow-lg">
-    <h1 class="fw-bold text-uppercase mb-0">Chess Titans Academy</h1>
-    <p class="mb-0 text-warning fw-semibold">Develop Your Mind Like a Grandmaster ♛</p>
+    <header class="bg-dark text-white text-center py-3 shadow-lg">
+      <h1 class="fw-bold text-uppercase mb-0">Chess Titans Academy</h1>
+      <p class="mb-0 text-warning fw-semibold">Develop Your Mind Like a Grandmaster ♛</p>
       <div class="d-flex justify-content-end p-3 ">
-    <button class="btn-logout btn btn-danger fw-bold px-4 py-2" onclick="logout()">Logout</button>
-  </div>
+        <button class="btn-logout btn btn-danger fw-bold px-4 py-2" onclick="logout()">Logout</button>
+      </div>
 
-<div class="text-center p-4" >
-  <h2 class="fw-bold text-uppercase mb-1 text-white">Homework (05/10/2025)</h2>
-  <p class="fw-semibold text-white">Complete your tasks with focus ♔</p>
-</div>
+      <div class="text-center p-4">
+        <h2 class="fw-bold text-uppercase mb-1 text-white">Homework (05/10/2025)</h2>
+        <p class="fw-semibold text-white">Complete your tasks with focus ♔</p>
+      </div>
+    </header>
 
-  </header>
+    <div class="container mt-3" id="homeworkTabsContainer">
+      <ul class="nav nav-tabs justify-content-center flex-wrap" id="homeworkTabs">
+        <li class="nav-item m-2">
+          <button class="nav-link active px-4 py-2 fw-bold shadow-sm" id="beginnerTab">Beginner Homework</button>
+        </li>
+        <li class="nav-item m-2">
+          <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediateTab">Intermediate Homework</button>
+        </li>
+      </ul>
+    </div>
 
+    <!-- Beginner Homework -->
+    <div id="beginnerHomework" class="container text-center mt-4">
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
+        <h4 class="fw-bold text-dark mb-3">♙ Beginner Homework</h4>
+        <img src="images/homewrok.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3">
+        <h5 class="fw-bold text-danger">IMPORTANT NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to attack all the Pawns using the <strong>“Knight”</strong>
+        </p>
+      </div>
+    </div>
 
+    <!-- Intermediate Homework -->
+    <div id="intermediateHomework" class="container mt-4" style="display: none;">
+      <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Homework</h4>
 
-  <div class="container mt-3">
-    <ul class="nav nav-tabs justify-content-center flex-wrap" id="homeworkTabs">
-      <li class="nav-item m-2">
-        <button class="nav-link active px-4 py-2 fw-bold shadow-sm" id="beginnerTab">Beginner Homework</button>
-      </li>
-      <li class="nav-item m-2">
-        <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediateTab">Intermediate Homework</button>
-      </li>
-    </ul>
-  </div>
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/3pjwwXVWVc/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div>
 
-<!-- Beginner Homework -->
-<div id="beginnerHomework" class="container text-center mt-4">
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
-    <h4 class="fw-bold text-dark mb-3">♙ Beginner Homework</h4>
-    <img src="images/homewrok.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3">
-    <h5 class="fw-bold text-danger">IMPORTANT NOTE</h5>
-    <p class="fw-semibold text-secondary mt-2">
-      Try to attack all the Pawns using the <strong>“Knight”</strong>
-    </p>
-  </div>
-</div>
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/LMd4itQBg/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div>
 
-<!-- Intermediate Homework -->
-<div id="intermediateHomework" class="container mt-4" style="display: none;">
-  <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Homework</h4>
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 3</h4>
+        <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/3umc9gxMLi/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div>
 
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
-    <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/3pjwwXVWVc/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
-  </div>
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 4</h4>
+        <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/2SBEVrYzBY/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div>
 
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
-    <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/LMd4itQBg/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
-  </div>
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="fw-bold text-dark">♔ PUZZLE 5</h4>
+        <img src="images/puzzle.jpg" alt="Puzzle 5" class="img-fluid rounded shadow my-3" style="max-width: 100%; height: auto; border-radius: 10px;">
+        <h5 class="fw-bold text-danger">IMPORTANT NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Find the Best Move for <strong>“Black”</strong>
+        </p>
+      </div>
+    </div>
 
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 3</h4>
-    <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/3umc9gxMLi/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
-  </div>
+    <footer class="container-fluid text-center p-3 bg-dark text-white fixed-bottom shadow-lg">
+      &copy; 2025 <span class="fw-bold text-warning">Chess Titans Academy</span>. All rights reserved. Website Developed by <a href="https://mjsteveportfolio.vercel.app/"><span class="fw-bold text-warning">Steve Rogers</span></a>
+    </footer>
+  </section>
 
-  <!-- PUZZLE 4 -->
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 4</h4>
-    <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/2SBEVrYzBY/analysis" target="_blank" class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
-  </div>
-
-  <!-- ✅ PUZZLE 5 correctly placed here -->
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="fw-bold text-dark">♔ PUZZLE 5</h4>
-    <img src="images/puzzle.jpg" 
-         alt="Puzzle 5" 
-         class="img-fluid rounded shadow my-3" 
-         style="max-width: 100%; height: auto; border-radius: 10px;">
-    <h5 class="fw-bold text-danger">IMPORTANT NOTE</h5>
-    <p class="fw-semibold text-secondary mt-2">
-      Find the Best Move for <strong>“Black”</strong>
-    </p>
-  </div>
-</div>
-
-  <footer class="container-fluid text-center p-3 bg-dark text-white fixed-bottom shadow-lg">
-    &copy; 2025 <span class="fw-bold text-warning">Chess Titans Academy</span>. All rights reserved.
-  </footer>
-</section>
-
-
-  <!-- ✅ SCRIPT -->
   <script>
     const users = {
       "steve": "01-11-2002",
+      
+      
       "admin": "01-01-2025",
       "john": "15-02-2025",
       "arun": "05-03-2025",
@@ -422,6 +396,10 @@
       "ravi": "01-10-2025",
       "lisa": "25-12-2025"
     };
+
+    const beginnerUsers = ["admin", "john"];
+    const intermediateUsers = ["arun", "meena", "lisa"];
+    const adminUser = "steve";
 
     const form = document.getElementById("loginForm");
     const message = document.getElementById("message");
@@ -441,7 +419,7 @@
       const password = normalizeDate(document.getElementById("password").value.trim());
 
       if (users[username] && users[username] === password) {
-        message.textContent = "✅ Login successful!";
+        message.textContent = "✅ Searching.....";
         message.className = "text-success fw-semibold";
 
         setTimeout(() => {
@@ -450,6 +428,30 @@
             loadingOverlay.style.display = "none";
             loginSection.style.display = "none";
             homeworkSection.style.display = "block";
+
+            // Access control logic
+            const beginnerTab = document.getElementById("beginnerTab");
+            const intermediateTab = document.getElementById("intermediateTab");
+            const beginnerHomework = document.getElementById("beginnerHomework");
+            const intermediateHomework = document.getElementById("intermediateHomework");
+
+            if (beginnerUsers.includes(username)) {
+              beginnerHomework.style.display = "block";
+              intermediateHomework.style.display = "none";
+              intermediateTab.parentElement.style.display = "none";
+            } else if (intermediateUsers.includes(username)) {
+              beginnerHomework.style.display = "none";
+              intermediateHomework.style.display = "block";
+              beginnerTab.parentElement.style.display = "none";
+              intermediateTab.classList.add("active");
+            } else if (username === adminUser) {
+              beginnerHomework.style.display = "block";
+              intermediateHomework.style.display = "block";
+            } else {
+              beginnerHomework.style.display = "none";
+              intermediateHomework.style.display = "none";
+            }
+
           }, 3500);
         }, 500);
       } else {
@@ -481,9 +483,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
