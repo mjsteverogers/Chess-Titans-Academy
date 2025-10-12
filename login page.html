@@ -478,11 +478,13 @@
       "loki": "01-11-2025"
     };
 
-    const beginnerLevel1Users = ["admin", "john","loki"];
+    const beginnerLevel1Users = ["admin", "john", "loki"];
     const beginnerLevel2Users = ["lisa"];
-    const intermediateLevel1Users = ["arun", "meena","ravi"];
+    const intermediateLevel1Users = ["arun", "meena", "ravi"];
     const intermediateLevel2Users = ["tina", "kumar"];
     const adminUser = "steve";
+
+    const renewalUsers = ["vijay", "nithya"];
 
     const form = document.getElementById("loginForm");
     const message = document.getElementById("message");
@@ -501,6 +503,13 @@
       const username = document.getElementById("username").value.trim().toLowerCase();
       const password = normalizeDate(document.getElementById("password").value.trim());
 
+      // Renewal restriction
+      if (renewalUsers.includes(username)) {
+        message.textContent = "⚠️ Your Weekly Puzzle Plan has expired. Please contact Chess Titans Academy to renew.";
+        message.className = "text-warning fw-semibold";
+        return;
+      }
+
       if (users[username] && users[username] === password) {
         message.textContent = "✅ Searching.....";
         message.className = "text-success fw-semibold";
@@ -512,19 +521,16 @@
             loginSection.style.display = "none";
             homeworkSection.style.display = "block";
 
-            // Homework Level Access Control
             const beginner1 = document.getElementById("beginnerHomework");
             const beginner2 = document.getElementById("beginner2Homework");
             const intermediate1 = document.getElementById("intermediateHomework");
             const intermediate2 = document.getElementById("intermediate2Homework");
 
-            // Tabs
             const beginnerTab = document.getElementById("beginnerTab");
             const beginner2Tab = document.getElementById("beginner2Tab");
             const intermediateTab = document.getElementById("intermediateTab");
             const intermediate2Tab = document.getElementById("intermediate2Tab");
 
-            // Hide all first
             beginner1.style.display = "none";
             beginner2.style.display = "none";
             intermediate1.style.display = "none";
@@ -535,7 +541,6 @@
             intermediateTab.parentElement.style.display = "none";
             intermediate2Tab.parentElement.style.display = "none";
 
-            // Access Logic
             if (beginnerLevel1Users.includes(username)) {
               beginner1.style.display = "block";
               beginnerTab.parentElement.style.display = "inline-block";
@@ -578,7 +583,6 @@
       message.textContent = "";
     }
 
-    // Tab click logic
     document.getElementById("beginnerTab").addEventListener("click", function () {
       showOnly("beginnerHomework");
     });
