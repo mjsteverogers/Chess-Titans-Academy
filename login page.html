@@ -2,15 +2,15 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chess Titans Academy - Homework Login</title>
-  <link rel="icon" href="images/logo.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Students Login</title>
+  <link rel="icon" href="images/logo.png" />
   <meta name="keywords" content="" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
     * {
@@ -166,7 +166,8 @@
     }
 
     @keyframes fadeBlink {
-      0%, 100% {
+      0%,
+      100% {
         opacity: 1;
       }
 
@@ -275,8 +276,8 @@
     <div class="login-container" id="loginBox">
       <h3>Students Login</h3>
       <form id="loginForm">
-        <input type="text" id="username" class="form-control mb-3" placeholder="Enter Username" required>
-        <input type="date" id="password" class="form-control mb-3" placeholder="D.O.B" required>
+        <input type="text" id="username" class="form-control mb-3" placeholder="Enter Username" required />
+        <input type="date" id="password" class="form-control mb-3" placeholder="D.O.B" required />
         <button type="submit" class="btn btn-login">Login</button>
         <p id="message" class="mt-3"></p>
       </form>
@@ -295,7 +296,7 @@
   <!-- ✅ LOADING OVERLAY -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="chess-king">♘</div>
-    <div class="loading-text">Preparing Your Weekly Puzzle.....</div>
+    <div class="loading-text" id="loadingText">Preparing Your Weekly Puzzle.....</div>
   </div>
 
   <!-- ✅ HOMEWORK SECTION -->
@@ -308,7 +309,7 @@
       </div>
 
       <div class="text-center p-4">
-        <h2 class="fw-bold text-uppercase mb-1 text-white">Homework (05/10/2025)</h2>
+        <h2 class="fw-bold text-uppercase mb-1 text-white">Weekly Task (19/10/2025)</h2>
         <p class="fw-semibold text-white">Complete your tasks with focus ♔</p>
       </div>
     </header>
@@ -327,284 +328,526 @@
         <li class="nav-item m-2">
           <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediate2Tab">Intermediate Level 2</button>
         </li>
+        <li class="nav-item m-2">
+          <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediate3Tab">Intermediate Level 3</button>
+        </li>
       </ul>
     </div>
 
-<!-- ✅ Beginner Level 1 -->
-<div id="beginnerHomework" class="container text-center mt-4">
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
-    <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 1</h4>
-    <img src="images/homewrok.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3">
-    <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
-    <p class="fw-semibold text-secondary mt-2">
-      Try to attack all the Pawns using the <strong>“Knight”</strong>
-    </p>
-  </div>
+    <!-- ✅ Beginner Level 1 -->
+    <div id="beginnerHomework" class="container text-center mt-4">
+      <!-- ♟ Puzzle 1 -->
+      <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 1</h4>
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
+        <img src="images/Homework File/BL 1.1.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to attack the Black Rook with the Help of  <strong>“White Queen”</strong>
+        </p>
+      </div>
 
-  <!-- ✅ Beginner Level 1 Solution Button -->
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+      <!-- ♟ Puzzle 2 -->
+      <h4 class="fw-bold text-dark mb-3"></h4>
+      <div class="card border-0 shadow-lg p-3 mx-auto homework-card">
+        <img src="images/Homework File/BL 1.2.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to Give a Check for Balck King with the Help of  <strong>“White Queen”</strong>
+        </p>
+      </div>
+
+<!-- ✅ Beginner Level 1 Solution Button -->
+<!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
     <h5 class="fw-bold text-dark mb-3">🎥 Beginner Level 1 - Solution</h5>
-    <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank"
+    <a href="https://youtu.be/lfWsKx_U5vo" target="_blank"
       class="btn btn-danger btn-lg w-100 fw-bold">Watch Solution Video</a>
   </div>
-</div>
+</div> -->
+    </div>
 
 
-<!-- ✅ Beginner Level 2 -->
-<div id="beginner2Homework" class="container text-center mt-4" style="display: none;">
-  <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 2</h4>
 
-  <!-- ♟ Puzzle 1 -->
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♙ PUZZLE 1</h4>
-    <p class="card-text text-muted">Find a checkmate in 2 moves using your Knight and Bishop coordination.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/3D7t4Kp1/analysis" target="_blank"
-      class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
-  </div>
 
-  <!-- ♟ Puzzle 2 -->
-  <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♙ PUZZLE 2</h4>
-    <p class="card-text text-muted">Use your Knight to deliver a surprising checkmate in 2 moves!</p>
-    <a href="https://www.chess.com/analysis/game/pgn/dY9r3FjN/analysis" target="_blank"
-      class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
-  </div>
 
-  <!-- ♙ Level Description -->
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
-    <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 2</h4>
-    <img src="images/beginner2.jpg" alt="Beginner Level 2" class="img-fluid rounded shadow-sm my-3">
-    <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
-    <p class="fw-semibold text-secondary mt-2">
-      Solve all checkmate-in-2 puzzles carefully using <strong>“Knight & Bishop”</strong> combinations.
-    </p>
-  </div>
+    <!-- ✅ Beginner Level 2 -->
+    <div id="beginner2Homework" class="container text-center mt-4" style="display: none;">
+      <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 2</h4>
 
-  <!-- ✅ Beginner Level 2 Solution Button -->
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+      <!-- ♟ Puzzle 1 -->
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♙ PUZZLE 1</h4>
+        <p class="card-text text-muted">Try to make Checkmate for Black with the Help of Two Rooks</p>
+        <a href="https://www.chess.com/analysis/game/pgn/3EByRC6nKp/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
+      </div>
+
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♙ PUZZLE 2</h4>
+        <p class="card-text text-muted">Use your Knight to deliver a surprising checkmate in 2 moves!</p>
+        <a href="https://www.chess.com/analysis/game/pgn/dY9r3FjN/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♙ Level Description -->
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
+        <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 2</h4>
+        <img src="images/Homework File/BL 2.1.jpg" alt="Beginner Level 2" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Give a Fork with the help of  <strong>“Black Queen”</strong> .
+        </p>
+      </div>
+        
+<!-- ✅ Beginner Level 2 Solution Button -->
+  <!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
     <h5 class="fw-bold text-dark mb-3">🎥 Beginner Level 2 - Solution</h5>
-    <a href="https://www.youtube.com/watch?v=kXYiU_JCYtU" target="_blank"
+    <a href="https://youtu.be/5G2KZlVwExw" target="_blank"
       class="btn btn-danger btn-lg w-100 fw-bold">Watch Solution Video</a>
-  </div>
-</div>
+  </div> -->
+    </div>
 
 
-<!-- ✅ Intermediate Level 1 -->
-<div id="intermediateHomework" class="container mt-4" style="display: none;">
-  <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 1</h4>
 
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
-    <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/3pjwwXVWVc/analysis" target="_blank"
-      class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
-  </div>
 
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
-    <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/LMd4itQBg/analysis" target="_blank"
-      class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
-  </div>
 
-  <!-- ✅ Intermediate Level 1 Solution Button -->
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+
+    <!-- ✅ Intermediate Level 1 -->
+    <div id="intermediateHomework" class="container mt-4" style="display: none;">
+      <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 1</h4>
+      <!-- ♟ Puzzle 1 -->
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Try to Make checkmate for the Black.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/5GJ6yMeLop/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div>
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/LMd4itQBg/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div> -->
+      <!-- ♟ Puzzle 3 -->
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5 text-center">
+        <img src="images/Homework File/IL 1.1.jpg" alt="Intermediate Level 1" class="img-fluid rounded shadow-sm my-3 mx-auto d-block" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to make checkmate with the help of  <strong>“White Rooks”</strong> .
+        </p>
+      </div>
+
+<!-- ✅ Intermediate Level 1 Solution Button -->
+  <!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
     <h5 class="fw-bold text-dark mb-3">🎥 Intermediate Level 1 - Solution</h5>
-    <a href="https://www.youtube.com/watch?v=9bZkp7q19f0" target="_blank"
+    <a href="https://youtu.be/KaSYbIixUIU" target="_blank"
       class="btn btn-danger btn-lg w-100 fw-bold">Watch Solution Video</a>
-  </div>
-</div>
+  </div>  -->
+    </div>
 
 
-<!-- ✅ Intermediate Level 2 -->
-<div id="intermediate2Homework" class="container text-center mt-4" style="display: none;">
-  <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 2</h4>
 
-  <!-- ♟ Puzzle 1 -->
-  <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
-    <p class="card-text text-muted">Analyze the position deeply and find a double-attack tactic.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/tk5yHcF8/analysis" target="_blank"
-      class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
-  </div>
 
-  <!-- ♟ Puzzle 2 -->
-  <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
-    <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
-    <p class="card-text text-muted">Find a precise fork tactic to gain a winning advantage.</p>
-    <a href="https://www.chess.com/analysis/game/pgn/Yh2uC3Qv/analysis" target="_blank"
-      class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
-  </div>
 
-  <!-- ♟ Image & Challenge Section -->
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5">
-    <img src="images/intermediate2.jpg" alt="Intermediate Level 2" class="img-fluid rounded shadow-sm my-3">
-    <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
-    <p class="fw-semibold text-secondary mt-2">
-      Find <strong>“Winning Tactics”</strong> for both Black and White pieces.
-    </p>
-  </div>
 
-  <!-- ✅ Intermediate Level 2 Solution Button -->
-  <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+    <!-- ✅ Intermediate Level 2 -->
+    <div id="intermediate2Homework" class="container text-center mt-4" style="display: none;">
+      <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 2</h4>
+
+      <!-- ♟ Puzzle 1 -->
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Find the Best Move for White.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/3SyRAUyp2i/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
+      </div>
+
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Find a precise fork tactic to gain a winning advantage.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/Yh2uC3Qv/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♟ Puzzle 3 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 3</h4>
+        <p class="card-text text-muted">Find a precise fork tactic to gain a winning advantage.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/Yh2uC3Qv/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♟ Image & Challenge Section -->
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5">
+        <img src="images/Homework File/IL 2.1.jpg" alt="Intermediate Level 2" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Find Best move for white<strong></strong> .
+        </p>
+      </div>
+<!-- ✅ Intermediate Level 2 Solution Button -->
+<!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
     <h5 class="fw-bold text-dark mb-3">🎥 Intermediate Level 2 - Solution</h5>
-    <a href="https://www.youtube.com/watch?v=3JZ_D3ELwOQ" target="_blank"
+    <a href="https://youtu.be/hKN_Vvj-xjI" target="_blank"
       class="btn btn-danger btn-lg w-100 fw-bold">Watch Solution Video</a>
-  </div>
-</div>
+  </div>  -->
+    </div>
 
 
 
+
+
+
+    <!-- ✅ Intermediate Level 3  -->
+    <div id="intermediate3Homework" class="container text-center mt-4" style="display: none;">
+      <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 3</h4>
+
+      <!-- ♟ Puzzle 1 -->
+      <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Find the Best Move for White </p>
+        <a href="https://www.chess.com/analysis/game/pgn/3oR6MUufEv/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
+      </div>
+
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Find a hidden pin tactic to trap your opponent’s Queen.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/testPuzzle2/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♟ Puzzle 3 -->
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5">
+        <img src="images/Homework File/IL 3.1.jpg" alt="Intermediate Level 3" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Find the Best move for <strong>“Black”</strong> .
+        </p>
+      </div>
+
+<!-- ✅ Intermediate Level 3 - Solution Button -->
+<!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4 text-center">
+  <h5 class="fw-bold text-dark mb-3">🎥 Intermediate Level 3 - Solution</h5>
+  <a href="https://youtu.be/ZgTRP8DE29A" target="_blank" rel="noopener noreferrer"
+     class="btn btn-danger btn-lg w-100 fw-bold">Watch Solution Video</a>
+</div> -->
+    </div>
+
+    
 
     <footer class="container-fluid text-center p-3 bg-dark text-white fixed-bottom shadow-lg">
-      &copy; 2025 <span class="fw-bold text-warning">Chess Titans Academy</span>. All rights reserved. Website Developed by <a href="https://mjsteveportfolio.vercel.app/"><span class="fw-bold text-warning">Steve Rogers</span></a>
+      &copy; 2025 <span class="fw-bold text-warning">Chess Titans Academy</span>. All rights reserved.
     </footer>
   </section>
 
   <script>
+    // -------------------------
+    // USER DATABASE (original names + DOB)
+    // -------------------------
     const users = {
-      "steve": "01-11-2002",
-      "admin": "01-01-2025",
-      "john": "15-02-2025",
-      "arun": "05-03-2025",
-      "meena": "20-04-2025",
-      "rajesh": "25-05-2025",
-      "vijay": "10-06-2025",
-      "nithya": "15-07-2025",
-      "tina": "05-08-2025",
-      "kumar": "10-09-2025",
-      "ravi": "01-10-2025",
-      "lisa": "25-12-2025",
-      "loki": "01-11-2025"
+      // SHINING STARS STUDENTS
+      "Jovin Benson D": "22-12-2019",
+      "A.s.pratyush": "01-12-2018",
+      "RishabRaghvieir.P.V": "20-11-2014",
+      "A.B.Arvind kumar": "28-11-2012",
+      "SRIRAGHAV SOLAIRAJ": "17-01-2017",
+      "P. Magizhan": "26-11-2017",
+      "Sashwanth. K. K": "06-10-2012",
+      "Deswanth. K. K": "03-10-2016",
+      "TS.Krishang": "23-03-2017",
+      "P.VIDYUT": "23-06-2015",
+      "B kirthika sai": "11-07-2017",
+      "Pragadeesh.S": "01-07-2015",
+      "Sanjeeth Gokul": "23-12-2013",
+      "R R vidhyuthsai": "12-04-2016",
+      "K.S.SHIVANI": "11-02-2013",
+      "K.S.SABARISH": "12-06-2018",
+      "Nandika.R.Menon": "24-08-2018",
+      "A.Jeevan Raj": "01-05-2013",
+
+      // FLY HIGH ACHIEVERS STUDENTS 
+      "S.pranesh ananth": "02-11-2015",
+      "J.KIRTHIKA": "02-04-2017",
+      "J.RITHVIKA": "10-10-2018",
+      "N.ROHITH": "07-11-2018",
+      "N.S.Nilan": "06-12-2018",
+      "G. NISHA": "20-12-2014",
+      "K.MOHAMMED NOOR KHAN": "04-07-2014",
+
+      // ONLINE STUDENTS 
+      "S.Srihas": "24-05-2014",
+      "M.R.SAHNAAZ": "06-09-2011",
+      "Pranov.S":"01-03-2013",
+
+
+
+      //ADMIN
+      "steve":"01-11-2002"
+
     };
 
-    const beginnerLevel1Users = ["admin", "john", "loki"];
-    const beginnerLevel2Users = ["lisa"];
-    const intermediateLevel1Users = ["arun", "meena", "ravi"];
-    const intermediateLevel2Users = ["tina", "kumar"];
-    const adminUser = "steve";
+    // -------------------------
+    // LEVEL ASSIGNMENTS (lowercase names for case-insensitive matching)
+    // You can edit these arrays to add/remove students to specific levels
+    // -------------------------
+    const levelGroups = {
+      beginner1: [
+        "Jovin Benson D",
+        "TS.Krishang",
+        "K.S.SABARISH",
+        "j.kirthika",
+        "j.rithvika",
+        "N.ROHITH",
+        "N.S.Nilan",
+        "s.pranesh ananth",
+        ],
+      beginner2: [
+        "a.s.pratyush",
+        "g. nisha",
+        "b kirthika sai",
+        "RishabRaghvieir.P.V",
+        "SRIRAGHAV SOLAIRAJ",
+        "K.S.SHIVANI",
+        "K.MOHAMMED NOOR KHAN",
+        "M.R.SAHNAAZ",
+        "Nandika.R.Menon"
+        ],
+      intermediate1: [
+       "P. Magizhan",
+       "Pragadeesh.S",
+       "Sanjeeth Gokul",
+       "R R vidhyuthsai",
+       "S.Srihas",
+       "A.Jeevan Raj"
+      ],
+      intermediate2: [
+        
+       "P.VIDYUT",
+       "Deswanth. K. K",
 
+      ],
+      intermediate3: [
+        "A.B.Arvind kumar",
+        "Sashwanth. K. K"
+      ],
+      admin: [
+        "steve"
+      ]
+    };
+
+    // -------------------------
+    // SPECIAL USER STATES (lowercase)
+    // -------------------------
     const renewalUsers = ["vijay", "nithya"];
+    const warningUsers = ["john", "rogers"];
 
+    // Elements
     const form = document.getElementById("loginForm");
     const message = document.getElementById("message");
     const loadingOverlay = document.getElementById("loadingOverlay");
+    const loadingText = document.getElementById("loadingText");
     const loginSection = document.getElementById("loginSection");
     const homeworkSection = document.getElementById("homeworkSection");
 
-    function normalizeDate(val) {
-      if (!val) return "";
-      const parts = val.split("-");
-      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    const beginner1 = document.getElementById("beginnerHomework");
+    const beginner2 = document.getElementById("beginner2Homework");
+    const intermediate1 = document.getElementById("intermediateHomework");
+    const intermediate2 = document.getElementById("intermediate2Homework");
+    const intermediate3 = document.getElementById("intermediate3Homework");
+
+    const tabsContainer = document.getElementById("homeworkTabsContainer");
+
+    // Utility: mapping of group keys to DOM ids
+    const levelToDom = {
+      beginner1: { sectionId: "beginnerHomework", tabId: "beginnerTab" },
+      beginner2: { sectionId: "beginner2Homework", tabId: "beginner2Tab" },
+      intermediate1: { sectionId: "intermediateHomework", tabId: "intermediateTab" },
+      intermediate2: { sectionId: "intermediate2Homework", tabId: "intermediate2Tab" },
+      intermediate3: { sectionId: "intermediate3Homework", tabId: "intermediate3Tab" }
+    };
+
+    // Hide everything helper
+    function hideAllPuzzles() {
+      Object.values(levelToDom).forEach(v => {
+        const sec = document.getElementById(v.sectionId);
+        if (sec) sec.style.display = "none";
+      });
     }
 
+    function hideAllTabs() {
+      const tabs = tabsContainer.querySelectorAll(".nav-item");
+      tabs.forEach(tab => tab.style.display = "none");
+    }
+
+    function clearActiveTabLinks() {
+      const links = document.querySelectorAll("#homeworkTabs .nav-link");
+      links.forEach(l => l.classList.remove("active"));
+    }
+
+    // Normalize date from input (YYYY-MM-DD) to DD-MM-YYYY
+    function normalizeDate(value) {
+      if (!value) return "";
+      const [y, m, d] = value.split("-");
+      return `${d.padStart(2, "0")}-${m.padStart(2, "0")}-${y}`;
+    }
+
+    // Show a specific level (by level key)
+    function showAssignedLevel(levelKey) {
+      hideAllPuzzles();
+      hideAllTabs();
+      clearActiveTabLinks();
+
+      const mapping = levelToDom[levelKey];
+      if (!mapping) return;
+
+      const section = document.getElementById(mapping.sectionId);
+      const tabBtn = document.getElementById(mapping.tabId);
+      if (section) section.style.display = "block";
+      if (tabBtn && tabBtn.parentElement) tabBtn.parentElement.style.display = "inline-block";
+      if (tabBtn) tabBtn.classList.add("active");
+    }
+
+    // Make tabs clickable so logged-in users can switch (non-destructive)
+    Object.entries(levelToDom).forEach(([levelKey, dom]) => {
+      const btn = document.getElementById(dom.tabId);
+      const section = document.getElementById(dom.sectionId);
+      if (btn && section) {
+        btn.addEventListener("click", () => {
+          hideAllPuzzles();
+          clearActiveTabLinks();
+          btn.classList.add("active");
+          section.style.display = "block";
+        });
+      }
+    });
+
+    // LOGIN flow
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const username = document.getElementById("username").value.trim().toLowerCase();
+      message.textContent = "";
+      clearActiveTabLinks();
+
+      const usernameRaw = document.getElementById("username").value.trim();
+      const username = usernameRaw.toLowerCase();
       const password = normalizeDate(document.getElementById("password").value.trim());
 
-      // Renewal restriction
+      // ✅ Special user notifications (checked before authentication)
       if (renewalUsers.includes(username)) {
         message.textContent = "⚠️ Your Weekly Puzzle Plan has expired. Please contact Chess Titans Academy to renew.";
         message.className = "text-warning fw-semibold";
         return;
       }
+      if (warningUsers.includes(username)) {
+        message.textContent = "⚠️ You haven’t completed your assigned Weekly Task yet. Kindly reach out to your Chess Titans Academy tutor for support.";
+        message.className = "text-danger fw-semibold";
+        return;
+      }
 
-      if (users[username] && users[username] === password) {
-        message.textContent = "✅ Searching.....";
-        message.className = "text-success fw-semibold";
+      // find matching user key in users (case-insensitive)
+      const matchedKey = Object.keys(users).find(k => k.trim().toLowerCase() === username);
+      if (!matchedKey) {
+        message.textContent = "❌ Invalid username or Date of Birth!";
+        message.className = "text-danger fw-semibold";
+        return;
+      }
+
+      const expectedDob = users[matchedKey];
+      if (expectedDob !== password) {
+        message.textContent = "❌ Invalid username or Date of Birth!";
+        message.className = "text-danger fw-semibold";
+        return;
+      }
+
+      // ✅ Valid credentials — show searching message first
+      message.textContent = "🔎 Searching Student Details...";
+      message.className = "text-info fw-semibold";
+
+      // Small delay to show searching text, then show overlay loading and finally open assigned level
+      setTimeout(() => {
+        loadingText.textContent = "♟ Preparing Your Weekly Puzzle.....";
+        loadingOverlay.style.display = "flex";
 
         setTimeout(() => {
-          loadingOverlay.style.display = "flex";
-          setTimeout(() => {
-            loadingOverlay.style.display = "none";
-            loginSection.style.display = "none";
-            homeworkSection.style.display = "block";
+          // hide overlay and open assigned section (guarded to avoid runtime errors if elements are missing)
+          if (loadingOverlay) loadingOverlay.style.display = "none";
+          if (loginSection) loginSection.style.display = "none";
+          if (homeworkSection) homeworkSection.style.display = "block";
 
-            const beginner1 = document.getElementById("beginnerHomework");
-            const beginner2 = document.getElementById("beginner2Homework");
-            const intermediate1 = document.getElementById("intermediateHomework");
-            const intermediate2 = document.getElementById("intermediate2Homework");
+          // reset view
+          hideAllPuzzles();
+          hideAllTabs();
+          clearActiveTabLinks();
 
-            const beginnerTab = document.getElementById("beginnerTab");
-            const beginner2Tab = document.getElementById("beginner2Tab");
-            const intermediateTab = document.getElementById("intermediateTab");
-            const intermediate2Tab = document.getElementById("intermediate2Tab");
+          // normalize username for group checks
+          const uname = username; // already lowercase
 
-            beginner1.style.display = "none";
-            beginner2.style.display = "none";
-            intermediate1.style.display = "none";
-            intermediate2.style.display = "none";
+          // Admin (steve) sees all levels
+          if (levelGroups.admin.includes(uname)) {
+            // show all tabs and sections
+            Object.values(levelToDom).forEach(v => {
+              const sec = document.getElementById(v.sectionId);
+              const tab = document.getElementById(v.tabId);
+              if (sec) sec.style.display = "block";
+              if (tab && tab.parentElement) tab.parentElement.style.display = "inline-block";
+            });
+            // set first tab active
+            const firstTab = document.getElementById(levelToDom.beginner1.tabId);
+            if (firstTab) firstTab.classList.add("active");
+            message.textContent = "✅ Logged in as Admin.";
+            message.className = "text-success fw-semibold";
+            return;
+          }
 
-            beginnerTab.parentElement.style.display = "none";
-            beginner2Tab.parentElement.style.display = "none";
-            intermediateTab.parentElement.style.display = "none";
-            intermediate2Tab.parentElement.style.display = "none";
-
-            if (beginnerLevel1Users.includes(username)) {
-              beginner1.style.display = "block";
-              beginnerTab.parentElement.style.display = "inline-block";
-              beginnerTab.classList.add("active");
-            } else if (beginnerLevel2Users.includes(username)) {
-              beginner2.style.display = "block";
-              beginner2Tab.parentElement.style.display = "inline-block";
-              beginner2Tab.classList.add("active");
-            } else if (intermediateLevel1Users.includes(username)) {
-              intermediate1.style.display = "block";
-              intermediateTab.parentElement.style.display = "inline-block";
-              intermediateTab.classList.add("active");
-            } else if (intermediateLevel2Users.includes(username)) {
-              intermediate2.style.display = "block";
-              intermediate2Tab.parentElement.style.display = "inline-block";
-              intermediate2Tab.classList.add("active");
-            } else if (username === adminUser) {
-              beginner1.style.display = "block";
-              beginner2.style.display = "block";
-              intermediate1.style.display = "block";
-              intermediate2.style.display = "block";
-              beginnerTab.parentElement.style.display = "inline-block";
-              beginner2Tab.parentElement.style.display = "inline-block";
-              intermediateTab.parentElement.style.display = "inline-block";
-              intermediate2Tab.parentElement.style.display = "inline-block";
+          // Otherwise find which group the user belongs to
+          let found = false;
+          for (const [groupKey, names] of Object.entries(levelGroups)) {
+            if (groupKey === "admin") continue;
+            // compare lowercased entries
+            const match = names.find(n => n.trim().toLowerCase() === uname);
+            if (match) {
+              // show the assigned level
+              showAssignedLevel(groupKey);
+              message.textContent = "✅ Logged in.";
+              message.className = "text-success fw-semibold";
+              found = true;
+              break;
             }
+          }
 
-          }, 3500);
-        }, 1500);
-      } else {
-        message.textContent = "❌ Invalid username or password!";
-        message.className = "text-danger fw-semibold";
-      }
+          if (!found) {
+            // fallback: if no group, show beginner by default
+            showAssignedLevel("beginner1");
+            message.textContent = "⚠️ No specific level assigned — defaulted to Beginner Level 1.";
+            message.className = "text-warning fw-semibold";
+          }
+
+        }, 4000); // overlay visible time
+      }, 3000); // searching text visible time
     });
 
+    // LOGOUT function
     function logout() {
       homeworkSection.style.display = "none";
       loginSection.style.display = "flex";
       form.reset();
       message.textContent = "";
+      hideAllPuzzles();
+      // restore nav tabs visible (so login screen shows tabs all)
+      const allTabs = tabsContainer.querySelectorAll(".nav-item");
+      allTabs.forEach(tab => tab.style.display = "inline-block");
+      clearActiveTabLinks();
+      // default active
+      const defaultTab = document.getElementById("beginnerTab");
+      if (defaultTab) defaultTab.classList.add("active");
     }
 
-    document.getElementById("beginnerTab").addEventListener("click", function () {
-      showOnly("beginnerHomework");
-    });
-    document.getElementById("beginner2Tab").addEventListener("click", function () {
-      showOnly("beginner2Homework");
-    });
-    document.getElementById("intermediateTab").addEventListener("click", function () {
-      showOnly("intermediateHomework");
-    });
-    document.getElementById("intermediate2Tab").addEventListener("click", function () {
-      showOnly("intermediate2Homework");
-    });
-
-    function showOnly(id) {
-      const sections = ["beginnerHomework", "beginner2Homework", "intermediateHomework", "intermediate2Homework"];
-      const tabs = ["beginnerTab", "beginner2Tab", "intermediateTab", "intermediate2Tab"];
-      sections.forEach(s => document.getElementById(s).style.display = "none");
-      tabs.forEach(t => document.getElementById(t).classList.remove("active"));
-      document.getElementById(id).style.display = "block";
-      const activeTab = id.replace("Homework", "Tab");
-      document.getElementById(activeTab).classList.add("active");
-    }
+    // expose logout to global (onclick in markup uses it)
+    window.logout = logout;
   </script>
 </body>
+
 </html>
