@@ -266,6 +266,29 @@
     header {
       background: linear-gradient(90deg, #000000, #2c2c54);
     }
+
+         .marquee-container {
+      overflow: hidden;
+      white-space: nowrap;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: #1e293b;
+    }
+
+    .marquee-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 12s linear infinite;
+      font-size: 18px;
+    }
+        @keyframes scroll-left {
+      from {
+        transform: translateX(0%);
+      }
+      to {
+        transform: translateX(-100%);
+      }
+    }
   </style>
 </head>
 
@@ -312,6 +335,10 @@
         <h2 class="fw-bold text-uppercase mb-1 text-white">Weekly Task (19/10/2025)</h2>
         <p class="fw-semibold text-white">Complete your tasks with focus ♔</p>
       </div>
+      <div class="marquee-container">
+     <div class="marquee-text">
+      🎯 Only for this month, you can access it for free. From next month, a fee of ₹200 will be applicable (3 months validity).
+    </div>
     </header>
 
     <div class="container mt-3" id="homeworkTabsContainer">
@@ -877,6 +904,7 @@
 </body>
 
 </html>
+
 
 
 
