@@ -922,23 +922,37 @@
     window.logout = logout;
         
     // Disable right-click context menu
-    document.addEventListener('contextmenu', event => event.preventDefault());
+    // Disable right-click
+    document.addEventListener("contextmenu", event => event.preventDefault());
 
-    // Disable F12 and Inspect shortcuts
-    document.addEventListener('keydown', event => {
+    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, and Ctrl+U
+    document.onkeydown = function (event) {
       if (
         event.key === "F12" || 
-        (event.ctrlKey && event.shiftKey && (event.key === "I" || event.key === "J")) || 
-        (event.ctrlKey && event.key === "U")
+        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "i") ||
+        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "j") ||
+        (event.ctrlKey && event.key.toLowerCase() === "u")
       ) {
         event.preventDefault();
-        alert("Developer tools are disabled!");
+        return false;
+      }
+    };
+
+    // Optional: Block Ctrl+S (Save), Ctrl+P (Print)
+    document.addEventListener("keydown", event => {
+      if (
+        (event.ctrlKey && event.key.toLowerCase() === "s") ||
+        (event.ctrlKey && event.key.toLowerCase() === "p")
+      ) {
+        event.preventDefault();
+        return false;
       }
     });
   </script>
 </body>
 
 </html>
+
 
 
 
