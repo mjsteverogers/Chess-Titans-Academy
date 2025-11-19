@@ -943,33 +943,49 @@
     // Disable right-click
     document.addEventListener("contextmenu", event => event.preventDefault());
 
-    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, and Ctrl+U
-    document.onkeydown = function (event) {
-      if (
-        event.key === "F12" || 
-        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "i") ||
-        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "j") ||
-        (event.ctrlKey && event.key.toLowerCase() === "u")
-      ) {
-        event.preventDefault();
-        return false;
-      }
-    };
+// Disable Right-click
+document.addEventListener("contextmenu", e => e.preventDefault());
 
-    // Optional: Block Ctrl+S (Save), Ctrl+P (Print)
-    document.addEventListener("keydown", event => {
-      if (
-        (event.ctrlKey && event.key.toLowerCase() === "s") ||
-        (event.ctrlKey && event.key.toLowerCase() === "p")
-      ) {
-        event.preventDefault();
-        return false;
-      }
-    });
+// Disable Key Shortcuts
+document.onkeydown = function (e) {
+  if (
+    e.key === "F12" ||
+    (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") ||
+    (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "j") ||
+    (e.ctrlKey && e.key.toLowerCase() === "u") ||
+    (e.ctrlKey && e.key.toLowerCase() === "s") ||
+    (e.ctrlKey && e.key.toLowerCase() === "p")
+  ) {
+    e.preventDefault();
+    return false;
+  }
+};
+
+// 🔥 SUPER DEVTOOLS DETECTION
+function detectDevTools() {
+  const start = performance.now();
+  debugger; // DevTools slows this line
+  if (performance.now() - start > 20) {
+    document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:20%;'>Developer Tools Detected! Access Blocked.</h1>";
+  }
+}
+
+setInterval(detectDevTools, 500);
+
+// Block DevTools by Resize Trick
+let threshold = 160;
+setInterval(() => {
+  if (window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold) {
+    document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:20%;'>Developer Tools Detected!</h1>";
+  }
+}, 500);
+
   </script>
 </body>
 
 </html>
+
 
 
 
