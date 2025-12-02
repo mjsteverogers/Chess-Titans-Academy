@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chess Titans: Grandmaster AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <style>
+        /* --- GLOBAL STYLES --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* ORANGE THEME GRADIENT BACKGROUND */
+            background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        h1 { 
+            color: #fff; 
+            margin: 15px 0; 
+            font-size: 1.8rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        
+        /* --- LAYOUT CONTAINER --- */
+        #game-container {
+            display: flex;
+            flex-direction: column; 
+            gap: 20px;
+            align-items: center;
+            width: 100%;
+            max-width: 960px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* --- CHESS BOARD --- */
+        #board {
+            width: 100%;
+            max-width: 500px;
+            touch-action: none; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border: 5px solid rgba(255,255,255,0.2);
+        }
+
+        /* --- SIDEBAR / CONTROLS --- */
+        .sidebar {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- DESKTOP LAYOUT --- */
+        @media (min-width: 768px) {
+            #game-container {
+                flex-direction: row; 
+                align-items: flex-start;
+                justify-content: center;
+                padding-top: 40px;
+            }
+
+            .sidebar {
+                width: 300px;
+                margin-top: 0;
+            }
+        }
+
+        /* --- CONTROLS UI --- */
+        .control-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #ffcc99; }
+        
+        select, button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        select:hover, button:hover { background: rgba(255, 255, 255, 0.2); }
+        
+        option {
+            background: #333;
+            color: #fff;
+        }
+
+        button.primary {
+            background-color: #e67e22;
+            border: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 0 #d35400;
+        }
+        button.primary:hover { 
+            background-color: #f39c12; 
+            box-shadow: 0 4px 0 #e67e22;
+        }
+        button.primary:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        #status { 
+            margin-top: 10px; 
+            padding: 15px; 
+            background: rgba(0,0,0,0.5); 
+            border-radius: 6px; 
+            text-align: center;
+            border-left: 4px solid #f39c12;
+        }
+        #evaluation { 
+            font-family: monospace; 
+            color: #f39c12; 
+            margin-top: 5px; 
+            text-align: center; 
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+    </style>
+    <style>
+        .chessboard-63f37 img { max-width: 100%; }
+    </style>
+</head>
+<body>
+
+    <h1>Chess Titans Academy</h1>
+
+    <div id="game-container">
+        <div id="board"></div>
+
+        <div class="sidebar">
+            <div class="control-group">
+                <label for="playerColor">Play As</label>
+                <select id="playerColor">
+                    <option value="w">White</option>
+                    <option value="b">Black</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="difficulty">Stockfish Level</label>
+                <select id="difficulty">
+                    <option value="0">Level 1 (Very Easy - Beginner)</option>
+                    <option value="5">Level 2 (Easy - Casual)</option>
+                    <option value="10">Level 3 (Intermediate)</option>
+                    <option value="20">Level 4 (Titan - Grandmaster)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Game Controls</label>
+                <button id="startBtn" class="primary">New Game</button>
+                <button id="flipBtn">Flip Board</button>
+            </div>
+
+            <div id="status">White to move</div>
+            <div id="evaluation">Eval: 0.0</div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+    <script>
+        // --- VARIABLES ---
+        var board = null;
+        var game = new Chess();
+        var stockfish = null;
+        var isEngineReady = false;
+        
+        var $status = $('#status');
+        var $evaluation = $('#evaluation');
+
+        // --- 1. INITIALIZE STOCKFISH ---
+        async function initStockfish() {
+            const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
+            const response = await fetch(stockfishUrl);
+            const script = await response.text();
+            const blob = new Blob([script], { type: 'application/javascript' });
+            stockfish = new Worker(window.URL.createObjectURL(blob));
+
+            stockfish.onmessage = function(event) {
+                var line = event.data;
+                
+                if (line === 'uciok') {
+                    isEngineReady = true;
+                }
+
+                // AI made a move
+                if (line.startsWith('bestmove')) {
+                    var move = line.split(' ')[1];
+                    game.move(move, {sloppy: true});
+                    board.position(game.fen());
+                    updateStatus();
+                }
+
+                if (line.includes('score cp')) {
+                    let score = line.split('score cp ')[1].split(' ')[0];
+                    $evaluation.text("Eval: " + (parseInt(score) / 100).toFixed(2));
+                } else if (line.includes('score mate')) {
+                    let score = line.split('score mate ')[1].split(' ')[0];
+                    $evaluation.text("Mate in " + Math.abs(score));
+                }
+            };
+
+            stockfish.postMessage('uci');
+        }
+
+        // --- 2. GAME LOGIC ---
+        function onDragStart (source, piece, position, orientation) {
+            if (game.game_over()) return false;
+
+            // NEW: Only allow picking up pieces of the player's color
+            // If board is white, player is white. If piece starts with 'b' (black), return false.
+            if (orientation === 'white' && piece.search(/^b/) !== -1) return false;
+            // If board is black, player is black. If piece starts with 'w' (white), return false.
+            if (orientation === 'black' && piece.search(/^w/) !== -1) return false;
+        }
+
+        function onDrop (source, target) {
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            if (move === null) return 'snapback';
+
+            updateStatus();
+            makeEngineMove();
+        }
+
+        function onSnapEnd () {
+            board.position(game.fen());
+        }
+
+        function makeEngineMove() {
+            if(!isEngineReady) return;
+            if(game.game_over()) return;
+
+            var level = parseInt($('#difficulty').val());
+            var depth = 15; 
+            
+            // --- DIFFICULTY TUNING ---
+            if (level === 0) {
+                depth = 1;
+                stockfish.postMessage('setoption name Skill Level value 0');
+                stockfish.postMessage('setoption name MultiPV value 10'); 
+            } 
+            else if (level === 5) {
+                depth = 5;
+                stockfish.postMessage('setoption name Skill Level value 5');
+                stockfish.postMessage('setoption name MultiPV value 3');
+            }
+            else if (level === 10) {
+                depth = 10;
+                stockfish.postMessage('setoption name Skill Level value 10');
+                stockfish.postMessage('setoption name MultiPV value 1');
+            }
+            else {
+                depth = 18;
+                stockfish.postMessage('setoption name Skill Level value 20');
+                stockfish.postMessage('setoption name MultiPV value 1');
+            }
+
+            stockfish.postMessage('position fen ' + game.fen());
+            stockfish.postMessage('go depth ' + depth);
+        }
+
+        function updateStatus () {
+            var status = '';
+            var moveColor = (game.turn() === 'b') ? 'Black' : 'White';
+
+            if (game.in_checkmate()) {
+                status = 'Game over, ' + moveColor + ' is in checkmate.';
+            } else if (game.in_draw()) {
+                status = 'Game over, drawn position';
+            } else {
+                status = moveColor + ' to move';
+                if (game.in_check()) {
+                    status += ', ' + moveColor + ' is in check';
+                }
+            }
+            $status.html(status);
+        }
+
+        // --- 3. INITIALIZATION ---
+        var config = {
+            draggable: true,
+            position: 'start',
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
+        }
+        
+        board = Chessboard('board', config);
+        
+        $(window).resize(function() {
+            board.resize();
+        });
+
+        initStockfish();
+
+        // --- NEW GAME BUTTON LOGIC ---
+        $('#startBtn').on('click', function() {
+            game.reset();
+            $evaluation.text("Eval: 0.0");
+            
+            // 1. Get chosen color
+            var playerColor = $('#playerColor').val(); // 'w' or 'b'
+
+            // 2. Set Board Orientation
+            if (playerColor === 'w') {
+                board.orientation('white');
+            } else {
+                board.orientation('black');
+            }
+            
+            board.start();
+            updateStatus();
+
+            // 3. If Player chose Black, AI (White) must move first immediately
+            if (playerColor === 'b') {
+                // Short delay to let board render
+                window.setTimeout(makeEngineMove, 500);
+            }
+        });
+
+        $('#flipBtn').on('click', function() {
+            board.flip();
+        });
+    </script>
+</body>
+</html>
