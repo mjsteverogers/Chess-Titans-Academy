@@ -351,18 +351,23 @@
       <ul class="nav nav-tabs justify-content-center flex-wrap" id="homeworkTabs">
         <li class="nav-item m-2">
           <button class="nav-link active px-4 py-2 fw-bold shadow-sm" id="beginnerTab">Beginner Level 1</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
         </li>
         <li class="nav-item m-2">
           <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="beginner2Tab">Beginner Level 2</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
         </li>
         <li class="nav-item m-2">
           <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediateTab">Intermediate Level 1</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
         </li>
         <li class="nav-item m-2">
           <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediate2Tab">Intermediate Level 2</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
         </li>
         <li class="nav-item m-2">
           <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediate3Tab">Intermediate Level 3</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
         </li>
       </ul>
     </div>
@@ -966,6 +971,10 @@
         return false;
       }
     });
+      function goToNextPage() {
+    // Change 'nextpage.html' to the page you want to go to
+    window.location.href = "chessbot.html";
+  }
   </script>
 </body>
 
@@ -1329,6 +1338,7 @@ window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeCelebrat
 </script>
 </body>
 </html>
+
 
 
 
