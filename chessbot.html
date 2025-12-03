@@ -8,7 +8,7 @@
     <title>Chess Titans Academy - Multiplayer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <style>
-        /* --- GLOBAL STYLES (Orange Theme) --- */
+        /* --- GLOBAL STYLES --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -23,12 +23,11 @@
 
         h1 { 
             color: #fff; 
-            margin: 15px 0; 
-            font-size: 1.8rem;
+            margin: 10px 0; 
+            font-size: 1.5rem;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             font-weight: 800;
-            letter-spacing: 1px;
         }
         
         #game-container {
@@ -42,14 +41,57 @@
             box-sizing: border-box;
         }
 
-        #board {
+        /* --- BOARD WRAPPER --- */
+        .board-wrapper {
+            display: flex;
+            flex-direction: column;
             width: 100%;
             max-width: 500px;
+            gap: 5px;
+        }
+
+        /* --- CLOCK STYLES --- */
+        .clock {
+            background: rgba(0, 0, 0, 0.6);
+            color: #ccc;
+            padding: 10px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .clock span.label {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            color: #aaa;
+            font-weight: normal;
+        }
+
+        .clock.active {
+            background: #fff;
+            color: #222;
+            border-color: #f39c12;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.6);
+        }
+        
+        .clock.active span.label { color: #555; }
+
+        /* --- BOARD --- */
+        #board {
+            width: 100%;
             touch-action: none; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.4);
             border: 5px solid rgba(255,255,255,0.2);
+            box-sizing: border-box;
         }
 
+        /* --- SIDEBAR --- */
         .sidebar {
             width: 100%;
             max-width: 500px;
@@ -102,9 +144,8 @@
         button.primary:hover { background-color: #f39c12; box-shadow: 0 4px 0 #e67e22; }
         button.primary:active { transform: translateY(4px); box-shadow: none; }
         
-        /* Specific style for Invite Link Box */
         #inviteLinkGroup {
-            display: none; /* Hidden by default */
+            display: none;
             background: rgba(255,255,255,0.1);
             padding: 10px;
             border-radius: 6px;
@@ -130,7 +171,6 @@
             font-size: 1.1em; font-weight: bold;
         }
         
-        /* Hide AI controls when in multiplayer mode */
         .ai-controls.hidden { display: none; }
     </style>
     <style> .chessboard-63f37 img { max-width: 100%; } </style>
@@ -140,22 +180,46 @@
     <h1>Chess Titans Academy</h1>
 
     <div id="game-container">
-        <div id="board"></div>
+        
+        <div class="board-wrapper">
+            <div id="clock-top" class="clock">
+                <span class="label">Opponent</span>
+                <span id="time-top-display">10:00</span>
+            </div>
+
+            <div id="board"></div>
+
+            <div id="clock-bottom" class="clock">
+                <span class="label">You</span>
+                <span id="time-bottom-display">10:00</span>
+            </div>
+        </div>
 
         <div class="sidebar">
             
             <div class="control-group">
                 <label>Game Mode</label>
-                <button id="modeAiBtn" class="primary">Play vs Computer</button>
+                <button id="modeAiBtn" class="primary">Play vs AI</button>
                 <button id="modeFriendBtn">Play vs Friend (Online)</button>
+            </div>
+
+            <div class="control-group">
+                <label for="timeControl">Time Control</label>
+                <select id="timeControl">
+                    <option value="1">1 Minute (Bullet)</option>
+                    <option value="3">3 Minutes (Blitz)</option>
+                    <option value="5">5 Minutes (Blitz)</option>
+                    <option value="10" selected>10 Minutes (Rapid)</option>
+                    <option value="30">30 Minutes (Classical)</option>
+                </select>
             </div>
 
             <div id="inviteLinkGroup" class="control-group">
                 <label>Send this link to your friend:</label>
                 <div id="inviteLink">Generating...</div>
                 <button id="copyLinkBtn">Copy Link</button>
-                <div style="font-size: 12px; color: #aaa; margin-top:5px;">
-                    Status: <span id="connectionStatus" style="color: yellow">Waiting...</span>
+                <div style="font-size: 14px; font-weight:bold; margin-top:10px; background:rgba(0,0,0,0.3); padding:5px; border-radius:4px;">
+                    Status: <span id="connectionStatus" style="color: #f1c40f">Waiting...</span>
                 </div>
             </div>
 
@@ -180,12 +244,6 @@
             </div>
 
             <div class="control-group">
-                <label for="fenInput">FEN Position</label>
-                <input type="text" id="fenInput" placeholder="FEN..." />
-                <button id="loadFenBtn">Load FEN</button>
-            </div>
-            
-            <div class="control-group">
                 <button id="startBtn" class="primary">New Game / Reset</button>
                 <button id="flipBtn">Flip Board</button>
             </div>
@@ -207,15 +265,19 @@
         var stockfish = null;
         var isEngineReady = false;
         
-        // GAME STATE
         var gameMode = 'ai'; // 'ai' or 'online'
-        var playerSide = 'w'; // 'w' or 'b'
+        var playerSide = 'w';
         var peer = null;
         var conn = null;
+        var myPeerId = null;
+
+        var timeWhite = 600;
+        var timeBlack = 600;
+        var timerInterval = null;
+        var isTimerRunning = false;
 
         var $status = $('#status');
         var $evaluation = $('#evaluation');
-        var $fenInput = $('#fenInput');
 
         // --- 1. INITIALIZE STOCKFISH ---
         async function initStockfish() {
@@ -229,78 +291,137 @@
                 var line = event.data;
                 if (line === 'uciok') isEngineReady = true;
 
-                // AI made a move
                 if (line.startsWith('bestmove') && gameMode === 'ai') {
                     var move = line.split(' ')[1];
                     game.move(move, {sloppy: true});
                     board.position(game.fen());
                     updateStatus();
+                    updateClockUI(); 
                 }
 
                 if (line.includes('score cp')) {
                     let score = line.split('score cp ')[1].split(' ')[0];
                     $evaluation.text("Eval: " + (parseInt(score) / 100).toFixed(2));
-                } else if (line.includes('score mate')) {
-                    let score = line.split('score mate ')[1].split(' ')[0];
-                    $evaluation.text("Mate in " + Math.abs(score));
                 }
             };
             stockfish.postMessage('uci');
         }
 
-        // --- 2. GAME LOGIC ---
-        function onDragStart (source, piece, position, orientation) {
-            if (game.game_over()) return false;
+        // --- 2. TIMER LOGIC ---
+        function resetTimers() {
+            clearInterval(timerInterval);
+            var minutes = parseInt($('#timeControl').val());
+            timeWhite = minutes * 60;
+            timeBlack = minutes * 60;
+            isTimerRunning = false;
+            updateClockUI();
+        }
 
-            // ONLINE MODE RESTRICTIONS
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+            timerInterval = setInterval(function() {
+                if (game.game_over()) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                if (game.turn() === 'w') {
+                    timeWhite--;
+                    if (timeWhite <= 0) endGameByTimeout('Black');
+                } else {
+                    timeBlack--;
+                    if (timeBlack <= 0) endGameByTimeout('White');
+                }
+                updateClockUI();
+            }, 1000);
+        }
+
+        function updateClockUI() {
+            var orientation = board.orientation(); // 'white' or 'black'
+            var topTime, bottomTime;
+            var topActive, bottomActive;
+
+            if (orientation === 'white') {
+                bottomTime = timeWhite; 
+                topTime = timeBlack;    
+                bottomActive = (game.turn() === 'w');
+                topActive = (game.turn() === 'b');
+            } else {
+                bottomTime = timeBlack;
+                topTime = timeWhite;
+                bottomActive = (game.turn() === 'b');
+                topActive = (game.turn() === 'w');
+            }
+
+            $('#time-top-display').text(formatTime(topTime));
+            $('#time-bottom-display').text(formatTime(bottomTime));
+
+            if(isTimerRunning || game.history().length > 0) {
+                if (topActive) {
+                    $('#clock-top').addClass('active');
+                    $('#clock-bottom').removeClass('active');
+                } else {
+                    $('#clock-bottom').addClass('active');
+                    $('#clock-top').removeClass('active');
+                }
+            } else {
+                $('.clock').removeClass('active');
+            }
+        }
+
+        function formatTime(seconds) {
+            if (seconds < 0) return "0:00";
+            var m = Math.floor(seconds / 60);
+            var s = seconds % 60;
+            return m + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        function endGameByTimeout(winner) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            $status.html('Game Over: ' + winner + ' wins by Timeout!');
+            alert(winner + " wins by Timeout!");
+        }
+
+        // --- 3. GAME LOGIC ---
+        function onDragStart (source, piece, position, orientation) {
+            if (game.game_over() || (!isTimerRunning && game.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')) return false;
+
             if (gameMode === 'online') {
-                // If I am white, I can only move white pieces
                 if (playerSide === 'w' && piece.search(/^b/) !== -1) return false;
                 if (playerSide === 'b' && piece.search(/^w/) !== -1) return false;
-                
-                // If it's not my turn, I can't move
-                if ((game.turn() === 'w' && playerSide === 'b') ||
-                    (game.turn() === 'b' && playerSide === 'w')) {
-                    return false;
-                }
+                if ((game.turn() === 'w' && playerSide === 'b') || (game.turn() === 'b' && playerSide === 'w')) return false;
             }
             
-            // AI MODE RESTRICTIONS
             if (gameMode === 'ai') {
-                var currentOrientation = board.orientation(); // 'white' or 'black'
+                var currentOrientation = board.orientation();
                 if (currentOrientation === 'white' && piece.search(/^b/) !== -1) return false;
                 if (currentOrientation === 'black' && piece.search(/^w/) !== -1) return false;
             }
         }
 
         function onDrop (source, target) {
-            var move = game.move({
-                from: source,
-                to: target,
-                promotion: 'q'
-            });
-
+            var move = game.move({ from: source, to: target, promotion: 'q' });
             if (move === null) return 'snapback';
 
-            updateStatus();
+            if (!isTimerRunning) startTimer();
 
-            // IF ONLINE: Send move to friend
+            updateStatus();
+            updateClockUI();
+
             if (gameMode === 'online' && conn) {
                 conn.send({
-                    type: 'move',
-                    from: source,
-                    to: target
+                    type: 'move', from: source, to: target,
+                    timeWhite: timeWhite, timeBlack: timeBlack
                 });
             }
-            // IF AI: Ask engine to move
             else if (gameMode === 'ai') {
                 makeEngineMove();
             }
         }
 
-        function onSnapEnd () {
-            board.position(game.fen());
-        }
+        function onSnapEnd () { board.position(game.fen()); }
 
         function makeEngineMove() {
             if(!isEngineReady) return;
@@ -308,7 +429,6 @@
 
             var level = parseInt($('#difficulty').val());
             var depth = 15; 
-            
             if (level === 0) { depth = 1; stockfish.postMessage('setoption name Skill Level value 0'); stockfish.postMessage('setoption name MultiPV value 10'); } 
             else if (level === 5) { depth = 5; stockfish.postMessage('setoption name Skill Level value 5'); }
             else if (level === 10) { depth = 10; stockfish.postMessage('setoption name Skill Level value 10'); }
@@ -321,95 +441,112 @@
         function updateStatus () {
             var status = '';
             var moveColor = (game.turn() === 'b') ? 'Black' : 'White';
-            if (game.in_checkmate()) status = 'Game over, ' + moveColor + ' is in checkmate.';
-            else if (game.in_draw()) status = 'Game over, drawn position';
+            if (game.in_checkmate()) { status = 'Game over, ' + moveColor + ' is in checkmate.'; clearInterval(timerInterval); }
+            else if (game.in_draw()) { status = 'Game over, drawn position'; clearInterval(timerInterval); }
             else {
                 status = moveColor + ' to move';
                 if (game.in_check()) status += ', ' + moveColor + ' is in check';
             }
             $status.html(status);
-            $fenInput.val(game.fen());
         }
 
-        // --- 3. MULTIPLAYER LOGIC (PeerJS) ---
+        // --- 4. MULTIPLAYER ---
+        function setConnectionStatus(status, color) {
+            $('#connectionStatus').text(status);
+            $('#connectionStatus').css('color', color);
+        }
+
         function initMultiplayer() {
-            // Check URL for "game" parameter
             const urlParams = new URLSearchParams(window.location.search);
             const joinId = urlParams.get('game');
+            const timeParam = urlParams.get('time'); 
 
-            peer = new Peer(); // Create connection to PeerJS cloud
+            peer = new Peer(); 
+
+            peer.on('open', function(id) {
+                myPeerId = id;
+                // If we are host and already in online mode, generate link now
+                if(gameMode === 'online' && !joinId) {
+                    updateInviteLink();
+                }
+            });
+
+            peer.on('error', function(err) {
+                console.error(err);
+                setConnectionStatus("Connection Error!", "#e74c3c"); // RED
+            });
+
+            peer.on('disconnected', function() {
+                setConnectionStatus("Disconnected", "#e74c3c"); // RED
+            });
 
             if (joinId) {
-                // --- WE ARE THE GUEST (Joining a game) ---
+                // GUEST
                 gameMode = 'online';
-                playerSide = 'b'; // Guest is Black
+                playerSide = 'b';
+                if(timeParam) $('#timeControl').val(timeParam);
                 switchToOnlineUI();
-                $('#connectionStatus').text("Connecting to host...");
+                setConnectionStatus("Connecting...", "#f1c40f"); // Yellow
                 board.orientation('black');
+                updateClockUI();
 
+                // Wait for peer open before connecting
                 peer.on('open', function(id) {
                     conn = peer.connect(joinId);
                     setupConnection();
                 });
-
-            } else {
-                // --- WE ARE THE HOST (Creating a game) ---
-                // Wait until user specifically clicks "Play Friend" to start listening
             }
 
             peer.on('connection', function(c) {
-                // Host receives connection
+                // HOST
                 conn = c;
-                $('#connectionStatus').text("Friend Connected! Play.");
-                $('#connectionStatus').css('color', '#0f0');
+                setConnectionStatus("Connected!", "#2ecc71"); // GREEN
                 setupConnection();
-                // Send current board state just in case
                 setTimeout(() => {
-                    conn.send({ type: 'sync', fen: game.fen() });
+                    conn.send({ type: 'init', fen: game.fen(), minutes: $('#timeControl').val() });
                 }, 1000);
             });
         }
 
         function setupConnection() {
             conn.on('open', function() {
-                $('#connectionStatus').text("Connected!");
-                $('#connectionStatus').css('color', '#0f0');
+                setConnectionStatus("Connected!", "#2ecc71"); // GREEN
+            });
+
+            conn.on('close', function() {
+                setConnectionStatus("Connection Lost", "#e74c3c"); // RED
+                alert("Opponent disconnected!");
+            });
+
+            conn.on('error', function() {
+                setConnectionStatus("Connection Error", "#e74c3c"); // RED
             });
 
             conn.on('data', function(data) {
-                // Opponent sent data
                 if (data.type === 'move') {
                     game.move({ from: data.from, to: data.to, promotion: 'q' });
                     board.position(game.fen());
+                    timeWhite = data.timeWhite;
+                    timeBlack = data.timeBlack;
                     updateStatus();
+                    if(!isTimerRunning) startTimer();
+                    updateClockUI();
                 }
-                if (data.type === 'sync') {
-                    game.load(data.fen);
-                    board.position(game.fen());
-                    updateStatus();
+                if (data.type === 'init') {
+                    $('#timeControl').val(data.minutes);
+                    resetTimers();
                 }
-                if (data.type === 'reset') {
-                    game.reset();
-                    board.start();
-                    updateStatus();
-                    alert("Opponent started a new game.");
-                }
+                if (data.type === 'reset') { location.reload(); }
             });
         }
 
-        function createGameLink() {
-            gameMode = 'online';
-            playerSide = 'w'; // Host is White
-            switchToOnlineUI();
-            
-            peer.on('open', function(id) {
-                var link = window.location.href.split('?')[0] + "?game=" + id;
-                $('#inviteLink').text(link);
-                $('#connectionStatus').text("Waiting for friend...");
-            });
+        function updateInviteLink() {
+            if (!myPeerId) return;
+            var timeVal = $('#timeControl').val();
+            var link = window.location.href.split('?')[0] + "?game=" + myPeerId + "&time=" + timeVal;
+            $('#inviteLink').text(link);
+            setConnectionStatus("Waiting for friend...", "#f1c40f"); // Yellow
         }
-
-        // --- UI & EVENTS ---
 
         function switchToOnlineUI() {
             $('#aiControls').addClass('hidden');
@@ -419,30 +556,67 @@
             $('#modeFriendBtn').css('border', '2px solid #fff');
             game.reset();
             board.start();
+            resetTimers();
             updateStatus();
         }
 
+        // EVENTS
         $('#modeAiBtn').click(function() {
             gameMode = 'ai';
             $('#aiControls').removeClass('hidden');
             $('#inviteLinkGroup').hide();
-            // Reset URL to remove ?game= ID if it exists
             window.history.pushState({}, document.title, window.location.pathname);
         });
 
         $('#modeFriendBtn').click(function() {
             if(!peer) initMultiplayer();
-            createGameLink();
+            
+            // Switch UI immediately
+            gameMode = 'online';
+            playerSide = 'w';
+            switchToOnlineUI();
+            
+            // Generate link if ID exists (if not, peer.on('open') will catch it)
+            if(myPeerId) updateInviteLink();
+        });
+
+        $('#timeControl').on('change', function() {
+            resetTimers();
+            // If we are Host and in Online Mode, update link automatically
+            const urlParams = new URLSearchParams(window.location.search);
+            if (gameMode === 'online' && !urlParams.get('game')) {
+                updateInviteLink();
+            }
         });
 
         $('#copyLinkBtn').click(function() {
-            var text = $('#inviteLink').text();
-            navigator.clipboard.writeText(text).then(function() {
-                alert("Link copied! Send it to your friend.");
-            });
+            navigator.clipboard.writeText($('#inviteLink').text());
+            alert("Link copied!");
         });
 
-        // Setup Board
+        $('#startBtn').on('click', function() {
+            if (gameMode === 'online') {
+                if(conn) conn.send({ type: 'reset' });
+                location.reload(); 
+                return;
+            }
+            game.reset();
+            resetTimers();
+            $evaluation.text("Eval: 0.0");
+            var pColor = $('#playerColor').val();
+            board.orientation(pColor === 'w' ? 'white' : 'black');
+            board.start();
+            updateStatus();
+            updateClockUI();
+            if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 500);
+        });
+
+        $('#flipBtn').on('click', function() { 
+            board.flip(); 
+            updateClockUI(); 
+        });
+        
+        // Setup
         var config = {
             draggable: true,
             position: 'start',
@@ -453,48 +627,10 @@
         }
         board = Chessboard('board', config);
         $(window).resize(function() { board.resize(); });
-
+        
         initStockfish();
-        initMultiplayer(); // Check if we are joining via URL
-
-        // General Buttons
-        $('#loadFenBtn').on('click', function() {
-            var fen = $fenInput.val();
-            if(game.load(fen)) {
-                board.position(fen);
-                updateStatus();
-                if(gameMode === 'online' && conn) {
-                    conn.send({ type: 'sync', fen: fen });
-                }
-                // AI Trigger logic
-                if (gameMode === 'ai') {
-                    var pColor = $('#playerColor').val();
-                    if ((pColor === 'w' && game.turn() === 'b') || (pColor === 'b' && game.turn() === 'w')) {
-                        window.setTimeout(makeEngineMove, 500);
-                    }
-                }
-            } else { alert("Invalid FEN"); }
-        });
-
-        $('#startBtn').on('click', function() {
-            game.reset();
-            $evaluation.text("Eval: 0.0");
-            
-            if (gameMode === 'ai') {
-                var pColor = $('#playerColor').val();
-                board.orientation(pColor === 'w' ? 'white' : 'black');
-                board.start();
-                if (pColor === 'b') window.setTimeout(makeEngineMove, 500);
-            } else {
-                // Online reset
-                board.start();
-                if(conn) conn.send({ type: 'reset' });
-            }
-            updateStatus();
-        });
-
-        $('#flipBtn').on('click', function() { board.flip(); });
-        updateStatus();
+        resetTimers();
+        initMultiplayer();
     </script>
 </body>
 </html>
