@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- Google Ads -->
-  <meta name="google-adsense-account" content="ca-pub-9085445837513717">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717"
-     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-9085445837513717">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717" crossorigin="anonymous"></script>
     <title>Chess Titans Academy Chess Bot</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <style>
@@ -86,7 +85,8 @@
         .control-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #ffcc99; }
         
-        select, button {
+        /* Updated to include input[type="text"] styling */
+        select, button, input[type="text"] {
             width: 100%;
             padding: 12px;
             font-size: 16px;
@@ -97,7 +97,16 @@
             cursor: pointer;
             margin-bottom: 10px;
             transition: background 0.2s;
+            box-sizing: border-box;
         }
+        
+        /* Special style for the textbox */
+        input[type="text"] {
+            cursor: text;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
         select:hover, button:hover { background: rgba(255, 255, 255, 0.2); }
         
         option {
@@ -168,6 +177,12 @@
                     <option value="20">Level 4 (Grandmaster)</option>
                 </select>
             </div>
+
+            <div class="control-group">
+                <label for="fenInput">FEN Position (Load Custom Setup)</label>
+                <input type="text" id="fenInput" placeholder="Paste FEN here..." />
+                <button id="loadFenBtn">Load FEN Position</button>
+            </div>
             
             <div class="control-group">
                 <label>Game Controls</label>
@@ -193,6 +208,7 @@
         
         var $status = $('#status');
         var $evaluation = $('#evaluation');
+        var $fenInput = $('#fenInput'); // Reference to the new textbox
 
         // --- 1. INITIALIZE STOCKFISH ---
         async function initStockfish() {
@@ -233,10 +249,8 @@
         function onDragStart (source, piece, position, orientation) {
             if (game.game_over()) return false;
 
-            // NEW: Only allow picking up pieces of the player's color
-            // If board is white, player is white. If piece starts with 'b' (black), return false.
+            // Only allow picking up pieces of the player's color
             if (orientation === 'white' && piece.search(/^b/) !== -1) return false;
-            // If board is black, player is black. If piece starts with 'w' (white), return false.
             if (orientation === 'black' && piece.search(/^w/) !== -1) return false;
         }
 
@@ -294,6 +308,7 @@
             var status = '';
             var moveColor = (game.turn() === 'b') ? 'Black' : 'White';
 
+            // Check game state
             if (game.in_checkmate()) {
                 status = 'Game over, ' + moveColor + ' is in checkmate.';
             } else if (game.in_draw()) {
@@ -305,6 +320,9 @@
                 }
             }
             $status.html(status);
+            
+            // Update the FEN textbox with the current board state
+            $fenInput.val(game.fen());
         }
 
         // --- 3. INITIALIZATION ---
@@ -325,15 +343,42 @@
 
         initStockfish();
 
-        // --- NEW GAME BUTTON LOGIC ---
+        // --- BUTTON EVENTS ---
+
+        // NEW: Load FEN Logic
+        $('#loadFenBtn').on('click', function() {
+            var fen = $fenInput.val();
+            
+            // 1. Try to load the FEN
+            var result = game.load(fen);
+            
+            if (!result) {
+                alert("Invalid FEN string!");
+                return;
+            }
+
+            // 2. Update the board (Show the coins)
+            board.position(fen);
+            updateStatus();
+            $evaluation.text("Eval: 0.0");
+
+            // 3. Check if it's the AI's turn after loading this position
+            var playerColor = $('#playerColor').val();
+            var turnColor = game.turn(); // 'w' or 'b'
+
+            // If player is White ('w') and turn is Black ('b'), AI moves.
+            // If player is Black ('b') and turn is White ('w'), AI moves.
+            if ((playerColor === 'w' && turnColor === 'b') || 
+                (playerColor === 'b' && turnColor === 'w')) {
+                window.setTimeout(makeEngineMove, 500);
+            }
+        });
+
         $('#startBtn').on('click', function() {
             game.reset();
             $evaluation.text("Eval: 0.0");
             
-            // 1. Get chosen color
-            var playerColor = $('#playerColor').val(); // 'w' or 'b'
-
-            // 2. Set Board Orientation
+            var playerColor = $('#playerColor').val(); 
             if (playerColor === 'w') {
                 board.orientation('white');
             } else {
@@ -343,9 +388,7 @@
             board.start();
             updateStatus();
 
-            // 3. If Player chose Black, AI (White) must move first immediately
             if (playerColor === 'b') {
-                // Short delay to let board render
                 window.setTimeout(makeEngineMove, 500);
             }
         });
@@ -353,6 +396,9 @@
         $('#flipBtn').on('click', function() {
             board.flip();
         });
+        
+        // Populate FEN box on load
+        updateStatus();
     </script>
 </body>
 </html>
