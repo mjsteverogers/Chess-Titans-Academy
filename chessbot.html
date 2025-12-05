@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-adsense-account" content="ca-pub-9085445837513717">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717" crossorigin="anonymous"></script>
-    <title>Chess Titans Academy </title>
+    <title>Chess Titans Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
     <style>
         /* --- GLOBAL STYLES --- */
@@ -39,7 +39,7 @@
             max-width: 960px;
             padding: 10px;
             box-sizing: border-box;
-            position: relative; /* For the modal */
+            position: relative; 
         }
 
         .board-wrapper {
@@ -91,24 +91,16 @@
             flex-wrap: wrap;
         }
 
-        .captured-piece {
-            height: 22px; 
-            transition: transform 0.2s;
-        }
-        .captured-piece:hover { transform: scale(1.2); }
+        .captured-piece { height: 22px; }
 
         .score-tag {
-            background: #444;
-            color: #f1c40f;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 5px;
-            font-family: monospace;
+            background: #444; color: #f1c40f;
+            font-weight: bold; font-size: 14px;
+            padding: 2px 6px; border-radius: 4px;
+            margin-left: 5px; font-family: monospace;
         }
 
-        /* --- BOARD & HIGHLIGHTS --- */
+        /* --- BOARD --- */
         #board {
             width: 100%;
             touch-action: none; 
@@ -117,7 +109,29 @@
             box-sizing: border-box;
         }
 
-        /* RED HIGHLIGHT FOR CHECK */
+        /* ANALYSIS CONTROLS */
+        .analysis-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .nav-btn {
+            background: #34495e;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 18px;
+            width: 50px;
+        }
+        .nav-btn:hover { background: #2c3e50; }
+        .nav-btn:disabled { background: #7f8c8d; cursor: not-allowed; opacity: 0.5; }
+
         .highlight-check {
             background-color: #e74c3c !important;
             box-shadow: inset 0 0 15px #c0392b;
@@ -142,11 +156,23 @@
             border: 2px solid #f39c12;
             box-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
             max-width: 90%;
+            position: relative;
         }
+        /* Close Button (X) */
+        .close-modal-x {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .close-modal-x:hover { color: #fff; }
+
         .modal-content h2 { margin-top: 0; font-size: 2rem; color: #f1c40f; }
         .modal-content p { font-size: 1.2rem; margin-bottom: 20px; }
 
-        /* --- SIDEBAR --- */
         .sidebar {
             width: 100%;
             max-width: 500px;
@@ -171,7 +197,7 @@
         .control-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #ffcc99; }
         
-        select, button, input[type="text"] {
+        select, button, input[type="text"], textarea {
             width: 100%;
             padding: 12px;
             font-size: 16px;
@@ -185,7 +211,7 @@
             box-sizing: border-box;
         }
         
-        input[type="text"] { cursor: text; font-family: monospace; }
+        input[type="text"], textarea { cursor: text; font-family: monospace; }
         select:hover, button:hover { background: rgba(255, 255, 255, 0.2); }
         option { background: #333; color: #fff; }
 
@@ -198,7 +224,8 @@
         }
         button.primary:hover { background-color: #f39c12; box-shadow: 0 4px 0 #e67e22; }
         
-        #inviteLinkGroup, #timeControlGroup, #onlineSetupGroup {
+        /* Analysis & Share Sections */
+        #inviteLinkGroup, #timeControlGroup, #onlineSetupGroup, #shareGameGroup {
             display: none; 
             background: rgba(255,255,255,0.1);
             padding: 10px;
@@ -206,13 +233,11 @@
             border: 1px dashed #f39c12;
             margin-bottom: 15px;
         }
-        #inviteLink {
+
+        #pgnOutput {
+            height: 60px;
             font-size: 12px;
-            word-break: break-all;
-            background: #222;
-            padding: 5px;
-            border-radius: 4px;
-            margin-bottom: 5px;
+            resize: none;
         }
 
         #status { 
@@ -228,9 +253,14 @@
 
     <div id="gameOverModal">
         <div class="modal-content">
+            <span class="close-modal-x" onclick="closeModalReview()" title="Close and Review Board">&times;</span>
             <h2 id="winnerText">Checkmate!</h2>
             <p id="winnerDesc">White Wins</p>
-            <button class="primary" onclick="closeModal()">Play Again</button>
+            <div style="display: flex; gap:10px; justify-content: center; flex-wrap:wrap;">
+                <button class="primary" onclick="restartGame()">Play Again</button>
+                <button onclick="shareGame()">Share Analysis</button>
+                <button onclick="closeModalReview()" style="background:#555;">Review Board</button>
+            </div>
         </div>
     </div>
 
@@ -246,6 +276,13 @@
 
             <div id="board"></div>
 
+            <div class="analysis-controls">
+                <button class="nav-btn" id="btnStart" disabled onclick="navStart()">|&lt;</button>
+                <button class="nav-btn" id="btnPrev" disabled onclick="navPrev()">&lt;</button>
+                <button class="nav-btn" id="btnNext" disabled onclick="navNext()">&gt;</button>
+                <button class="nav-btn" id="btnEnd" disabled onclick="navEnd()">&gt;|</button>
+            </div>
+
             <div class="player-info" id="info-bottom">
                 <div id="clock-bottom" class="clock">10:00</div>
                 <div class="material-container" id="material-bottom"></div>
@@ -253,9 +290,9 @@
         </div>
 
         <div class="sidebar">
-            <div class="control-group">
+            <div class="control-group" id="mainControls">
                 <label>Game Mode</label>
-                <button id="modeAiBtn" class="primary">Play vs Computer</button>
+                <button id="modeAiBtn" class="primary">Play vs AI</button>
                 <button id="modeFriendBtn">Play vs Friend (Online)</button>
             </div>
 
@@ -263,7 +300,6 @@
                 <label for="timeControl">Time Control</label>
                 <select id="timeControl">
                     <option value="1">1 Minute (Bullet)</option>
-                    <option value="3">3 Minutes (Blitz)</option>
                     <option value="5">5 Minutes (Blitz)</option>
                     <option value="10" selected>10 Minutes (Rapid)</option>
                     <option value="30">30 Minutes (Classical)</option>
@@ -276,14 +312,14 @@
                     <option value="w" selected>White</option>
                     <option value="b">Black</option>
                 </select>
-                <div style="font-size:12px; color:#aaa; margin-top:5px;">(Your friend will play the opposite color)</div>
+                <div style="font-size:12px; color:#aaa; margin-top:5px;">(Friend plays opposite)</div>
             </div>
 
             <div id="inviteLinkGroup">
-                <label>Send this link to your friend:</label>
-                <div id="inviteLink">Generating...</div>
+                <label>Send link to friend:</label>
+                <div id="inviteLink" style="font-size:11px; word-break:break-all; background:#222; padding:5px; margin-bottom:5px;">Generating...</div>
                 <button id="copyLinkBtn">Copy Link</button>
-                <div style="font-size: 14px; font-weight:bold; margin-top:10px; background:rgba(0,0,0,0.3); padding:5px; border-radius:4px;">
+                <div style="font-size: 14px; font-weight:bold; margin-top:10px;">
                     Status: <span id="connectionStatus" style="color: #f1c40f">Waiting...</span>
                 </div>
             </div>
@@ -300,16 +336,25 @@
                     <label for="difficulty">Stockfish Level</label>
                     <select id="difficulty">
                         <option value="0">Level 1 (Beginner)</option>
-                        <option value="5">Level 2 (Casual)</option>
+                        <option value="5">Level 2 (Amateur)</option>
                         <option value="10">Level 3 (Intermediate)</option>
                         <option value="14">Level 4 (Titan)</option>
                     </select>
                 </div>
             </div>
 
+            <div id="shareGameGroup">
+                <label>Share / Save Game</label>
+                <textarea id="pgnOutput" readonly placeholder="Game PGN will appear here..."></textarea>
+                <button id="copyPgnBtn" style="font-size:12px; padding:8px;">Copy PGN</button>
+                <button id="shareAnalysisBtn" class="primary">Get Analysis Link</button>
+                <button id="lichessBtn" style="background:#333; margin-top:5px;">Analyze on Lichess</button>
+            </div>
+
             <div class="control-group">
                 <button id="startBtn" class="primary">New Game / Reset</button>
                 <button id="flipBtn">Flip Board</button>
+                <button id="showShareBtn" style="background: #34495e;">Save / Analyze</button>
             </div>
 
             <div id="status">White to move</div>
@@ -331,22 +376,21 @@
         
         var gameMode = 'ai'; 
         var playerSide = 'w';
-        var peer = null;
-        var conn = null;
-        var myPeerId = null;
+        var peer = null; var conn = null; var myPeerId = null;
 
-        var timeWhite = 600;
-        var timeBlack = 600;
-        var timerInterval = null;
-        var isTimerRunning = false;
+        var timeWhite = 600; var timeBlack = 600;
+        var timerInterval = null; var isTimerRunning = false;
 
         var $status = $('#status');
         var $evaluation = $('#evaluation');
 
+        // ANALYSIS HISTORY STACK
+        var undoneMoves = []; 
+
         const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
         const STARTING_PIECES = { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 };
 
-        // --- 1. INITIALIZE STOCKFISH ---
+        // --- 1. INITIALIZATION ---
         async function initStockfish() {
             const stockfishUrl = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.0/stockfish.js';
             const response = await fetch(stockfishUrl);
@@ -357,14 +401,12 @@
             stockfish.onmessage = function(event) {
                 var line = event.data;
                 if (line === 'uciok') isEngineReady = true;
-
                 if (line.startsWith('bestmove') && gameMode === 'ai') {
                     var move = line.split(' ')[1];
                     game.move(move, {sloppy: true});
                     board.position(game.fen());
                     updateGameUI();
                 }
-
                 if (line.includes('score cp')) {
                     let score = line.split('score cp ')[1].split(' ')[0];
                     $evaluation.text((parseInt(score) / 100).toFixed(2));
@@ -373,7 +415,7 @@
             stockfish.postMessage('uci');
         }
 
-        // --- 2. MATERIAL & SCORE ---
+        // --- 2. GAME LOGIC & UPDATE ---
         function updateMaterial() {
             var boardCounts = { w: { p:0, n:0, b:0, r:0, q:0, k:0 }, b: { p:0, n:0, b:0, r:0, q:0, k:0 } };
             var boardArr = game.board();
@@ -383,26 +425,21 @@
                     if(piece) boardCounts[piece.color][piece.type]++;
                 }
             }
-
             var whiteScore = 0; var blackScore = 0;
             ['p','n','b','r','q'].forEach(p => {
                 whiteScore += boardCounts.w[p] * PIECE_VALUES[p];
                 blackScore += boardCounts.b[p] * PIECE_VALUES[p];
             });
-
             var scoreDiff = whiteScore - blackScore;
             var capturedByWhite = []; var capturedByBlack = []; 
-
             ['p','n','b','r','q'].forEach(p => {
                 var wLost = STARTING_PIECES[p] - boardCounts.w[p];
                 var bLost = STARTING_PIECES[p] - boardCounts.b[p];
                 for(var i=0; i<wLost; i++) capturedByBlack.push('w' + p.toUpperCase());
                 for(var i=0; i<bLost; i++) capturedByWhite.push('b' + p.toUpperCase());
             });
-
             var orientation = board.orientation();
-            var bottomContainer = $('#material-bottom');
-            var topContainer = $('#material-top');
+            var bottomContainer = $('#material-bottom'); var topContainer = $('#material-top');
             bottomContainer.empty(); topContainer.empty();
 
             if (orientation === 'white') {
@@ -422,119 +459,56 @@
         }
         function renderScore(container, text) { if(text) container.append(`<div class="score-tag">${text}</div>`); }
 
-        // --- 3. HIGHLIGHT KING ON CHECK ---
         function highlightCheck() {
-            // remove all previous check highlights (class name from chessboardjs is .square-55d63)
             $('.square-55d63').removeClass('highlight-check');
-
             if (game.in_check()) {
-                var boardArr = game.board();
-                var turn = game.turn(); // 'w' or 'b'
-                
-                // Find the King's square
+                var boardArr = game.board(); var turn = game.turn();
                 for (var i=0; i<8; i++) {
                     for (var j=0; j<8; j++) {
                         if (boardArr[i][j] && boardArr[i][j].type === 'k' && boardArr[i][j].color === turn) {
-                            // Convert coords to algebraic (e.g., e8)
-                            var files = ['a','b','c','d','e','f','g','h'];
-                            var ranks = [8,7,6,5,4,3,2,1];
-                            var square = files[j] + ranks[i];
-                            
-                            // Highlight using chessboard js selector
-                            var $square = $('.square-' + square);
-                            $square.addClass('highlight-check');
+                            var files = ['a','b','c','d','e','f','g','h']; var ranks = [8,7,6,5,4,3,2,1];
+                            $('.square-' + files[j] + ranks[i]).addClass('highlight-check');
                         }
                     }
                 }
             }
         }
 
-        // --- 4. GAME OVER MODAL ---
+        // --- 3. MODAL & ANALYSIS CONTROLS ---
         function showGameOver(winner) {
             $('#gameOverModal').css('display', 'flex');
             $('#winnerText').text("Checkmate!");
             $('#winnerDesc').text(winner + " Wins!");
             clearInterval(timerInterval);
+            $('#shareGameGroup').show();
+            enableAnalysisButtons(true);
         }
         
-        function closeModal() {
-            $('#gameOverModal').hide();
-            // Trigger Reset
-            $('#startBtn').click();
+        function restartGame() { $('#gameOverModal').hide(); $('#startBtn').click(); }
+        function closeModalReview() { $('#gameOverModal').hide(); enableAnalysisButtons(true); }
+        function shareGame() { $('#gameOverModal').hide(); $('#shareGameGroup').show(); document.getElementById('shareGameGroup').scrollIntoView(); }
+
+        // ANALYSIS NAVIGATION LOGIC
+        function enableAnalysisButtons(enabled) { $('.nav-btn').prop('disabled', !enabled); }
+        function navPrev() {
+            var move = game.undo();
+            if (move) { undoneMoves.push(move); board.position(game.fen()); updateGameUI(true); }
+        }
+        function navNext() {
+            var move = undoneMoves.pop();
+            if (move) { game.move(move); board.position(game.fen()); updateGameUI(true); }
+        }
+        function navStart() {
+            var move = game.undo();
+            while(move) { undoneMoves.push(move); move = game.undo(); }
+            board.position(game.fen()); updateGameUI(true);
+        }
+        function navEnd() {
+            while(undoneMoves.length > 0) { var move = undoneMoves.pop(); game.move(move); }
+            board.position(game.fen()); updateGameUI(true);
         }
 
-        // --- 5. GAME LOOP & STATUS ---
-        function updateGameUI() {
-            updateStatus();
-            updateMaterial();
-            highlightCheck(); // Check for red king
-            if (gameMode === 'online') updateClockUI();
-        }
-
-        function updateStatus () {
-            var status = '';
-            var moveColor = (game.turn() === 'b') ? 'Black' : 'White';
-            
-            if (game.in_checkmate()) { 
-                status = 'Game over, ' + moveColor + ' is in checkmate.'; 
-                clearInterval(timerInterval);
-                // Trigger Modal
-                var winner = (game.turn() === 'b') ? 'White' : 'Black';
-                showGameOver(winner);
-            }
-            else if (game.in_draw()) { status = 'Game over, drawn position'; clearInterval(timerInterval); }
-            else { status = moveColor + ' to move'; if (game.in_check()) status += ', ' + moveColor + ' is in check'; }
-            $status.html(status);
-        }
-
-        // --- 6. DRAG & DROP ---
-        function onDragStart (source, piece, position, orientation) {
-            // AI Mode
-            if (gameMode === 'ai') {
-                if (game.game_over()) return false;
-                if ((board.orientation() === 'white' && piece.search(/^b/) !== -1) || 
-                    (board.orientation() === 'black' && piece.search(/^w/) !== -1)) return false;
-                return true;
-            }
-            // Online Mode
-            if (gameMode === 'online') {
-                if (game.game_over() || (!isTimerRunning && game.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')) return false;
-                if (playerSide === 'w' && piece.search(/^b/) !== -1) return false;
-                if (playerSide === 'b' && piece.search(/^w/) !== -1) return false;
-                if ((game.turn() === 'w' && playerSide === 'b') || (game.turn() === 'b' && playerSide === 'w')) return false;
-            }
-        }
-
-        function onDrop (source, target) {
-            var move = game.move({ from: source, to: target, promotion: 'q' });
-            if (move === null) return 'snapback';
-
-            if (gameMode === 'online' && !isTimerRunning) startTimer();
-
-            board.position(game.fen());
-            updateGameUI();
-
-            if (gameMode === 'online' && conn) {
-                conn.send({ type: 'move', from: source, to: target, timeWhite: timeWhite, timeBlack: timeBlack });
-            } else if (gameMode === 'ai') {
-                makeEngineMove();
-            }
-        }
-        function onSnapEnd () { board.position(game.fen()); }
-
-        function makeEngineMove() {
-            if(!isEngineReady || game.game_over()) return;
-            var level = parseInt($('#difficulty').val());
-            var depth = 14; 
-            if (level === 0) { depth = 1; stockfish.postMessage('setoption name Skill Level value 0'); stockfish.postMessage('setoption name MultiPV value 10'); } 
-            else if (level === 5) { depth = 5; stockfish.postMessage('setoption name Skill Level value 5'); }
-            else if (level === 10) { depth = 10; stockfish.postMessage('setoption name Skill Level value 10'); }
-            else { depth = 14; stockfish.postMessage('setoption name Skill Level value 20'); }
-            stockfish.postMessage('position fen ' + game.fen());
-            stockfish.postMessage('go depth ' + depth);
-        }
-
-        // --- 7. TIMERS ---
+        // --- 4. TIMERS ---
         function resetTimers() {
             clearInterval(timerInterval);
             var minutes = parseInt($('#timeControl').val());
@@ -547,11 +521,8 @@
             isTimerRunning = true;
             timerInterval = setInterval(function() {
                 if (game.game_over()) { clearInterval(timerInterval); return; }
-                if (game.turn() === 'w') {
-                    timeWhite--; if (timeWhite <= 0) endGameByTimeout('Black');
-                } else {
-                    timeBlack--; if (timeBlack <= 0) endGameByTimeout('White');
-                }
+                if (game.turn() === 'w') { timeWhite--; if (timeWhite <= 0) endGameByTimeout('Black'); } 
+                else { timeBlack--; if (timeBlack <= 0) endGameByTimeout('White'); }
                 updateClockUI();
             }, 1000);
         }
@@ -579,18 +550,88 @@
         }
         function endGameByTimeout(winner) {
             clearInterval(timerInterval); isTimerRunning = false;
-            $('#winnerText').text("Timeout!");
-            $('#winnerDesc').text(winner + " Wins on Time.");
+            $('#winnerText').text("Timeout!"); $('#winnerDesc').text(winner + " Wins on Time.");
             $('#gameOverModal').css('display', 'flex');
+            enableAnalysisButtons(true);
         }
 
-        // --- 8. MULTIPLAYER ---
+        // --- 5. GAME UPDATE & STATUS ---
+        function updateGameUI(skipStatusCheck) {
+            if(!skipStatusCheck) updateStatus();
+            updateMaterial();
+            highlightCheck();
+            if (gameMode === 'online') updateClockUI();
+            $('#pgnOutput').val(game.pgn());
+        }
+
+        function updateStatus () {
+            var status = '';
+            var moveColor = (game.turn() === 'b') ? 'Black' : 'White';
+            if (game.in_checkmate()) { 
+                status = 'Game over, ' + moveColor + ' is in checkmate.'; 
+                clearInterval(timerInterval);
+                var winner = (game.turn() === 'b') ? 'White' : 'Black';
+                showGameOver(winner);
+            }
+            else if (game.in_draw()) { status = 'Game over, drawn position'; clearInterval(timerInterval); }
+            else { status = moveColor + ' to move'; if (game.in_check()) status += ', ' + moveColor + ' is in check'; }
+            $status.html(status);
+        }
+
+        function onDragStart (source, piece, position, orientation) {
+            if (gameMode === 'analysis') return false; 
+            if (gameMode === 'ai') return !game.game_over() && !((board.orientation() === 'white' && piece.search(/^b/) !== -1) || (board.orientation() === 'black' && piece.search(/^w/) !== -1));
+            if (gameMode === 'online') {
+                if (game.game_over() || (!isTimerRunning && game.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')) return false;
+                if (playerSide === 'w' && piece.search(/^b/) !== -1) return false;
+                if (playerSide === 'b' && piece.search(/^w/) !== -1) return false;
+                if ((game.turn() === 'w' && playerSide === 'b') || (game.turn() === 'b' && playerSide === 'w')) return false;
+            }
+        }
+        function onDrop (source, target) {
+            var move = game.move({ from: source, to: target, promotion: 'q' });
+            if (move === null) return 'snapback';
+            undoneMoves = [];
+            if (gameMode === 'online' && !isTimerRunning) startTimer();
+            board.position(game.fen());
+            updateGameUI();
+            if (gameMode === 'online' && conn) { conn.send({ type: 'move', from: source, to: target, timeWhite: timeWhite, timeBlack: timeBlack }); } 
+            else if (gameMode === 'ai') { makeEngineMove(); }
+        }
+        function onSnapEnd () { board.position(game.fen()); }
+        function makeEngineMove() {
+            if(!isEngineReady || game.game_over()) return;
+            var level = parseInt($('#difficulty').val());
+            var depth = 14; 
+            if (level === 0) { depth = 1; stockfish.postMessage('setoption name Skill Level value 0'); stockfish.postMessage('setoption name MultiPV value 10'); } 
+            else if (level === 5) { depth = 5; stockfish.postMessage('setoption name Skill Level value 5'); stockfish.postMessage('setoption name MultiPV value 3'); }
+            else if (level === 10) { depth = 10; stockfish.postMessage('setoption name Skill Level value 10'); stockfish.postMessage('setoption name MultiPV value 1'); }
+            else { depth = 14; stockfish.postMessage('setoption name Skill Level value 20'); stockfish.postMessage('setoption name MultiPV value 1'); }
+            stockfish.postMessage('position fen ' + game.fen()); stockfish.postMessage('go depth ' + depth);
+        }
+
+        // --- 6. MULTIPLAYER ---
         function setConnectionStatus(status, color) { $('#connectionStatus').text(status).css('color', color); }
         function initMultiplayer() {
             const urlParams = new URLSearchParams(window.location.search);
             const joinId = urlParams.get('game');
             const timeParam = urlParams.get('time'); 
             const hostColorParam = urlParams.get('hostColor'); 
+            const analysisPgn = urlParams.get('analysis');
+
+            if (analysisPgn) {
+                gameMode = 'analysis';
+                $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide();
+                $('#shareGameGroup').show();
+                enableAnalysisButtons(true); 
+                try {
+                    game.load_pgn(decodeURIComponent(analysisPgn));
+                    board.position(game.fen());
+                    updateGameUI();
+                } catch(e) {}
+                return;
+            }
+
             peer = new Peer(); 
             peer.on('open', function(id) { myPeerId = id; if(gameMode === 'online' && !joinId) updateInviteLink(); });
             peer.on('error', function(err) { setConnectionStatus("Error", "#e74c3c"); });
@@ -617,6 +658,7 @@
                     game.move({ from: data.from, to: data.to, promotion: 'q' });
                     board.position(game.fen());
                     timeWhite = data.timeWhite; timeBlack = data.timeBlack;
+                    undoneMoves = [];
                     if(!isTimerRunning) startTimer();
                     updateGameUI();
                 }
@@ -634,34 +676,40 @@
             $('#aiControls').addClass('hidden'); $('#inviteLinkGroup').show(); $('#timeControlGroup').show(); $('#onlineSetupGroup').show();
             $('.clock').css('display', 'block');
             $('#modeAiBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('opacity', '1'); $('#modeFriendBtn').css('border', '2px solid #fff');
-            
             if(myPeerId && !conn) {
                 var chosenColor = $('#onlineHostColor').val();
                 playerSide = chosenColor;
                 board.orientation(chosenColor === 'w' ? 'white' : 'black');
             }
             game.reset(); board.start(); resetTimers(); updateGameUI();
+            enableAnalysisButtons(false);
         }
 
-        // --- 9. EVENT LISTENERS ---
+        // --- EVENT BINDINGS ---
         $('#modeAiBtn').click(function() {
             gameMode = 'ai';
             $('#aiControls').removeClass('hidden'); $('#inviteLinkGroup').hide(); $('#timeControlGroup').hide(); $('#onlineSetupGroup').hide(); $('.clock').hide();
             $('#modeAiBtn').css('opacity', '1'); $('#modeAiBtn').css('border', '2px solid #fff');
             $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
             window.history.pushState({}, document.title, window.location.pathname);
-            game.reset(); clearInterval(timerInterval); isTimerRunning = false; board.start(); updateGameUI();
+            game.reset(); clearInterval(timerInterval); isTimerRunning = false; board.start(); updateGameUI(); enableAnalysisButtons(false);
         });
         $('#modeFriendBtn').click(function() { if(!peer) initMultiplayer(); gameMode = 'online'; switchToOnlineUI(); if(myPeerId) updateInviteLink(); });
         $('#timeControl').on('change', function() { resetTimers(); if (gameMode === 'online' && !conn) updateInviteLink(); });
         $('#onlineHostColor').on('change', function() { if (gameMode === 'online' && !conn) { playerSide = $(this).val(); board.orientation(playerSide === 'w' ? 'white' : 'black'); updateInviteLink(); updateGameUI(); } });
         $('#copyLinkBtn').click(function() { navigator.clipboard.writeText($('#inviteLink').text()); alert("Link copied!"); });
+        $('#showShareBtn').click(function() { $('#shareGameGroup').toggle(); $('#pgnOutput').val(game.pgn()); });
+        $('#shareAnalysisBtn').click(function() { navigator.clipboard.writeText(window.location.href.split('?')[0] + "?analysis=" + encodeURIComponent(game.pgn())).then(() => alert("Analysis Link Copied!")); });
+        $('#copyPgnBtn').click(function() { navigator.clipboard.writeText($('#pgnOutput').val()); alert("PGN Copied!"); });
+        $('#lichessBtn').click(function() { window.open("https://lichess.org/analysis/pgn/" + encodeURIComponent(game.pgn()), '_blank'); });
+
         $('#startBtn').on('click', function() {
             if (gameMode === 'online') { if(conn) conn.send({ type: 'reset' }); location.reload(); return; }
-            game.reset(); $evaluation.text("0.0");
+            if (gameMode === 'analysis') { window.location.href = window.location.href.split('?')[0]; return; }
+            game.reset(); undoneMoves = []; $evaluation.text("0.0");
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
-            board.start(); updateGameUI();
+            board.start(); updateGameUI(); enableAnalysisButtons(false);
             if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
         });
         $('#flipBtn').on('click', function() { board.flip(); updateGameUI(); });
