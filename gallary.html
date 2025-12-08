@@ -43,6 +43,7 @@
       border-radius: 10px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       position: relative;
+      cursor: pointer; /* Indicates clickable */
     }
 
     .img-box img {
@@ -55,6 +56,49 @@
     /* Hover Zoom Animation */
     .img-box:hover img {
       transform: scale(1.1);
+    }
+
+    /* MODAL STYLES (The Popup) */
+    #galleryModal .modal-content {
+      background-color: transparent;
+      border: none;
+    }
+    
+    #galleryModal .modal-body {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    #galleryModal img {
+      max-width: 100%;
+      max-height: 85vh; /* Prevents image from being taller than screen */
+      border-radius: 5px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      animation: zoomIn 0.3s ease; /* Pop open animation */
+    }
+
+    /* Close button style */
+    .close-modal-btn {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      opacity: 0.8;
+      z-index: 1051;
+    }
+    .close-modal-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    @keyframes zoomIn {
+      from {transform: scale(0.8); opacity: 0;}
+      to {transform: scale(1); opacity: 1;}
     }
   </style>
 </head>
@@ -292,7 +336,7 @@
             </div>
         </div>
         
-        </div>
+      </div>
     </div>
   </section>
 
@@ -344,14 +388,41 @@
           class="fw-bold text-warning">Steve Rogers</span></a>
     </p>
   </footer>
+
+  <div class="modal fade" id="galleryModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+            <span class="close-modal-btn" data-dismiss="modal">&times;</span>
+            <img src="" id="modalImage" alt="Full View">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/jquery-3.4.1.min.js"></script>
   <script src="js/bootstrap.js"></script>
   
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
+    // Initialize AOS Animation
     AOS.init({
-      duration: 1000, // Animation duration in milliseconds
-      once: true, // Whether animation should happen only once - while scrolling down
+      duration: 1000, 
+      once: true, 
+    });
+
+    // Custom Script to Handle Image Clicks
+    $(document).ready(function(){
+        $(".img-box img").click(function(){
+            // 1. Get the source of the clicked image
+            var imageUrl = $(this).attr("src");
+            
+            // 2. Set the modal image source to the clicked image
+            $("#modalImage").attr("src", imageUrl);
+            
+            // 3. Open the Modal
+            $("#galleryModal").modal("show");
+        });
     });
   </script>
 
