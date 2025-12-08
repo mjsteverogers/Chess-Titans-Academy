@@ -2,41 +2,66 @@
 <html>
 
 <head>
-  <!-- Basic -->
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Google Ads -->
   <meta name="google-adsense-account" content="ca-pub-9085445837513717">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717"
-     crossorigin="anonymous"></script>
-  <!-- Site Metas -->
+    crossorigin="anonymous"></script>
   <link rel="icon" href="images/logo.png">
   <meta name="keywords" content="" />
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Chess Titans Academy</title>
+  <title>Chess Titans Academy - Gallery</title>
 
-  <!-- slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
 
-  <!-- bootstrap core css -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
 
-  <!-- fonts style -->
   <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
-  <!-- Custom styles for this template -->
   <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
   <link href="css/responsive.css" rel="stylesheet" />
+  
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <style>
+    /* Custom Gallery Styles for Animation and Visibility */
+    .gallery_container {
+      padding: 20px 0;
+    }
+
+    .gallery-item {
+      margin-bottom: 30px;
+    }
+
+    .img-box {
+      width: 100%;
+      height: 250px; /* Fixed height for uniformity */
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Ensures image covers the box without stretching */
+      transition: transform 0.5s ease;
+    }
+
+    /* Hover Zoom Animation */
+    .img-box:hover img {
+      transform: scale(1.1);
+    }
+  </style>
 </head>
 
 <body>
-  
+
   <div class="hero_area">
-    <!-- header section strats -->
     <header class="header_section">
       <div class="container-fluid">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
@@ -45,7 +70,8 @@
               Chess Titans Academy
             </span>
           </a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
 
@@ -58,28 +84,27 @@
                 <li class="nav-item ">
                   <a class="nav-link" href="why.html"> Learning </a>
                 </li>
-                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="trainer.html"> trainers</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="gallary.html"> Gallery</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="Tournament.html"> Tournament</a>
-                  </li>
-
+                  <a class="nav-link" href="gallary.html"> Gallery</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="Tournament.html"> Tournament</a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="contact.html"> Contact Us</a>
                 </li>
               </ul>
               <div class="user_option">
                 <form class="form-inline my-2 my-lg-0 ml-0 ml-lg-4 mb-3 mb-lg-0">
-             <div class="user_option d-flex align-items-center ml-lg-4">
-            <a href="login page.html" class="btn btn-outline-light btn-sm" style="border-radius: 20px; padding: 5px 15px;">
-              <i class="fa fa-user"></i> Students Login
-            </a>
-          </div>
+                  <div class="user_option d-flex align-items-center ml-lg-4">
+                    <a href="login page.html" class="btn btn-outline-light btn-sm"
+                      style="border-radius: 20px; padding: 5px 15px;">
+                      <i class="fa fa-user"></i> Students Login
+                    </a>
+                  </div>
                 </form>
               </div>
             </div>
@@ -87,129 +112,190 @@
         </nav>
       </div>
     </header>
-    <section class="trainer_section layout_padding">
-        <div class="container">
-          <div class="heading_container">
-            <h2>
-              Our Student achievements
-            </h2>
+  </div>
+
+  <section class="trainer_section layout_padding">
+    <div class="container">
+      <div class="heading_container">
+        <h2>
+          Our Student Achievements
+        </h2>
+      </div>
+      
+      <div class="row gallery_container">
+        
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/33.jpg" alt="Achievement">
           </div>
-          <div class="row">
-            <div class="col-lg-4 col-md-6 mx-auto">
-              <div class="box">
-                <div class="name">
-                  <h5>
-                  </h5>
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/33.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/32.png" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/31.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/30.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/34.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/35.jpg" alt="">
-                </div>  
-                 <div class="img-box">
-                  <img src="images/chess/36.jpg" alt="">
-                </div>      
-                <div class="img-box">
-                  <img src="images/chess/37.jpg" alt="">
-                </div>    
-                <div class="img-box">
-                  <img src="images/chess/38.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/39.jpg" alt="">
-                </div>  
-                <div class="img-box">
-                  <img src="images/chess/40.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/41.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/42.png" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/25.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/24.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/23.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/chess/22.jpg" alt="">
-                </div>
-                <div class="img-box">
-                    <img src="images/chess/20.jpeg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/21.jpg" alt="">
-                  </div>
-                <div class="img-box">
-                  <img src="images/chess/1.jpg" alt="">
-                </div>
-                <div class="img-box">
-                    <img src="images/chess/2.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/3.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/4.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/5.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/6.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/7.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/8.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/9.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/10.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/11.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/12.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/13.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/14.jpg" alt="">
-                  </div>
-                  <div class="img-box">
-                    <img src="images/chess/15.jpg" alt="">
-                    <div class="img-box">
-                        <img src="images/chess/16.jpg" alt="">
-                      </div>
-                  </div>
-                </div>
-              </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="img-box">
+            <img src="images/chess/32.png" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="img-box">
+            <img src="images/chess/31.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="img-box">
+            <img src="images/chess/30.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/34.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="img-box">
+            <img src="images/chess/35.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="img-box">
+            <img src="images/chess/36.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="img-box">
+            <img src="images/chess/37.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/38.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="img-box">
+            <img src="images/chess/39.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="img-box">
+            <img src="images/chess/40.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="img-box">
+            <img src="images/chess/41.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/42.png" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="img-box">
+            <img src="images/chess/25.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="img-box">
+            <img src="images/chess/24.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="img-box">
+            <img src="images/chess/23.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/22.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="img-box">
+            <img src="images/chess/20.jpeg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="img-box">
+            <img src="images/chess/21.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="img-box">
+            <img src="images/chess/1.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/2.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="img-box">
+            <img src="images/chess/3.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="img-box">
+            <img src="images/chess/4.jpg" alt="Achievement">
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="img-box">
+            <img src="images/chess/5.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up">
+          <div class="img-box">
+            <img src="images/chess/6.jpg" alt="Achievement">
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="100">
+            <div class="img-box">
+              <img src="images/chess/7.jpg" alt="Achievement">
             </div>
-  <!-- info section -->
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="200">
+            <div class="img-box">
+              <img src="images/chess/8.jpg" alt="Achievement">
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-6 gallery-item" data-aos="fade-up" data-aos-delay="300">
+            <div class="img-box">
+              <img src="images/chess/9.jpg" alt="Achievement">
+            </div>
+        </div>
+        
+        </div>
+    </div>
+  </section>
+
   <section class="info_section layout_padding2">
     <div class="container">
       <div class="info_items">
@@ -252,20 +338,23 @@
       </div>
     </div>
   </section>
-
-  <!-- end info_section -->
-
-  <!-- footer section -->
   <footer class="container-fluid footer_section">
     <p>
-      &copy; 2025 Chess Titans Academy. All rights reserved. Website Developed by <a href="https://mjsteveportfolio.vercel.app/"><span class="fw-bold text-warning">Steve Rogers</span></a>
+      © 2025 Chess Titans Academy. All rights reserved. Website Developed by <a href="https://mjsteveportfolio.vercel.app/"><span
+          class="fw-bold text-warning">Steve Rogers</span></a>
     </p>
   </footer>
-  <!-- footer section -->
-
   <script src="js/jquery-3.4.1.min.js"></script>
   <script src="js/bootstrap.js"></script>
+  
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({
+      duration: 1000, // Animation duration in milliseconds
+      once: true, // Whether animation should happen only once - while scrolling down
+    });
+  </script>
 
 </body>
 
-</html> 
+</html>
