@@ -87,7 +87,7 @@
 
         /* --- SIGNAL STRENGTH ANIMATION STYLES --- */
         .signal-container {
-            display: none; /* Hidden by default, shown in online mode */
+            display: none; 
             align-items: flex-end;
             gap: 2px;
             height: 20px;
@@ -97,34 +97,27 @@
 
         .signal-bar {
             width: 4px;
-            background-color: #555; /* Default inactive color */
+            background-color: #555; 
             border-radius: 1px;
             transition: background-color 0.3s ease;
         }
 
-        /* Heights for bars */
         .signal-bar:nth-child(1) { height: 6px; }
         .signal-bar:nth-child(2) { height: 10px; }
         .signal-bar:nth-child(3) { height: 14px; }
         .signal-bar:nth-child(4) { height: 18px; }
 
-        /* Animation States */
         @keyframes pulse-signal {
             0% { opacity: 0.6; }
             50% { opacity: 1; }
             100% { opacity: 0.6; }
         }
 
-        .signal-active {
-            animation: pulse-signal 2s infinite ease-in-out;
-        }
+        .signal-active { animation: pulse-signal 2s infinite ease-in-out; }
 
-        /* Connection Quality Colors */
         .signal-good .signal-bar.active { background-color: #2ecc71; box-shadow: 0 0 4px #2ecc71; }
         .signal-fair .signal-bar.active { background-color: #f1c40f; box-shadow: 0 0 4px #f1c40f; }
         .signal-weak .signal-bar.active { background-color: #e74c3c; box-shadow: 0 0 4px #e74c3c; }
-        
-        /* Helper to gray out unused bars */
         .signal-bar.inactive { background-color: #444 !important; box-shadow: none !important; }
 
         .clock {
@@ -224,7 +217,6 @@
             max-width: 90%;
             position: relative;
         }
-        /* Close Button (X) */
         .close-modal-x {
             position: absolute;
             top: 10px;
@@ -290,7 +282,6 @@
         }
         button.primary:hover { background-color: #f39c12; box-shadow: 0 4px 0 #e67e22; }
         
-        /* Analysis & Share Sections */
         #inviteLinkGroup, #timeControlGroup, #onlineSetupGroup, #shareGameGroup {
             display: none; 
             background: rgba(255,255,255,0.1);
@@ -457,19 +448,69 @@
 
         var $status = $('#status');
         var $evaluation = $('#evaluation');
-
-        // ANALYSIS HISTORY STACK
         var undoneMoves = []; 
-
-        // TOUCH PIECE VARIABLE
         var touchedSquare = null;
-
-        // PING/SIGNAL VARIABLES
         var pingIntervalId = null;
         var lastPingTime = 0;
 
         const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
         const STARTING_PIECES = { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 };
+
+        // --- LOCAL STORAGE HELPERS ---
+        function saveLocalState() {
+            if (gameMode === 'analysis') return;
+            localStorage.setItem('chess_fen', game.fen());
+            localStorage.setItem('chess_pgn', game.pgn());
+            localStorage.setItem('chess_time_w', timeWhite);
+            localStorage.setItem('chess_time_b', timeBlack);
+            localStorage.setItem('chess_mode', gameMode);
+            localStorage.setItem('chess_side', playerSide);
+            if(myPeerId) localStorage.setItem('chess_my_id', myPeerId);
+        }
+
+        function restoreLocalState() {
+            var savedFen = localStorage.getItem('chess_fen');
+            var savedMode = localStorage.getItem('chess_mode');
+            
+            if (savedFen && savedMode) {
+                // Restore logic
+                gameMode = savedMode;
+                game.load(savedFen);
+                
+                // Restore times
+                var tW = localStorage.getItem('chess_time_w');
+                var tB = localStorage.getItem('chess_time_b');
+                if(tW) timeWhite = parseInt(tW);
+                if(tB) timeBlack = parseInt(tB);
+                
+                // Restore Side
+                var side = localStorage.getItem('chess_side');
+                if(side) playerSide = side;
+
+                // Set PGN if available for history
+                var pgn = localStorage.getItem('chess_pgn');
+                if(pgn) {
+                    try { 
+                        // We reload strictly to fill history, but trust FEN for current state
+                        var tempGame = new Chess();
+                        tempGame.load_pgn(pgn);
+                        if (tempGame.fen() === savedFen) game = tempGame; 
+                    } catch(e){}
+                }
+
+                // UI Updates
+                if(gameMode === 'online') {
+                    switchToOnlineUI(true); // true = skip reset
+                } else {
+                    $('#modeAiBtn').click(); // will trigger reset, so we need to override
+                    game.load(savedFen); // Reload FEN after UI switch reset
+                }
+                
+                board.position(game.fen());
+                board.orientation(playerSide === 'w' ? 'white' : 'black');
+                updateGameUI();
+            }
+        }
 
         // --- 1. INITIALIZATION ---
         async function initStockfish() {
@@ -487,6 +528,7 @@
                     game.move(move, {sloppy: true});
                     board.position(game.fen());
                     updateGameUI();
+                    saveLocalState();
                 }
                 if (line.includes('score cp')) {
                     let score = line.split('score cp ')[1].split(' ')[0];
@@ -496,7 +538,7 @@
             stockfish.postMessage('uci');
         }
 
-        // --- 2. GAME LOGIC & UPDATE ---
+        // --- 2. GAME LOGIC ---
         function updateMaterial() {
             var boardCounts = { w: { p:0, n:0, b:0, r:0, q:0, k:0 }, b: { p:0, n:0, b:0, r:0, q:0, k:0 } };
             var boardArr = game.board();
@@ -555,24 +597,24 @@
             }
         }
 
-        // --- 3. MODAL & ANALYSIS CONTROLS ---
+        // --- 3. CONTROLS ---
         function showGameOver(winner) {
             $('#gameOverModal').css('display', 'flex');
             $('#winnerText').text("Checkmate!");
             $('#winnerDesc').text(winner + " Wins!");
             clearInterval(timerInterval);
-            stopPingLoop(); // Stop signal animation
+            stopPingLoop(); 
             $('#shareGameGroup').show();
             enableAnalysisButtons(true);
             touchedSquare = null; 
             $('.square-55d63').removeClass('touched-square');
+            localStorage.removeItem('chess_fen'); // Clear saved game on finish
         }
         
         function restartGame() { $('#gameOverModal').hide(); $('#startBtn').click(); }
         function closeModalReview() { $('#gameOverModal').hide(); enableAnalysisButtons(true); }
         function shareGame() { $('#gameOverModal').hide(); $('#shareGameGroup').show(); document.getElementById('shareGameGroup').scrollIntoView(); }
 
-        // ANALYSIS NAVIGATION LOGIC
         function enableAnalysisButtons(enabled) { $('.nav-btn').prop('disabled', !enabled); }
         function navPrev() {
             var move = game.undo();
@@ -608,6 +650,7 @@
                 if (game.turn() === 'w') { timeWhite--; if (timeWhite <= 0) endGameByTimeout('Black'); } 
                 else { timeBlack--; if (timeBlack <= 0) endGameByTimeout('White'); }
                 updateClockUI();
+                if(timeWhite % 5 === 0) saveLocalState(); // Backup save every 5s
             }, 1000);
         }
         function updateClockUI() {
@@ -637,9 +680,10 @@
             $('#winnerText').text("Timeout!"); $('#winnerDesc').text(winner + " Wins on Time.");
             $('#gameOverModal').css('display', 'flex');
             enableAnalysisButtons(true);
+            localStorage.removeItem('chess_fen');
         }
 
-        // --- 5. GAME UPDATE & STATUS ---
+        // --- 5. UI UPDATES ---
         function updateGameUI(skipStatusCheck) {
             if(!skipStatusCheck) updateStatus();
             updateMaterial();
@@ -663,32 +707,26 @@
             $status.html(status);
         }
 
-        // --- TOUCH MOVE ALERT FUNCTION ---
         function showTouchWarning() {
             var msg = $('#warning-message');
             msg.fadeIn(200);
-            setTimeout(function() {
-                msg.fadeOut(300);
-            }, 2500);
+            setTimeout(function() { msg.fadeOut(300); }, 2500);
         }
 
         function onDragStart (source, piece, position, orientation) {
             if (gameMode === 'analysis') return false; 
             
-            // Basic Game Checks
             if (gameMode === 'ai') {
-                if (game.game_over() || ((board.orientation() === 'white' && piece.search(/^b/) !== -1) || (board.orientation() === 'black' && piece.search(/^w/) !== -1))) {
-                    return false;
-                }
+                if (game.game_over() || ((board.orientation() === 'white' && piece.search(/^b/) !== -1) || (board.orientation() === 'black' && piece.search(/^w/) !== -1))) return false;
             }
             if (gameMode === 'online') {
-                if (game.game_over() || (!isTimerRunning && game.fen() !== 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')) return false;
+                // Allow move even if connection is lost, as long as board state allows it (optimistic UI)
+                if (game.game_over()) return false;
                 if (playerSide === 'w' && piece.search(/^b/) !== -1) return false;
                 if (playerSide === 'b' && piece.search(/^w/) !== -1) return false;
                 if ((game.turn() === 'w' && playerSide === 'b') || (game.turn() === 'b' && playerSide === 'w')) return false;
             }
 
-            // --- TOUCH PIECE LOGIC ---
             var moves = game.moves({ square: source });
             if (moves.length === 0) return false;
 
@@ -696,30 +734,34 @@
                 showTouchWarning();
                 return false; 
             }
-
             if (touchedSquare === null) {
                 touchedSquare = source;
                 $('.square-' + source).addClass('touched-square');
             }
-
             return true;
         }
 
         function onDrop (source, target) {
             var move = game.move({ from: source, to: target, promotion: 'q' });
-            
-            if (move === null) {
-                return 'snapback';
-            }
+            if (move === null) return 'snapback';
 
             touchedSquare = null;
             $('.square-55d63').removeClass('touched-square');
-
             undoneMoves = [];
+            
             if (gameMode === 'online' && !isTimerRunning) startTimer();
             board.position(game.fen());
             updateGameUI();
-            if (gameMode === 'online' && conn) { conn.send({ type: 'move', from: source, to: target, timeWhite: timeWhite, timeBlack: timeBlack }); } 
+            saveLocalState(); // SAVE ON DROP
+
+            if (gameMode === 'online') {
+                if (conn && conn.open) {
+                    conn.send({ type: 'move', from: source, to: target, timeWhite: timeWhite, timeBlack: timeBlack, fen: game.fen() }); 
+                } else {
+                    // Queued or Just Saved (will sync on reconnect)
+                    console.log("Move saved locally. Waiting for reconnection...");
+                }
+            } 
             else if (gameMode === 'ai') { makeEngineMove(); }
         }
 
@@ -728,21 +770,19 @@
             if(!isEngineReady || game.game_over()) return;
             var level = parseInt($('#difficulty').val());
             var depth = 14; 
-            if (level === 0) { depth = 1; stockfish.postMessage('setoption name Skill Level value 0'); stockfish.postMessage('setoption name MultiPV value 10'); } 
-            else if (level === 5) { depth = 5; stockfish.postMessage('setoption name Skill Level value 5'); stockfish.postMessage('setoption name MultiPV value 3'); }
-            else if (level === 10) { depth = 10; stockfish.postMessage('setoption name Skill Level value 10'); stockfish.postMessage('setoption name MultiPV value 1'); }
-            else { depth = 14; stockfish.postMessage('setoption name Skill Level value 20'); stockfish.postMessage('setoption name MultiPV value 1'); }
+            if (level === 0) { depth = 1; stockfish.postMessage('setoption name Skill Level value 0'); } 
+            else if (level === 5) { depth = 5; stockfish.postMessage('setoption name Skill Level value 5'); }
+            else if (level === 10) { depth = 10; stockfish.postMessage('setoption name Skill Level value 10'); }
+            else { depth = 14; stockfish.postMessage('setoption name Skill Level value 20'); }
             stockfish.postMessage('position fen ' + game.fen()); stockfish.postMessage('go depth ' + depth);
         }
 
-        // --- 6. MULTIPLAYER & SIGNAL LOGIC ---
+        // --- 6. MULTIPLAYER & RECONNECT ---
         function setConnectionStatus(status, color) { $('#connectionStatus').text(status).css('color', color); }
         
         function initMultiplayer() {
             const urlParams = new URLSearchParams(window.location.search);
             const joinId = urlParams.get('game');
-            const timeParam = urlParams.get('time'); 
-            const hostColorParam = urlParams.get('hostColor'); 
             const analysisPgn = urlParams.get('analysis');
 
             if (analysisPgn) {
@@ -750,44 +790,82 @@
                 $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide();
                 $('#shareGameGroup').show();
                 enableAnalysisButtons(true); 
-                try {
-                    game.load_pgn(decodeURIComponent(analysisPgn));
-                    board.position(game.fen());
-                    updateGameUI();
-                } catch(e) {}
+                try { game.load_pgn(decodeURIComponent(analysisPgn)); board.position(game.fen()); updateGameUI(); } catch(e) {}
                 return;
             }
 
+            // ATTEMPT TO REUSE OLD ID IF REFRESHED
+            var savedId = localStorage.getItem('chess_my_id');
+            var peerOptions = {};
+            if (savedId && !joinId) {
+                // Only try to reuse ID if we are the HOST (no joinId in URL)
+                // Note: PeerJS might fail if ID is still "taken" by the server, but it's worth a try
+                // For simplicity, we usually let server assign new, but we save it.
+                // If we want persistent refresh for host, we would need 'new Peer(savedId)'.
+                // To avoid errors, we'll just generate new for now unless we are sure.
+            }
+
             peer = new Peer(); 
-            peer.on('open', function(id) { myPeerId = id; if(gameMode === 'online' && !joinId) updateInviteLink(); });
-            peer.on('error', function(err) { setConnectionStatus("Error", "#e74c3c"); });
+            peer.on('open', function(id) { 
+                myPeerId = id; 
+                localStorage.setItem('chess_my_id', myPeerId); // Save for reference
+                if(gameMode === 'online' && !joinId) updateInviteLink(); 
+            });
+            
+            peer.on('error', function(err) { setConnectionStatus("Connection Error (Refresh)", "#e74c3c"); });
             peer.on('disconnected', function() { setConnectionStatus("Disconnected", "#e74c3c"); stopPingLoop(); });
 
             if (joinId) {
                 gameMode = 'online'; 
-                if(hostColorParam === 'b') playerSide = 'w'; else playerSide = 'b';
-                if(timeParam) $('#timeControl').val(timeParam);
-                switchToOnlineUI(); setConnectionStatus("Connecting...", "#f1c40f");
+                // Restore logic might have already set playerSide, but URL param overrides if clean load
+                var hostColorParam = urlParams.get('hostColor'); 
+                if(!localStorage.getItem('chess_fen')) {
+                    if(hostColorParam === 'b') playerSide = 'w'; else playerSide = 'b';
+                    if(urlParams.get('time')) $('#timeControl').val(urlParams.get('time'));
+                }
+
+                switchToOnlineUI(true); // Don't reset if local storage exists
+                setConnectionStatus("Connecting...", "#f1c40f");
                 board.orientation(playerSide === 'w' ? 'white' : 'black');
-                peer.on('open', function(id) { conn = peer.connect(joinId); setupConnection(); });
+                
+                peer.on('open', function(id) { 
+                    conn = peer.connect(joinId); 
+                    setupConnection(); 
+                });
             }
+
             peer.on('connection', function(c) {
-                conn = c; setConnectionStatus("Connected!", "#2ecc71"); setupConnection();
-                setTimeout(() => { conn.send({ type: 'init', fen: game.fen(), minutes: $('#timeControl').val() }); }, 1000);
+                conn = c; 
+                setConnectionStatus("Connected!", "#2ecc71"); 
+                setupConnection();
+                // Send current state immediately on connect (Sync)
+                setTimeout(() => { 
+                    conn.send({ 
+                        type: 'sync', 
+                        fen: game.fen(), 
+                        timeWhite: timeWhite, 
+                        timeBlack: timeBlack 
+                    }); 
+                }, 1000);
             });
         }
 
         function setupConnection() {
             conn.on('open', function() { 
                 setConnectionStatus("Connected!", "#2ecc71"); 
-                startPingLoop(); // START SIGNAL ANIMATION
+                startPingLoop(); 
+                // Re-send state if we have moves
+                if (game.history().length > 0) {
+                     conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack });
+                }
             });
             conn.on('close', function() { 
-                setConnectionStatus("Lost", "#e74c3c"); 
-                alert("Opponent disconnected!"); 
+                setConnectionStatus("Reconnecting...", "#e67e22"); 
                 stopPingLoop();
+                // PeerJS auto-reconnect logic is complex, usually easiest to just wait
             });
             conn.on('data', function(data) {
+                // MOVE
                 if (data.type === 'move') {
                     game.move({ from: data.from, to: data.to, promotion: 'q' });
                     board.position(game.fen());
@@ -795,36 +873,38 @@
                     undoneMoves = [];
                     touchedSquare = null;
                     $('.square-55d63').removeClass('touched-square');
-
                     if(!isTimerRunning) startTimer();
                     updateGameUI();
+                    saveLocalState();
                 }
-                if (data.type === 'init') { $('#timeControl').val(data.minutes); resetTimers(); }
-                if (data.type === 'reset') { location.reload(); }
-                
-                // --- PING/PONG HANDLING ---
-                if (data.type === 'ping') {
-                    // Respond immediately to ping
-                    conn.send({ type: 'pong', time: data.time });
+                // SYNC (Reconnect)
+                if (data.type === 'sync') {
+                    // Only accept sync if their history is longer or we are at start
+                    var temp = new Chess(data.fen);
+                    // Simple heuristic: accept incoming state if valid
+                    game.load(data.fen);
+                    timeWhite = data.timeWhite; 
+                    timeBlack = data.timeBlack;
+                    board.position(game.fen());
+                    updateGameUI();
+                    saveLocalState();
                 }
-                if (data.type === 'pong') {
-                    // Calculate round trip time
-                    var latency = Date.now() - data.time;
-                    updateSignalUI(latency);
+                // RESET
+                if (data.type === 'reset') { 
+                    localStorage.removeItem('chess_fen');
+                    location.reload(); 
                 }
+                // SIGNAL
+                if (data.type === 'ping') { conn.send({ type: 'pong', time: data.time }); }
+                if (data.type === 'pong') { updateSignalUI(Date.now() - data.time); }
             });
         }
 
-        // --- SIGNAL STRENGTH LOGIC ---
         function startPingLoop() {
             if (pingIntervalId) clearInterval(pingIntervalId);
             $('.signal-container').css('display', 'flex').addClass('signal-active');
-            
-            // Ping every 2 seconds
             pingIntervalId = setInterval(function() {
-                if (conn && conn.open) {
-                    conn.send({ type: 'ping', time: Date.now() });
-                }
+                if (conn && conn.open) { conn.send({ type: 'ping', time: Date.now() }); }
             }, 2000);
         }
 
@@ -834,36 +914,22 @@
         }
 
         function updateSignalUI(latency) {
-            // Update both indicators (P2P latency is shared)
             var $signals = $('.signal-container');
             $signals.removeClass('signal-good signal-fair signal-weak');
             $signals.find('.signal-bar').removeClass('active inactive');
-            $signals.addClass('signal-active'); // Keep pulsating
+            $signals.addClass('signal-active');
 
             var qualityClass = '';
             var bars = 0;
-
-            if (latency < 150) {
-                qualityClass = 'signal-good'; // Green
-                bars = 4;
-            } else if (latency < 400) {
-                qualityClass = 'signal-fair'; // Yellow
-                bars = 3;
-            } else {
-                qualityClass = 'signal-weak'; // Red
-                bars = 2; // Show at least 2 bars for weak connection
-            }
+            if (latency < 150) { qualityClass = 'signal-good'; bars = 4; } 
+            else if (latency < 400) { qualityClass = 'signal-fair'; bars = 3; } 
+            else { qualityClass = 'signal-weak'; bars = 2; }
 
             $signals.addClass(qualityClass);
-            
             $signals.each(function() {
-                var $bars = $(this).find('.signal-bar');
-                $bars.each(function(index) {
-                    if (index < bars) {
-                        $(this).addClass('active');
-                    } else {
-                        $(this).addClass('inactive');
-                    }
+                $(this).find('.signal-bar').each(function(index) {
+                    if (index < bars) $(this).addClass('active');
+                    else $(this).addClass('inactive');
                 });
             });
         }
@@ -874,17 +940,22 @@
             $('#inviteLink').text(link);
             setConnectionStatus("Waiting for friend...", "#f1c40f");
         }
-        function switchToOnlineUI() {
+
+        function switchToOnlineUI(skipReset) {
             $('#aiControls').addClass('hidden'); $('#inviteLinkGroup').show(); $('#timeControlGroup').show(); $('#onlineSetupGroup').show();
             $('.clock').css('display', 'block');
             $('#modeAiBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('opacity', '1'); $('#modeFriendBtn').css('border', '2px solid #fff');
-            if(myPeerId && !conn) {
+            
+            if(myPeerId && !conn && !skipReset) {
                 var chosenColor = $('#onlineHostColor').val();
                 playerSide = chosenColor;
                 board.orientation(chosenColor === 'w' ? 'white' : 'black');
             }
             touchedSquare = null; 
-            game.reset(); board.start(); resetTimers(); updateGameUI();
+            if(!skipReset) {
+                game.reset(); board.start(); resetTimers(); 
+            }
+            updateGameUI();
             enableAnalysisButtons(false);
         }
 
@@ -896,10 +967,17 @@
             $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
             window.history.pushState({}, document.title, window.location.pathname);
             touchedSquare = null; 
-            stopPingLoop(); // Stop signal in AI mode
+            stopPingLoop(); 
             game.reset(); clearInterval(timerInterval); isTimerRunning = false; board.start(); updateGameUI(); enableAnalysisButtons(false);
+            localStorage.setItem('chess_mode', 'ai');
         });
-        $('#modeFriendBtn').click(function() { if(!peer) initMultiplayer(); gameMode = 'online'; switchToOnlineUI(); if(myPeerId) updateInviteLink(); });
+        $('#modeFriendBtn').click(function() { 
+            if(!peer) initMultiplayer(); 
+            gameMode = 'online'; 
+            localStorage.setItem('chess_mode', 'online');
+            switchToOnlineUI(false); 
+            if(myPeerId) updateInviteLink(); 
+        });
         $('#timeControl').on('change', function() { resetTimers(); if (gameMode === 'online' && !conn) updateInviteLink(); });
         $('#onlineHostColor').on('change', function() { if (gameMode === 'online' && !conn) { playerSide = $(this).val(); board.orientation(playerSide === 'w' ? 'white' : 'black'); updateInviteLink(); updateGameUI(); } });
         $('#copyLinkBtn').click(function() { navigator.clipboard.writeText($('#inviteLink').text()); alert("Link copied!"); });
@@ -917,6 +995,7 @@
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
             board.start(); updateGameUI(); enableAnalysisButtons(false);
+            localStorage.removeItem('chess_fen');
             if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
         });
         $('#flipBtn').on('click', function() { board.flip(); updateGameUI(); });
@@ -924,7 +1003,10 @@
         var config = { draggable: true, position: 'start', moveSpeed: 'fast', snapbackSpeed: 'fast', pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png', onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd }
         board = Chessboard('board', config);
         $(window).resize(function() { board.resize(); });
-        initStockfish(); resetTimers(); initMultiplayer();
+        
+        initStockfish(); 
+        restoreLocalState(); // RESTORE LOCAL STATE ON LOAD
+        initMultiplayer();   // CONNECT
     </script>
 </body>
 </html>
