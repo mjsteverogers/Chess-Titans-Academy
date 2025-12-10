@@ -7,7 +7,6 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717" crossorigin="anonymous"></script>
     <title>Chess Titans Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
-    <link rel="icon" href="images/logo.png">
     <style>
         /* --- GLOBAL STYLES --- */
         body {
@@ -122,7 +121,7 @@
             padding: 5px 10px;
             border-radius: 8px;
             min-height: 50px;
-            gap: 8px; /* Spacing between elements */
+            gap: 8px; 
         }
 
         /* --- SIGNAL STRENGTH --- */
@@ -437,6 +436,8 @@
         var timeWhite = 600; var timeBlack = 600;
         var timerInterval = null; var isTimerRunning = false;
         
+        var isGameActive = true; // NEW FLAG for state tracking
+        
         var illegalCount = { w: 0, b: 0 }; 
         var undoneMoves = []; 
         var touchedSquare = null;
@@ -499,7 +500,10 @@
                 board.position(game.fen());
                 board.orientation(playerSide === 'w' ? 'white' : 'black');
                 updateGameUI();
-                if(!game.game_over()) $('#resignBtn').css('display', 'flex'); // Show resign if game is active
+                if(!game.game_over()) { 
+                    isGameActive = true; 
+                    $('#resignBtn').css('display', 'flex'); 
+                }
             }
         }
 
@@ -594,6 +598,7 @@
 
         // --- 3. CONTROLS ---
         function showGameOver(winner, reason) {
+            isGameActive = false; // Flag game as ended for analysis
             $('#gameOverModal').css('display', 'flex');
             $('#winnerText').text("Game Over!");
             $('#winnerDesc').text(reason ? reason : (winner + " Wins!"));
@@ -605,16 +610,22 @@
             touchedSquare = null; 
             $('.square-55d63').removeClass('touched-square');
             localStorage.removeItem('chess_fen'); 
+            updateGameUI(); // Trigger UI update for buttons
         }
         
         function restartGame() { $('#gameOverModal').hide(); $('#startBtn').click(); }
-        function closeModalReview() { $('#gameOverModal').hide(); enableAnalysisButtons(true); }
-        function shareGame() { $('#gameOverModal').hide(); $('#shareGameGroup').show(); document.getElementById('shareGameGroup').scrollIntoView(); }
-        function enableAnalysisButtons(enabled) { 
-            $('.nav-btn-sm').prop('disabled', !enabled);
-            // Re-disable specific buttons based on history position if enabling
-            if(enabled) updateGameUI(true);
+        function closeModalReview() { 
+            $('#gameOverModal').hide(); 
+            // isGameActive is already false, buttons will enable
+            updateGameUI(); 
         }
+        function shareGame() { $('#gameOverModal').hide(); $('#shareGameGroup').show(); document.getElementById('shareGameGroup').scrollIntoView(); }
+        
+        function enableAnalysisButtons(enabled) { 
+            // Re-calc state based on game status
+            updateGameUI();
+        }
+        
         function navPrev() {
             var move = game.undo();
             if (move) { undoneMoves.push(move); board.position(game.fen()); updateGameUI(true); }
@@ -698,20 +709,20 @@
             if (gameMode === 'online') updateClockUI();
             $('#pgnOutput').val(game.pgn());
             
-            // Update Analysis Buttons State
-            $('#btnStart').prop('disabled', game.history().length === 0 && undoneMoves.length === 0 && game.fen() === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'); 
-            // Simplified check: if we are at start of history
-            // Actually easier: check if undo is possible
-            var temp = new Chess(game.fen());
-            // This is complex because we mix nav with live game. 
-            // Simple logic: disable all if game active to prevent messing up state?
-            // Current requirement: "merge in timing", implies they are visible during game.
-            // Usually analysis buttons are only enabled when game is OVER or paused.
-            // For now, let's keep them disabled if game is active to avoid bugs, or enable only for review.
-            if(game.game_over() || $('#gameOverModal').is(':visible')) {
-                 $('.nav-btn-sm').prop('disabled', false);
+            // NAVIGATION BUTTON STATE
+            // Buttons enabled only if game is NOT active
+            if (!isGameActive) {
+                // Enabled logic:
+                // Prev/Start: Enabled if there is history to undo
+                var hasHistory = game.history().length > 0;
+                $('#btnStart, #btnPrev').prop('disabled', !hasHistory);
+
+                // Next/End: Enabled if there are undone moves to redo
+                var hasUndone = undoneMoves.length > 0;
+                $('#btnNext, #btnEnd').prop('disabled', !hasUndone);
             } else {
-                 $('.nav-btn-sm').prop('disabled', true);
+                // Game is active, disable all
+                $('.nav-btn-sm').prop('disabled', true);
             }
         }
 
@@ -722,7 +733,7 @@
                 var winner = (game.turn() === 'b') ? 'White' : 'Black';
                 showGameOver(winner);
             }
-            else if (game.in_draw()) { status = 'Game over, drawn position'; clearInterval(timerInterval); stopPingLoop(); }
+            else if (game.in_draw()) { status = 'Game over, drawn position'; clearInterval(timerInterval); stopPingLoop(); showGameOver('Draw', 'Game Drawn'); }
             else { status = moveColor + ' to move'; if (game.in_check()) status += ', ' + moveColor + ' is in check'; }
             $status.html(status);
         }
@@ -749,10 +760,8 @@
         function showPromotionDialog(source, target, color) {
             pendingPromotion = { source: source, target: target };
             var pieces = ['q', 'r', 'b', 'n'];
-            
-            // Generate valid Image URL: e.g. wQ.png (Uppercase Piece type, Lowercase color)
             pieces.forEach(p => {
-                var pieceCode = color + p.toUpperCase(); // e.g. wQ, bN
+                var pieceCode = color + p.toUpperCase(); 
                 var src = PIECE_THEME_URL.replace('{piece}', pieceCode);
                 $('#promo-' + p).attr('src', src);
             });
@@ -771,16 +780,14 @@
         }
 
         function executeMove(source, target, promotionPiece) {
-            // promotionPiece defaults to 'q' if not supplied, but our dialog supplies it
             var moveCfg = { from: source, to: target, promotion: promotionPiece || 'q' };
             var move = game.move(moveCfg);
 
-            // ILLEGAL LOGIC REPEATED HERE FOR PROMOTIONS
             if (move === null) return 'snapback';
 
             touchedSquare = null;
             $('.square-55d63').removeClass('touched-square');
-            undoneMoves = [];
+            undoneMoves = []; // Clear undone stack on new move
             
             if (gameMode === 'online' && !isTimerRunning) startTimer();
             board.position(game.fen());
@@ -796,6 +803,9 @@
         }
 
         function onDragStart (source, piece, position, orientation) {
+            // Disable drag if review mode (game not active)
+            if (!isGameActive) return false;
+            
             if (gameMode === 'analysis') return false; 
             if (gameMode === 'ai') {
                 if (game.game_over() || ((board.orientation() === 'white' && piece.search(/^b/) !== -1) || (board.orientation() === 'black' && piece.search(/^w/) !== -1))) return false;
@@ -829,11 +839,9 @@
             var moveTest = tempGame.move({ from: source, to: target, promotion: 'q' });
             
             if (moveTest && (moveTest.flags.includes('p'))) {
-                 // It is a valid promotion move. STOP and ask user.
-                 // Only ask if it's the player's turn (AI handles its own promotions automatically usually to Q)
                  if (gameMode === 'ai' || (gameMode === 'online' && game.turn() === playerSide)) {
                      showPromotionDialog(source, target, game.turn());
-                     return; // Wait for dialog click
+                     return; 
                  }
             }
 
@@ -854,8 +862,7 @@
                 return 'snapback';
             }
 
-            // If valid normal move
-            game.undo(); // Undo the test move so executeMove can do it properly with UI updates
+            game.undo(); 
             executeMove(source, target, 'q');
         }
 
@@ -881,6 +888,7 @@
 
             if (analysisPgn) {
                 gameMode = 'analysis';
+                isGameActive = false; // Analysis starts inactive
                 $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide();
                 $('#shareGameGroup').show(); enableAnalysisButtons(true); 
                 try { game.load_pgn(decodeURIComponent(analysisPgn)); board.position(game.fen()); updateGameUI(); } catch(e) {}
@@ -922,7 +930,6 @@
             conn.on('close', function() { setConnectionStatus("Reconnecting...", "#e67e22"); stopPingLoop(); });
             conn.on('data', function(data) {
                 if (data.type === 'move') {
-                    // Receive move including promotion info
                     var moveCfg = { from: data.from, to: data.to, promotion: data.promotion || 'q' };
                     game.move(moveCfg);
                     board.position(game.fen());
@@ -939,7 +946,6 @@
                 if (data.type === 'reset') { localStorage.removeItem('chess_fen'); location.reload(); }
                 if (data.type === 'illegal_penalty') { handleIllegalMove(data.color); }
                 if (data.type === 'resign') { 
-                    // Handle opponent resignation
                     let winner = data.color === 'w' ? 'Black' : 'White';
                     endGameByResignation(winner, "Opponent Resigned");
                 }
@@ -989,7 +995,7 @@
                 board.orientation(chosenColor === 'w' ? 'white' : 'black');
             }
             touchedSquare = null; 
-            if(!skipReset) { game.reset(); board.start(); resetTimers(); illegalCount = { w: 0, b: 0 }; }
+            if(!skipReset) { game.reset(); board.start(); resetTimers(); illegalCount = { w: 0, b: 0 }; isGameActive = true; }
             updateGameUI(); enableAnalysisButtons(false);
             if(!game.game_over()) $('#resignBtn').css('display', 'flex');
         }
@@ -997,6 +1003,7 @@
         // --- EVENT BINDINGS ---
         $('#modeAiBtn').click(function() {
             gameMode = 'ai';
+            isGameActive = true;
             $('#aiControls').removeClass('hidden'); $('#inviteLinkGroup').hide(); $('#timeControlGroup').hide(); $('#onlineSetupGroup').hide(); $('.clock').hide();
             $('#modeAiBtn').css('opacity', '1'); $('#modeAiBtn').css('border', '2px solid #fff');
             $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
@@ -1025,30 +1032,30 @@
             if (gameMode === 'analysis') { window.location.href = window.location.href.split('?')[0]; return; }
             game.reset(); undoneMoves = []; $evaluation.text("0.0");
             touchedSquare = null; illegalCount = { w: 0, b: 0 }; 
+            isGameActive = true;
             $('.square-55d63').removeClass('touched-square');
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
             board.start(); updateGameUI(); enableAnalysisButtons(false);
             localStorage.removeItem('chess_fen');
             if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
-            $('#resignBtn').css('display', 'flex'); // Show resign on restart
+            $('#resignBtn').css('display', 'flex'); 
         });
         
         // RESIGN BUTTON LOGIC
         $('#resignBtn').click(function() {
-            if (game.game_over()) return; // Can't resign if game is over
+            if (game.game_over()) return; 
             if (gameMode === 'analysis') return;
 
             if (confirm("Are you sure you want to resign?")) {
                 if (gameMode === 'ai') {
-                    // In AI mode, if human resigns, AI wins.
                     let humanColor = $('#aiPlayerColor').val();
                     let winner = humanColor === 'w' ? 'Black' : 'White';
                     endGameByResignation(winner, "You Resigned");
                 }
                 else if (gameMode === 'online') {
                     if (conn && conn.open) {
-                        conn.send({ type: 'resign', color: playerSide }); // Send resign signal
+                        conn.send({ type: 'resign', color: playerSide }); 
                         let winner = playerSide === 'w' ? 'Black' : 'White';
                         endGameByResignation(winner, "You Resigned");
                     }
