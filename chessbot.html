@@ -7,6 +7,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717" crossorigin="anonymous"></script>
     <title>Chess Titans Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    <link rel="icon" href="images/logo.png">
     <style>
         /* --- GLOBAL STYLES --- */
         body {
@@ -28,34 +29,8 @@
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             font-weight: 800;
-            position: relative;
-            width: 100%;
-            max-width: 960px;
         }
         
-        /* --- SMALL ADMIN BUTTON --- */
-        #adminLoginBtn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.6);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px; /* Very small text */
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        #adminLoginBtn:hover {
-            background: #e74c3c;
-            color: white;
-            border-color: #e74c3c;
-        }
-
         #game-container {
             display: flex;
             flex-direction: column; 
@@ -241,8 +216,8 @@
         .nav-btn-sm:hover { background: #2c3e50; }
         .nav-btn-sm:disabled { background: #555; cursor: not-allowed; opacity: 0.5; }
 
-        /* --- GAME OVER & ADMIN MODALS --- */
-        .modal-overlay {
+        /* --- GAME OVER MODAL --- */
+        #gameOverModal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 4000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
@@ -265,52 +240,6 @@
             box-sizing: border-box; backdrop-filter: blur(5px);
         }
 
-        /* --- ADMIN DASHBOARD --- */
-        #adminPanel {
-            display: none;
-            width: 100%;
-            max-width: 960px;
-            background: #2c3e50;
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #f39c12;
-            box-sizing: border-box;
-        }
-        #adminPanel h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #f1c40f; border-bottom: 1px solid #555; padding-bottom: 5px;}
-        
-        .live-games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 10px;
-        }
-        .game-card {
-            background: #34495e;
-            padding: 10px;
-            border-radius: 5px;
-            border-left: 4px solid #2ecc71;
-            font-size: 0.9rem;
-        }
-        .game-card.offline { border-left-color: #3498db; }
-        .game-card h4 { margin: 0 0 5px 0; color: #ecf0f1; }
-        .game-card p { margin: 2px 0; color: #bdc3c7; font-size: 0.8rem; }
-        .spectate-btn {
-            background: #e67e22; color: white; border: none; 
-            padding: 5px 10px; font-size: 0.8rem; border-radius: 3px;
-            cursor: pointer; margin-top: 5px; width: 100%;
-        }
-
-        #spectatorControls {
-            display: none; /* Only visible to admin in spectator mode */
-            margin-top: 10px;
-        }
-        .spectator-banner {
-            background: #c0392b; color: white; padding: 10px; text-align: center;
-            font-weight: bold; border-radius: 5px; margin-bottom: 10px;
-            border: 1px dashed #fff; animation: pulse-border 2s infinite;
-        }
-        @keyframes pulse-border { 0% { opacity:0.8; } 50% { opacity:1; } 100% { opacity:0.8; } }
-
         @media (min-width: 768px) {
             #game-container { flex-direction: row; align-items: flex-start; justify-content: center; padding-top: 40px; }
             .sidebar { width: 300px; margin-top: 0; }
@@ -319,14 +248,14 @@
         .control-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #ffcc99; }
         
-        select, button, input[type="text"], input[type="password"], textarea {
+        select, button, input[type="text"], textarea {
             width: 100%; padding: 12px; font-size: 16px;
             background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff; border-radius: 6px; cursor: pointer; margin-bottom: 10px;
             transition: background 0.2s; box-sizing: border-box;
         }
         
-        input[type="text"], input[type="password"], textarea { cursor: text; font-family: monospace; }
+        input[type="text"], textarea { cursor: text; font-family: monospace; }
         select:hover, button:hover { background: rgba(255, 255, 255, 0.2); }
         option { background: #333; color: #fff; }
 
@@ -351,18 +280,7 @@
 </head>
 <body>
 
-    <div id="adminAuthModal" class="modal-overlay">
-        <div class="modal-content" style="width: 300px;">
-            <span class="close-modal-x" onclick="closeAdminAuth()">&times;</span>
-            <h2>Admin Login</h2>
-            <p style="font-size: 0.9rem; color:#ccc;">Enter Password</p>
-            <input type="password" id="adminPasswordInput" placeholder="Password...">
-            <button class="primary" onclick="checkAdminPassword()">Login</button>
-            <p id="adminError" style="color: #e74c3c; font-size: 0.8rem; display:none; margin-top:10px;">Incorrect Password</p>
-        </div>
-    </div>
-
-    <div id="gameOverModal" class="modal-overlay">
+    <div id="gameOverModal">
         <div class="modal-content">
             <span class="close-modal-x" onclick="closeModalReview()" title="Close and Review Board">&times;</span>
             <h2 id="winnerText">Checkmate!</h2>
@@ -375,21 +293,7 @@
         </div>
     </div>
 
-    <button id="adminLoginBtn" onclick="openAdminAuth()">Admin</button>
-
     <h1>Chess Titans Academy</h1>
-
-    <div id="adminPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>Live Games Dashboard</h2>
-            <button onclick="logoutAdmin()" style="width:auto; padding:5px 10px; background:#e74c3c; font-size:0.8rem;">Logout</button>
-        </div>
-        <div id="liveGamesList" class="live-games-grid">
-            <div style="grid-column: 1/-1; text-align:center; color:#aaa; padding:20px;">
-                Searching for active games...
-            </div>
-        </div>
-    </div>
 
     <div id="game-container">
         <div class="board-wrapper">
@@ -442,83 +346,71 @@
         </div>
 
         <div class="sidebar">
-            
-            <div id="spectatorControls">
-                <div class="spectator-banner">LIVE SPECTATOR MODE<br>You are watching a game.</div>
-                <button onclick="exitSpectatorMode()" style="background:#34495e; border:1px solid #fff;">&larr; Back to Dashboard</button>
-                <div class="control-group">
-                    <label>Spectating Actions</label>
-                    <button onclick="board.flip()">Flip Board View</button>
+            <div class="control-group" id="mainControls">
+                <label>Game Mode</label>
+                <button id="modeAiBtn" class="primary">Play vs Computer</button>
+                <button id="modeFriendBtn">Play vs Friend (Online)</button>
+            </div>
+
+            <div id="timeControlGroup">
+                <label for="timeControl">Time Control</label>
+                <select id="timeControl">
+                    <option value="1">1 Minute (Bullet)</option>
+                    <option value="5">5 Minutes (Blitz)</option>
+                    <option value="10" selected>10 Minutes (Rapid)</option>
+                    <option value="30">30 Minutes (Classical)</option>
+                </select>
+            </div>
+
+            <div id="onlineSetupGroup">
+                <label for="onlineHostColor">Play As</label>
+                <select id="onlineHostColor">
+                    <option value="w" selected>White</option>
+                    <option value="b">Black</option>
+                </select>
+                <div style="font-size:12px; color:#aaa; margin-top:5px;">(Friend plays opposite)</div>
+            </div>
+
+            <div id="inviteLinkGroup">
+                <label>Send link to friend:</label>
+                <div id="inviteLink" style="font-size:11px; word-break:break-all; background:#222; padding:5px; margin-bottom:5px;">Generating...</div>
+                <button id="copyLinkBtn">Copy Link</button>
+                <div style="font-size: 14px; font-weight:bold; margin-top:10px;">
+                    Status: <span id="connectionStatus" style="color: #f1c40f">Waiting...</span>
                 </div>
             </div>
 
-            <div id="playerControlsWrapper">
-                <div class="control-group" id="mainControls">
-                    <label>Game Mode</label>
-                    <button id="modeAiBtn" class="primary">Play vs Computer</button>
-                    <button id="modeFriendBtn">Play vs Friend (Online)</button>
-                </div>
-
-                <div id="timeControlGroup">
-                    <label for="timeControl">Time Control</label>
-                    <select id="timeControl">
-                        <option value="1">1 Minute (Bullet)</option>
-                        <option value="5">5 Minutes (Blitz)</option>
-                        <option value="10" selected>10 Minutes (Rapid)</option>
-                        <option value="30">30 Minutes (Classical)</option>
-                    </select>
-                </div>
-
-                <div id="onlineSetupGroup">
-                    <label for="onlineHostColor">Play As</label>
-                    <select id="onlineHostColor">
-                        <option value="w" selected>White</option>
+            <div id="aiControls" class="ai-controls">
+                <div class="control-group">
+                    <label for="aiPlayerColor">Play As</label>
+                    <select id="aiPlayerColor">
+                        <option value="w">White</option>
                         <option value="b">Black</option>
                     </select>
-                    <div style="font-size:12px; color:#aaa; margin-top:5px;">(Friend plays opposite)</div>
                 </div>
-
-                <div id="inviteLinkGroup">
-                    <label>Send link to friend:</label>
-                    <div id="inviteLink" style="font-size:11px; word-break:break-all; background:#222; padding:5px; margin-bottom:5px;">Generating...</div>
-                    <button id="copyLinkBtn">Copy Link</button>
-                    <div style="font-size: 14px; font-weight:bold; margin-top:10px;">
-                        Status: <span id="connectionStatus" style="color: #f1c40f">Waiting...</span>
-                    </div>
-                </div>
-
-                <div id="aiControls" class="ai-controls">
-                    <div class="control-group">
-                        <label for="aiPlayerColor">Play As</label>
-                        <select id="aiPlayerColor">
-                            <option value="w">White</option>
-                            <option value="b">Black</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label for="difficulty">Stockfish Level</label>
-                        <select id="difficulty">
-                            <option value="0">Level 1 (Beginner)</option>
-                            <option value="5">Level 2 (Easy)</option>
-                            <option value="10">Level 3 (Intermediate)</option>
-                            <option value="14">Level 4 (Titan)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="shareGameGroup">
-                    <label>Share / Save Game</label>
-                    <textarea id="pgnOutput" readonly placeholder="Game PGN will appear here..."></textarea>
-                    <button id="copyPgnBtn" style="font-size:12px; padding:8px;">Copy PGN</button>
-                    <button id="shareAnalysisBtn" class="primary">Get Analysis Link</button>
-                    <button id="lichessBtn" style="background:#333; margin-top:5px;">Analyze on Lichess</button>
-                </div>
-
                 <div class="control-group">
-                    <button id="startBtn" class="primary">New Game / Reset</button>
-                    <button id="flipBtn">Flip Board</button>
-                    <button id="showShareBtn" style="background: #34495e;">Save / Analyze</button>
+                    <label for="difficulty">Stockfish Level</label>
+                    <select id="difficulty">
+                        <option value="0">Level 1 (Beginner)</option>
+                        <option value="5">Level 2 (Easy)</option>
+                        <option value="10">Level 3 (Intermediate)</option>
+                        <option value="14">Level 4 (Titan)</option>
+                    </select>
                 </div>
+            </div>
+
+            <div id="shareGameGroup">
+                <label>Share / Save Game</label>
+                <textarea id="pgnOutput" readonly placeholder="Game PGN will appear here..."></textarea>
+                <button id="copyPgnBtn" style="font-size:12px; padding:8px;">Copy PGN</button>
+                <button id="shareAnalysisBtn" class="primary">Get Analysis Link</button>
+                <button id="lichessBtn" style="background:#333; margin-top:5px;">Analyze on Lichess</button>
+            </div>
+
+            <div class="control-group">
+                <button id="startBtn" class="primary">New Game / Reset</button>
+                <button id="flipBtn">Flip Board</button>
+                <button id="showShareBtn" style="background: #34495e;">Save / Analyze</button>
             </div>
 
             <div id="status">White to move</div>
@@ -545,7 +437,7 @@
         var timeWhite = 600; var timeBlack = 600;
         var timerInterval = null; var isTimerRunning = false;
         
-        var isGameActive = true; 
+        var isGameActive = true; // NEW FLAG for state tracking
         
         var illegalCount = { w: 0, b: 0 }; 
         var undoneMoves = []; 
@@ -564,17 +456,9 @@
         const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
         const STARTING_PIECES = { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 };
 
-        // --- ADMIN / LIVE VARIABLES ---
-        const SESSION_ID = Math.random().toString(36).substr(2, 9);
-        const liveChannel = new BroadcastChannel('chess_titans_live');
-        let activeLiveGames = {};
-        let isAdminLoggedIn = false;
-        let isSpectating = false; // Is admin currently watching a game?
-        let spectatingId = null;  // Which game ID are we watching?
-
         // --- LOCAL STORAGE HELPERS ---
         function saveLocalState() {
-            if (gameMode === 'analysis' || isSpectating) return; // Don't save if spectating
+            if (gameMode === 'analysis') return;
             localStorage.setItem('chess_fen', game.fen());
             localStorage.setItem('chess_pgn', game.pgn());
             localStorage.setItem('chess_time_w', timeWhite);
@@ -582,9 +466,6 @@
             localStorage.setItem('chess_mode', gameMode);
             localStorage.setItem('chess_side', playerSide);
             if(myPeerId) localStorage.setItem('chess_my_id', myPeerId);
-            
-            // Broadcast State to Admin
-            broadcastGameState();
         }
 
         function restoreLocalState() {
@@ -624,167 +505,8 @@
                     isGameActive = true; 
                     $('#resignBtn').css('display', 'flex'); 
                 }
-                broadcastGameState(); // Initial broadcast
             }
         }
-
-        // --- 0. ADMIN FUNCTIONS ---
-        function openAdminAuth() {
-            $('#adminAuthModal').css('display', 'flex');
-            $('#adminPasswordInput').val('').focus();
-            $('#adminError').hide();
-        }
-
-        function closeAdminAuth() {
-            $('#adminAuthModal').hide();
-        }
-
-        function checkAdminPassword() {
-            const pwd = $('#adminPasswordInput').val();
-            if (pwd === 'steverogers') {
-                isAdminLoggedIn = true;
-                $('#adminAuthModal').hide();
-                $('#adminLoginBtn').hide();
-                $('#adminPanel').fadeIn();
-                startAdminListener();
-                // Request status from everyone
-                liveChannel.postMessage({ type: 'request_status' });
-            } else {
-                $('#adminError').show();
-            }
-        }
-
-        function logoutAdmin() {
-            exitSpectatorMode();
-            isAdminLoggedIn = false;
-            $('#adminPanel').hide();
-            $('#adminLoginBtn').show();
-        }
-
-        function broadcastGameState() {
-            if (gameMode === 'analysis' || isSpectating) return; // Don't broadcast if you are the spectator
-            const statusMsg = {
-                type: 'update',
-                id: SESSION_ID,
-                mode: gameMode,
-                fen: game.fen(),
-                turn: game.turn(),
-                isOver: game.game_over(),
-                pgn: game.pgn()
-            };
-            liveChannel.postMessage(statusMsg);
-        }
-
-        function startAdminListener() {
-            liveChannel.onmessage = (event) => {
-                const data = event.data;
-
-                if (data.type === 'update') {
-                    activeLiveGames[data.id] = data;
-                    renderAdminDashboard();
-                    
-                    // --- LIVE UPDATE LOGIC ---
-                    // If Admin is currently spectating THIS specific game ID, update the board instantly
-                    if (isSpectating && spectatingId === data.id) {
-                        game.load(data.fen);
-                        board.position(data.fen);
-                        updateStatus(); 
-                        updateMaterial();
-                    }
-
-                } else if (data.type === 'disconnect') {
-                    delete activeLiveGames[data.id];
-                    renderAdminDashboard();
-                    if (isSpectating && spectatingId === data.id) {
-                         alert("Player disconnected from live session.");
-                         exitSpectatorMode();
-                    }
-                } else if (data.type === 'request_status') {
-                    // Regular players respond below
-                }
-            };
-        }
-
-        // Listen for requests even if not admin (to reply to admin)
-        liveChannel.addEventListener('message', (event) => {
-            if (event.data.type === 'request_status' && !isAdminLoggedIn) {
-                broadcastGameState();
-            }
-        });
-
-        function renderAdminDashboard() {
-            const container = $('#liveGamesList');
-            container.empty();
-            const keys = Object.keys(activeLiveGames);
-            
-            if (keys.length === 0) {
-                container.html('<div style="grid-column: 1/-1; text-align:center; color:#aaa; padding:20px;">No Active Players Found...</div>');
-                return;
-            }
-
-            keys.forEach(key => {
-                const g = activeLiveGames[key];
-                if (key === SESSION_ID) return; // Don't show self
-
-                let modeLabel = g.mode === 'ai' ? 'Offline Computer (AI)' : 'Online Friend';
-                let cardClass = g.mode === 'ai' ? 'offline' : 'online';
-                let turnLabel = g.isOver ? 'Game Over' : (g.turn === 'w' ? 'White to Move' : 'Black to Move');
-
-                const html = `
-                    <div class="game-card ${cardClass}">
-                        <h4>${modeLabel}</h4>
-                        <p><strong>Status:</strong> ${turnLabel}</p>
-                        <p style="font-family:monospace; font-size:0.7rem; color:#888;">ID: ${key}</p>
-                        <button class="spectate-btn" onclick="spectateGame('${key}')">Watch Live</button>
-                    </div>
-                `;
-                container.append(html);
-            });
-        }
-
-        function spectateGame(id) {
-            const g = activeLiveGames[id];
-            if (!g) return;
-            
-            // Enter Spectator Mode
-            isSpectating = true;
-            spectatingId = id;
-
-            // Load State
-            game.load(g.fen);
-            board.position(g.fen);
-            
-            // UI Changes
-            $('#adminPanel').hide(); // Hide dashboard
-            $('#playerControlsWrapper').hide(); // Hide play controls
-            $('#spectatorControls').show(); // Show admin exit button
-            $('#resignBtn').hide();
-            
-            // Disable Board Interaction
-            isGameActive = false; // Disables logic
-            updateGameUI();
-        }
-
-        function exitSpectatorMode() {
-            isSpectating = false;
-            spectatingId = null;
-            
-            // UI Revert
-            $('#spectatorControls').hide();
-            $('#playerControlsWrapper').show(); // Show play controls again (though admin shouldn't play)
-            $('#adminPanel').fadeIn();
-            
-            // Reset local board for the admin (so they don't see the ghost of the watched game)
-            game.reset();
-            board.start();
-            updateGameUI();
-        }
-
-        // Cleanup on close
-        window.addEventListener('beforeunload', () => {
-            liveChannel.postMessage({ type: 'disconnect', id: SESSION_ID });
-        });
-
 
         // --- 1. INITIALIZATION ---
         async function initStockfish() {
@@ -797,7 +519,7 @@
             stockfish.onmessage = function(event) {
                 var line = event.data;
                 if (line === 'uciok') isEngineReady = true;
-                if (line.startsWith('bestmove') && gameMode === 'ai' && !isSpectating) {
+                if (line.startsWith('bestmove') && gameMode === 'ai') {
                     var move = line.split(' ')[1];
                     game.move(move, {sloppy: true});
                     board.position(game.fen());
@@ -884,13 +606,12 @@
             clearInterval(timerInterval);
             stopPingLoop(); 
             $('#shareGameGroup').show();
-            // enableAnalysisButtons(true);
+            enableAnalysisButtons(true);
             $('#resignBtn').hide(); // Hide resign button on game over
             touchedSquare = null; 
             $('.square-55d63').removeClass('touched-square');
             localStorage.removeItem('chess_fen'); 
             updateGameUI(); // Trigger UI update for buttons
-            broadcastGameState(); // Send game over state
         }
         
         function restartGame() { $('#gameOverModal').hide(); $('#startBtn').click(); }
@@ -900,6 +621,11 @@
             updateGameUI(); 
         }
         function shareGame() { $('#gameOverModal').hide(); $('#shareGameGroup').show(); document.getElementById('shareGameGroup').scrollIntoView(); }
+        
+        function enableAnalysisButtons(enabled) { 
+            // Re-calc state based on game status
+            updateGameUI();
+        }
         
         function navPrev() {
             var move = game.undo();
@@ -985,16 +711,18 @@
             $('#pgnOutput').val(game.pgn());
             
             // NAVIGATION BUTTON STATE
-            // Buttons enabled only if game is NOT active AND NOT spectating
-            if (!isGameActive && !isSpectating) {
+            // Buttons enabled only if game is NOT active
+            if (!isGameActive) {
                 // Enabled logic:
+                // Prev/Start: Enabled if there is history to undo
                 var hasHistory = game.history().length > 0;
                 $('#btnStart, #btnPrev').prop('disabled', !hasHistory);
 
+                // Next/End: Enabled if there are undone moves to redo
                 var hasUndone = undoneMoves.length > 0;
                 $('#btnNext, #btnEnd').prop('disabled', !hasUndone);
             } else {
-                // Game is active or spectating, disable all nav
+                // Game is active, disable all
                 $('.nav-btn-sm').prop('disabled', true);
             }
         }
@@ -1076,8 +804,8 @@
         }
 
         function onDragStart (source, piece, position, orientation) {
-            // Disable drag if review mode OR SPECTATING
-            if (!isGameActive || isSpectating) return false;
+            // Disable drag if review mode (game not active)
+            if (!isGameActive) return false;
             
             if (gameMode === 'analysis') return false; 
             if (gameMode === 'ai') {
@@ -1105,7 +833,6 @@
         }
 
         function onDrop (source, target) {
-            if (isSpectating) return 'snapback';
             if (source === target) return;
 
             // 1. CHECK IF MOVE IS A PROMOTION
@@ -1142,7 +869,7 @@
 
         function onSnapEnd () { board.position(game.fen()); }
         function makeEngineMove() {
-            if(!isEngineReady || game.game_over() || isSpectating) return;
+            if(!isEngineReady || game.game_over()) return;
             var level = parseInt($('#difficulty').val());
             var depth = 14; 
             if (level === 0) { depth = 1; stockfish.postMessage('setoption name Skill Level value 0'); } 
@@ -1164,7 +891,7 @@
                 gameMode = 'analysis';
                 isGameActive = false; // Analysis starts inactive
                 $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide();
-                $('#shareGameGroup').show(); 
+                $('#shareGameGroup').show(); enableAnalysisButtons(true); 
                 try { game.load_pgn(decodeURIComponent(analysisPgn)); board.position(game.fen()); updateGameUI(); } catch(e) {}
                 return;
             }
@@ -1270,8 +997,7 @@
             }
             touchedSquare = null; 
             if(!skipReset) { game.reset(); board.start(); resetTimers(); illegalCount = { w: 0, b: 0 }; isGameActive = true; }
-            updateGameUI(); 
-            // enableAnalysisButtons(false);
+            updateGameUI(); enableAnalysisButtons(false);
             if(!game.game_over()) $('#resignBtn').css('display', 'flex');
         }
 
@@ -1285,11 +1011,9 @@
             window.history.pushState({}, document.title, window.location.pathname);
             touchedSquare = null; stopPingLoop(); 
             game.reset(); clearInterval(timerInterval); isTimerRunning = false; board.start(); 
-            illegalCount = { w: 0, b: 0 }; updateGameUI(); 
-            // enableAnalysisButtons(false);
+            illegalCount = { w: 0, b: 0 }; updateGameUI(); enableAnalysisButtons(false);
             localStorage.setItem('chess_mode', 'ai');
             $('#resignBtn').css('display', 'flex');
-            saveLocalState();
         });
         $('#modeFriendBtn').click(function() { 
             if(!peer) initMultiplayer(); 
@@ -1313,10 +1037,8 @@
             $('.square-55d63').removeClass('touched-square');
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
-            board.start(); updateGameUI(); 
-            // enableAnalysisButtons(false);
+            board.start(); updateGameUI(); enableAnalysisButtons(false);
             localStorage.removeItem('chess_fen');
-            saveLocalState();
             if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
             $('#resignBtn').css('display', 'flex'); 
         });
