@@ -437,7 +437,7 @@
         var timeWhite = 600; var timeBlack = 600;
         var timerInterval = null; var isTimerRunning = false;
         
-        var isGameActive = true; // NEW FLAG for state tracking
+        var isGameActive = true; 
         
         var illegalCount = { w: 0, b: 0 }; 
         var undoneMoves = []; 
@@ -458,53 +458,18 @@
 
         // --- LOCAL STORAGE HELPERS ---
         function saveLocalState() {
-            if (gameMode === 'analysis') return;
-            localStorage.setItem('chess_fen', game.fen());
-            localStorage.setItem('chess_pgn', game.pgn());
-            localStorage.setItem('chess_time_w', timeWhite);
-            localStorage.setItem('chess_time_b', timeBlack);
-            localStorage.setItem('chess_mode', gameMode);
-            localStorage.setItem('chess_side', playerSide);
+            // UPDATED: We only save peer ID so identity is kept.
+            // Game state (FEN, PGN) is NO LONGER saved to localStorage.
+            // Reloading the page will reset the game.
             if(myPeerId) localStorage.setItem('chess_my_id', myPeerId);
         }
 
         function restoreLocalState() {
-            var savedFen = localStorage.getItem('chess_fen');
-            var savedMode = localStorage.getItem('chess_mode');
-            
-            if (savedFen && savedMode) {
-                gameMode = savedMode;
-                game.load(savedFen);
-                var tW = localStorage.getItem('chess_time_w');
-                var tB = localStorage.getItem('chess_time_b');
-                if(tW) timeWhite = parseInt(tW);
-                if(tB) timeBlack = parseInt(tB);
-                var side = localStorage.getItem('chess_side');
-                if(side) playerSide = side;
-
-                var pgn = localStorage.getItem('chess_pgn');
-                if(pgn) {
-                    try { 
-                        var tempGame = new Chess();
-                        tempGame.load_pgn(pgn);
-                        if (tempGame.fen() === savedFen) game = tempGame; 
-                    } catch(e){}
-                }
-
-                if(gameMode === 'online') {
-                    switchToOnlineUI(true); 
-                } else {
-                    $('#modeAiBtn').click(); 
-                    game.load(savedFen); 
-                }
-                
-                board.position(game.fen());
-                board.orientation(playerSide === 'w' ? 'white' : 'black');
-                updateGameUI();
-                if(!game.game_over()) { 
-                    isGameActive = true; 
-                    $('#resignBtn').css('display', 'flex'); 
-                }
+            // UPDATED: Only restore ID logic, no game state logic.
+            // This ensures a fresh game on every load.
+            if(gameMode === 'online') {
+                // If url has game params, we might want to switch UI, but board stays fresh.
+                 // We don't restore PGN/FEN anymore.
             }
         }
 
@@ -610,7 +575,7 @@
             $('#resignBtn').hide(); // Hide resign button on game over
             touchedSquare = null; 
             $('.square-55d63').removeClass('touched-square');
-            localStorage.removeItem('chess_fen'); 
+            // We don't save FEN anymore, so nothing to remove from LocalStorage
             updateGameUI(); // Trigger UI update for buttons
         }
         
@@ -661,7 +626,7 @@
                 if (game.turn() === 'w') { timeWhite--; if (timeWhite <= 0) endGameByTimeout('Black'); } 
                 else { timeBlack--; if (timeBlack <= 0) endGameByTimeout('White'); }
                 updateClockUI();
-                if(timeWhite % 5 === 0) saveLocalState(); 
+                // Removed periodic saving to localStorage
             }, 1000);
         }
         function updateClockUI() {
@@ -793,7 +758,7 @@
             if (gameMode === 'online' && !isTimerRunning) startTimer();
             board.position(game.fen());
             updateGameUI();
-            saveLocalState(); 
+            // Removed saveLocalState()
 
             if (gameMode === 'online') {
                 if (conn && conn.open) {
@@ -907,10 +872,10 @@
             if (joinId) {
                 gameMode = 'online'; 
                 var hostColorParam = urlParams.get('hostColor'); 
-                if(!localStorage.getItem('chess_fen')) {
-                    if(hostColorParam === 'b') playerSide = 'w'; else playerSide = 'b';
-                    if(urlParams.get('time')) $('#timeControl').val(urlParams.get('time'));
-                }
+                // Don't load FEN from local storage for online games anymore
+                if(hostColorParam === 'b') playerSide = 'w'; else playerSide = 'b';
+                if(urlParams.get('time')) $('#timeControl').val(urlParams.get('time'));
+                
                 switchToOnlineUI(true); 
                 setConnectionStatus("Connecting...", "#f1c40f");
                 board.orientation(playerSide === 'w' ? 'white' : 'black');
@@ -928,7 +893,18 @@
                 setConnectionStatus("Connected!", "#2ecc71"); startPingLoop(); 
                 if (game.history().length > 0) { conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack }); }
             });
-            conn.on('close', function() { setConnectionStatus("Reconnecting...", "#e67e22"); stopPingLoop(); });
+            
+            // UPDATED: Handle Opponent Disconnect explicitly
+            conn.on('close', function() { 
+                setConnectionStatus("Opponent Disconnected", "#e74c3c"); 
+                stopPingLoop(); 
+                clearInterval(timerInterval); // Stop the clock
+                isGameActive = false; // Freeze board
+                isTimerRunning = false;
+                $('.clock').removeClass('active');
+                showNotification("Opponent Disconnected", true); // Alert user
+            });
+            
             conn.on('data', function(data) {
                 if (data.type === 'move') {
                     var moveCfg = { from: data.from, to: data.to, promotion: data.promotion || 'q' };
@@ -938,13 +914,15 @@
                     undoneMoves = []; touchedSquare = null;
                     $('.square-55d63').removeClass('touched-square');
                     if(!isTimerRunning) startTimer();
-                    updateGameUI(); saveLocalState();
+                    updateGameUI(); 
+                    // No saveLocalState
                 }
                 if (data.type === 'sync') {
                     game.load(data.fen); timeWhite = data.timeWhite; timeBlack = data.timeBlack;
-                    board.position(game.fen()); updateGameUI(); saveLocalState();
+                    board.position(game.fen()); updateGameUI(); 
+                    // No saveLocalState
                 }
-                if (data.type === 'reset') { localStorage.removeItem('chess_fen'); location.reload(); }
+                if (data.type === 'reset') { location.reload(); }
                 if (data.type === 'illegal_penalty') { handleIllegalMove(data.color); }
                 if (data.type === 'resign') { 
                     let winner = data.color === 'w' ? 'Black' : 'White';
@@ -954,6 +932,11 @@
                 if (data.type === 'pong') { updateSignalUI(Date.now() - data.time); }
             });
         }
+        
+        // Ensure connection closes on reload
+        window.addEventListener('beforeunload', function() {
+            if (conn) conn.close();
+        });
 
         function startPingLoop() {
             if (pingIntervalId) clearInterval(pingIntervalId);
@@ -1012,12 +995,12 @@
             touchedSquare = null; stopPingLoop(); 
             game.reset(); clearInterval(timerInterval); isTimerRunning = false; board.start(); 
             illegalCount = { w: 0, b: 0 }; updateGameUI(); enableAnalysisButtons(false);
-            localStorage.setItem('chess_mode', 'ai');
+            // No local storage save
             $('#resignBtn').css('display', 'flex');
         });
         $('#modeFriendBtn').click(function() { 
             if(!peer) initMultiplayer(); 
-            gameMode = 'online'; localStorage.setItem('chess_mode', 'online');
+            gameMode = 'online'; // No localStorage save
             switchToOnlineUI(false); if(myPeerId) updateInviteLink(); 
         });
         $('#timeControl').on('change', function() { resetTimers(); if (gameMode === 'online' && !conn) updateInviteLink(); });
@@ -1038,7 +1021,6 @@
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
             board.start(); updateGameUI(); enableAnalysisButtons(false);
-            localStorage.removeItem('chess_fen');
             if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
             $('#resignBtn').css('display', 'flex'); 
         });
@@ -1070,7 +1052,7 @@
         board = Chessboard('board', config);
         $(window).resize(function() { board.resize(); });
         
-        initStockfish(); restoreLocalState(); initMultiplayer();   
+        initStockfish(); restoreLocalState(); initMultiplayer();    
     </script>
 </body>
 </html>
