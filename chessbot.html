@@ -1002,7 +1002,13 @@
             $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
             window.history.pushState({}, document.title, window.location.pathname);
             touchedSquare = null; stopPingLoop(); 
-            game.reset(); clearInterval(timerInterval); isTimerRunning = false; board.start(); 
+            game.reset(); clearInterval(timerInterval); isTimerRunning = false; 
+            
+            // Respect the dropdown selection when switching modes
+            var pColor = $('#aiPlayerColor').val();
+            board.orientation(pColor === 'w' ? 'white' : 'black');
+            board.start(); 
+            
             illegalCount = { w: 0, b: 0 }; updateGameUI(); enableAnalysisButtons(false);
             // No local storage save
             $('#resignBtn').css('display', 'flex');
@@ -1014,6 +1020,15 @@
         });
         $('#timeControl').on('change', function() { resetTimers(); if (gameMode === 'online' && !conn) updateInviteLink(); });
         $('#onlineHostColor').on('change', function() { if (gameMode === 'online' && !conn) { playerSide = $(this).val(); board.orientation(playerSide === 'w' ? 'white' : 'black'); updateInviteLink(); updateGameUI(); } });
+        
+        // NEW: Handle AI Player Color change immediately
+        $('#aiPlayerColor').on('change', function() {
+            // If in AI mode, restart the game so logic (orientation + AI first move) applies automatically
+            if (gameMode === 'ai') {
+                $('#startBtn').click();
+            }
+        });
+
         $('#copyLinkBtn').click(function() { navigator.clipboard.writeText($('#inviteLink').text()); alert("Link copied!"); });
         $('#showShareBtn').click(function() { $('#shareGameGroup').toggle(); $('#pgnOutput').val(game.pgn()); });
         $('#shareAnalysisBtn').click(function() { navigator.clipboard.writeText(window.location.href.split('?')[0] + "?analysis=" + encodeURIComponent(game.pgn())).then(() => alert("Analysis Link Copied!")); });
