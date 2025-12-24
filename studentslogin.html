@@ -1,788 +1,1467 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chess Titans Academy</title>
-    <link rel="icon" href="images/logo.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            200: '#fed7aa',
-                            500: '#f97316',
-                            600: '#ea580c',
-                            700: '#c2410c',
-                            800: '#9a3412',
-                            900: '#7c2d12',
-                        },
-                        secondary: {
-                            900: '#1a1a1a',
-                            800: '#262626',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #fff7ed;
-            background-image: 
-                linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
-            height: 100vh;
-            height: 100dvh; 
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(249, 115, 22, 0.1);
-            box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.1), 0 8px 10px -6px rgba(234, 88, 12, 0.1);
-        }
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 3px solid #ea580c;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .sidebar-transition { transition: transform 0.3s ease-in-out; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Students Login</title>
+  <link rel="icon" href="images/logo.png" />
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <!-- Google Ads -->
+  <meta name="google-adsense-account" content="ca-pub-9085445837513717">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717"
+     crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      overflow-x: hidden;
+    }
+
+    #loginSection {
+      background: url('images/chess titans academy logo.png') no-repeat center center/cover;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    #loginSection::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 0;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      animation: fadeIn 1s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-container h3 {
+      font-weight: 700;
+      color: #dc3309;
+      margin-bottom: 25px;
+    }
+
+    .form-control {
+      border-radius: 30px;
+      padding: 12px 15px;
+      text-align: center;
+      border: 1.8px solid #ddd;
+      transition: 0.3s;
+    }
+
+    .form-control:focus {
+      border-color: #dc3309;
+      box-shadow: 0 0 8px rgba(220, 51, 9, 0.3);
+    }
+
+    .btn-login {
+      border-radius: 30px;
+      width: 100%;
+      background: linear-gradient(135deg, #dc3309, #ff6600);
+      color: white;
+      font-weight: 600;
+      transition: 0.4s;
+      border: none;
+      padding: 12px;
+    }
+
+    .btn-login:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(220, 51, 9, 0.4);
+    }
+
+    .instructions {
+      background: rgba(255, 255, 255, 0.9);
+      margin-top: 25px;
+      border-radius: 15px;
+      padding: 15px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .instructions h6 {
+      color: #dc3309;
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #fff, #ffe6e1);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+
+    .chess-king {
+      font-size: 100px;
+      color: #dc3309;
+      animation: spinBounce 2s infinite ease-in-out;
+      text-shadow: 0 0 15px #ff4500, 0 0 25px #ff7733;
+    }
+
+    @keyframes spinBounce {
+      0% {
+        transform: rotate(0deg) scale(1);
+      }
+
+      50% {
+        transform: rotate(180deg) scale(1.2);
+      }
+
+      100% {
+        transform: rotate(360deg) scale(1);
+      }
+    }
+
+    .loading-text {
+      margin-top: 25px;
+      font-weight: 600;
+      color: #333;
+      font-size: 18px;
+      animation: fadeBlink 1.5s infinite;
+      text-shadow: 0 0 8px #ff4500;
+    }
+
+    @keyframes fadeBlink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    #homeworkSection {
+      display: none;
+      animation: slideIn 1s ease-in-out;
+      background: linear-gradient(180deg, #ff8000, #ffe0b3);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      position: relative;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn-logout {
+      background-color: #c43e00;
+      color: #fff;
+      border-radius: 30px;
+      padding: 8px 25px;
+      border: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(196, 62, 0, 0.3);
+    }
+
+    .btn-logout:hover {
+      background-color: #a53200;
+      transform: scale(1.05);
+    }
+
+    .homework-card {
+      max-width: 600px;
+      background: linear-gradient(145deg, #fff3e0, #ffd9b3);
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .homework-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(196, 62, 0, 0.25);
+    }
+
+    .nav-tabs .nav-link {
+      background: #ffe3cc;
+      color: #c43e00;
+      border-radius: 25px;
+      border: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .nav-tabs .nav-link.active {
+      background: #c43e00;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .nav-tabs .nav-link:hover {
+      background: #ffbb80;
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .btn-logout {
+        width: 100%;
+        margin-top: 10px;
+        text-align: center;
+        border-radius: 25px;
+      }
+
+      .d-flex.justify-content-end {
+        justify-content: center !important;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+    }
+
+    header {
+      background: linear-gradient(90deg, #000000, #2c2c54);
+    }
+
+         .marquee-container {
+      overflow: hidden;
+      white-space: nowrap;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: #1e293b;
+    }
+
+    .marquee-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 23s linear infinite;
+      font-size: 18px;
+    }
+        @keyframes scroll-left {
+      from {
+        transform: translateX(0%);
+      }
+      to {
+        transform: translateX(-100%);
+      }
+    }
+
+
+  </style>
 </head>
-<body class="antialiased text-slate-800 flex flex-col overflow-hidden">
 
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none w-full max-w-xs px-4 md:px-0 ml-auto"></div>
+<body>
 
-    <div id="app" class="flex-grow flex items-center justify-center p-4 w-full h-full relative">
-        <div class="text-brand-600 font-bold flex flex-col items-center">
-            <div class="loader mb-2 w-8 h-8 border-4"></div>
-            Connecting to Academy Server...
-        </div>
+  <!-- ✅ LOGIN SECTION -->
+  <section id="loginSection">
+    <div class="login-container" id="loginBox">
+      <h3>Students Login</h3>
+      <form id="loginForm">
+        <b>Username</b>
+        <input type="text" id="username" class="form-control mb-3" placeholder="Enter Username" required />
+        <b>Password (DD-MM-YYYY)</b>
+        <input type="date" id="password" class="form-control mb-3" placeholder="D.O.B" required />
+        <button type="submit" class="btn btn-login">Login</button>
+        <p id="message" class="mt-3"></p>
+      </form>
+
+      <div class="instructions">
+        <h6>🔹 Instructions:</h6>
+        <ul>
+          <li>Enter your Name as <b>Username</b>.</li>
+          <li>Enter your <b>Date of Birth as Password</b></li>
+          <li>Then your weekly Puzzle page will open automatically.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ LOADING OVERLAY -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="chess-king">♘</div>
+    <div class="loading-text" id="loadingText">Preparing Your Weekly Puzzle.....</div>
+  </div>
+
+  <!-- ✅ HOMEWORK SECTION -->
+  <section id="homeworkSection">
+    <header class="bg-dark text-white text-center py-3 shadow-lg">
+      <h1 class="fw-bold text-uppercase mb-0">Chess Titans Academy</h1>
+      <p class="mb-0 text-warning fw-semibold">Develop Your Mind Like a Grandmaster ♛</p>
+      <div class="d-flex justify-content-end p-3 ">
+        <button class="btn-logout btn btn-danger fw-bold px-4 py-2" onclick="logout()">Logout</button>
+      </div>
+
+      <div class="text-center p-4">
+        <h2 class="fw-bold text-uppercase mb-1 text-white">Online Tournament (21/12/2025)</h2>
+        <p class="fw-semibold text-white">Complete your tasks with focus ♔</p>
+      </div>
+      <div class="marquee-container">
+     <div class="marquee-text">
+      🎯IMPORTANT NOTE On 21/12/2025 We will Have December Month Online tournament.
+    </div> 
+    </header>
+
+    <div class="container mt-3" id="homeworkTabsContainer">
+      <ul class="nav nav-tabs justify-content-center flex-wrap" id="homeworkTabs">
+        <li class="nav-item m-2">
+          <button class="nav-link active px-4 py-2 fw-bold shadow-sm" id="beginnerTab">Beginner Level 1</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
+        </li>
+        <li class="nav-item m-2">
+          <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="beginner2Tab">Beginner Level 2</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
+        </li>
+        <li class="nav-item m-2">
+          <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediateTab">Intermediate Level 1</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
+        </li>
+        <li class="nav-item m-2">
+          <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediate2Tab">Intermediate Level 2</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
+        </li>
+        <li class="nav-item m-2">
+          <button class="nav-link px-4 py-2 fw-bold shadow-sm" id="intermediate3Tab">Intermediate Level 3</button>
+          <button class="btn"  onclick="goToNextPage()"><b>Practice vs Computer</b></button>
+        </li>
+      </ul>
     </div>
 
-    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden fade-in"></div>
+    <!-- ✅ Beginner Level 1 -->
+    <div id="beginnerHomework" class="container text-center mt-4">
+      <!-- ♟ Puzzle 1 -->
+      <!-- <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 1</h4>
+      <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
+        <img src="images/Homework File/BL 1.1.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to Checkmate for Black.<strong></strong>
+        </p>
+      </div> -->
 
-    <script>
-        // --- API CONFIGURATION ---
-        // Ensure this URL matches your Deployment > 'Web App' URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbykSFks6F3q-2UZBYwvnH2LRfEywG9Hl8nf9iuGPaBLIO0P8sJspmGpUTVNEiio9HGn3Q/exec'; 
+      <!-- ♟ Puzzle 2 -->
+      <!-- <h4 class="fw-bold text-dark mb-3"></h4>
+      <div class="card border-0 shadow-lg p-3 mx-auto homework-card">
+        <img src="images/Homework File/BL 1.2.jpg" alt="Beginner Homework" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to Checkmate for White. <strong></strong>
+        </p>
+      </div> -->
 
-        const ACADEMY_LEVELS = [
-            'Beginner Level 1', 'Beginner Level 2',
-            'Intermediate Level 1', 'Intermediate Level 2',
-            'Advance Level 1', 'Advance Level 2', 'Advance Level 3',
-            'Advance Pro'
-        ];
-
-        // --- DATA MANAGEMENT ---
-        async function fetchUsers() {
-            try {
-                const response = await fetch(`${API_URL}?action=getUsers`);
-                return await response.json();
-            } catch (error) {
-                console.error("Connection Error:", error);
-                return [];
-            }
-        }
-
-        async function fetchTasks() {
-            try {
-                const response = await fetch(`${API_URL}?action=getTasks`);
-                return await response.json();
-            } catch (error) { return []; }
-        }
-
-        async function registerUserAPI(userData) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'register', data: userData })
-                });
-                return await response.json();
-            } catch (error) { return { success: false, message: error.toString() }; }
-        }
-
-        async function updateUserStatusAPI(username, status) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'updateStatus', username: username, status: status })
-                });
-                return await response.json();
-            } catch (error) { return { success: false }; }
-        }
-
-        async function updateUserLevelAPI(username, level) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'updateLevel', username: username, level: level })
-                });
-                return await response.json();
-            } catch (error) { return { success: false }; }
-        }
-
-        async function addTaskAPI(taskData) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addTask', data: taskData })
-                });
-                const result = await response.json();
-                return result; 
-            } catch (error) { 
-                return { success: false, message: "Network/Script Error" }; 
-            }
-        }
-
-        async function deleteTaskAPI(taskId) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'deleteTask', id: taskId })
-                });
-                return await response.json();
-            } catch (error) { return { success: false }; }
-        }
-
-        // --- UI UTILITIES ---
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            const colors = {
-                success: 'bg-emerald-600 text-white border-l-4 border-emerald-800',
-                error: 'bg-red-500 text-white border-l-4 border-red-800',
-                info: 'bg-brand-600 text-white border-l-4 border-brand-800'
-            };
-            const icons = {
-                success: '<i class="fas fa-check-circle mr-2"></i>',
-                error: '<i class="fas fa-exclamation-triangle mr-2"></i>',
-                info: '<i class="fas fa-info-circle mr-2"></i>'
-            };
-            toast.className = `${colors[type]} px-4 py-3 md:px-6 md:py-4 rounded shadow-2xl transform transition-all duration-300 translate-x-full pointer-events-auto flex items-center font-medium text-sm md:text-base`;
-            toast.innerHTML = `${icons[type]} <span>${message}</span>`;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-x-full'));
-            setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function setButtonLoading(btn, isLoading, text = "") {
-            if (isLoading) {
-                btn.disabled = true;
-                btn.innerHTML = `<div class="loader inline-block mr-2 border-white border-t-transparent w-4 h-4"></div> Processing...`;
-            } else {
-                btn.disabled = false;
-                btn.innerHTML = text;
-            }
-        }
-
-        // --- VIEWS ---
-
-        const views = {
-            login: () => `
-                <div class="glass-panel w-full max-w-md rounded-xl p-0 fade-in relative overflow-hidden shadow-2xl shadow-orange-900/10 mx-auto">
-                    <div class="bg-brand-600 h-2 w-full"></div>
-                    <div class="p-6 md:p-8">
-                        <div class="text-center mb-6 md:mb-8">
-                            <div class="inline-block relative">
-                                <div class="bg-gradient-to-br from-brand-500 to-red-600 w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center mx-auto mb-4 text-white text-2xl md:text-3xl shadow-lg transform rotate-3 hover:rotate-6 transition-transform">
-                                    <i class="fas fa-chess-knight"></i>
-                                </div>
-                            </div>
-                            <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Chess Titans Academy</h1>
-                            <p class="text-brand-600 font-medium text-xs md:text-sm mt-1 uppercase tracking-wider">Students Login Portal</p>
-                        </div>
-                        <form id="loginForm" class="space-y-4 md:space-y-5">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Username</label>
-                                <div class="relative group">
-                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors"><i class="fas fa-chess-pawn"></i></span>
-                                    <input type="text" id="loginUser" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-brand-500 outline-none transition-all text-sm font-medium" placeholder="Grandmaster">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Password (Ex:-CTA DD/MM/YYYY)</</label>
-                                <div class="relative group">
-                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors"><i class="fas fa-lock"></i></span>
-                                    <input type="password" id="loginPass" required class="w-full pl-10 pr-10 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-brand-500 outline-none transition-all text-sm font-medium" placeholder="••••••••">
-                                    <button type="button" onclick="togglePassword('loginPass', 'eyeLogin')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors focus:outline-none">
-                                        <i id="eyeLogin" class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <button type="submit" id="btnLogin" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-bold py-3.5 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
-                                <span>Enter Academy</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </form>
-                        <div class="mt-6 md:mt-8 pt-6 border-t border-slate-100 text-center">
-                            <p class="text-slate-500 text-sm">New Student?</p>
-                            <button onclick="router('register')" class="text-brand-600 font-bold hover:text-brand-700 text-sm mt-1 hover:underline">Apply for Admission</button>
-                        </div>
-                    </div>
-                </div>
-            `,
-            register: () => `
-                <div class="glass-panel w-full max-w-md rounded-xl p-0 fade-in relative overflow-hidden shadow-2xl mx-auto">
-                    <div class="bg-secondary-900 h-2 w-full"></div>
-                    <div class="p-6 md:p-8">
-                        <div class="text-center mb-6">
-                            <h1 class="text-xl md:text-2xl font-bold text-slate-800">Student Registration</h1>
-                            <p class="text-slate-500 text-sm mt-1">Join the ranks of the Titans.</p>
-                        </div>
-                        <form id="registerForm" class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Username</label><input type="text" id="regUser" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-500 outline-none text-sm bg-slate-50 focus:bg-white"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label><input type="tel" id="regPhone" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-500 outline-none text-sm bg-slate-50 focus:bg-white" placeholder="Mobile #"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Create Password (Ex:-CTA DD/MM/YYYY)</label>
-                                <div class="relative">
-                                    <input type="password" id="regPass" required class="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-200 focus:border-brand-500 outline-none text-sm bg-slate-50 focus:bg-white">
-                                    <button type="button" onclick="togglePassword('regPass', 'eyeReg')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors focus:outline-none">
-                                        <i id="eyeReg" class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Confirm Password (Ex:-CTA DD/MM/YYYY)</</label>
-                                <div class="relative">
-                                    <input type="password" id="regPassConfirm" required class="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-200 focus:border-brand-500 outline-none text-sm bg-slate-50 focus:bg-white">
-                                    <button type="button" onclick="togglePassword('regPassConfirm', 'eyeRegConf')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-brand-600 transition-colors focus:outline-none">
-                                        <i id="eyeRegConf" class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="pt-3">
-                                <button type="submit" id="btnRegister" class="w-full bg-secondary-900 hover:bg-black text-white font-bold py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2">
-                                    <i class="fas fa-chess-pawn"></i> Submit Application
-                                </button>
-                            </div>
-                        </form>
-                        <div class="mt-6 text-center">
-                            <button onclick="router('login')" class="text-slate-400 hover:text-brand-600 text-sm font-medium transition-colors">Back to Login</button>
-                        </div>
-                    </div>
-                </div>
-            `,
-userHome: (data) => {
-    const user = data.user;
-    // Filter tasks based on user level
-    const myTasks = data.tasks.filter(t => t.level === user.level);
-
-    return `
-    <div class="glass-panel w-full max-w-5xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[85vh] border-0">
-        <div class="bg-white border-b border-orange-100 p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
-            <div class="flex items-center gap-3 md:gap-5">
-                <div class="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-brand-500 text-white flex items-center justify-center text-lg md:text-2xl font-bold shadow-lg shadow-brand-500/20">
-                    <i class="fas fa-chess-king"></i>
-                </div>
-                <div>
-                    <h2 class="text-lg md:text-2xl font-bold text-slate-800 truncate max-w-[150px] md:max-w-none">Hello, ${user.username}</h2>
-                    <div class="flex items-center gap-2 text-xs md:text-sm text-slate-500 mt-1">
-                        <span class="px-2 py-0.5 rounded bg-secondary-900 text-white text-[10px] md:text-xs font-bold tracking-wider uppercase truncate">
-                            <i class="fas fa-crown text-[10px] text-yellow-400 mr-1"></i> ${user.level || 'Unranked'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <button onclick="handleLogout()" class="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
-                <span class="text-sm font-medium hidden md:block">Logout</span> <i class="fas fa-sign-out-alt text-lg group-hover:translate-x-1"></i>
-            </button>
-        </div>
-        <div class="flex-grow p-4 md:p-8 bg-orange-50/30 overflow-y-auto">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-                
-                <a href="https://drive.google.com/drive/folders/1c1BJRTYlsD87HbgpEQNKlymkJ-FhQa9F?usp=sharing" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center mb-4"><i class="fas fa-book-open text-lg md:text-xl"></i></div>
-                    <h3 class="font-bold text-base md:text-lg text-slate-800">Course Materials</h3>
-                    <p class="text-slate-500 text-xs md:text-sm mt-2">Study well for <strong>${user.level || 'Beginner'}</strong>.</p>
-                </a>
-
-                <a href="https://chesstitansacademy.vercel.app/Tournament.html" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
-                    <h3 class="font-bold text-base md:text-lg text-slate-800">Tournament Status</h3>
-                    <p class="text-slate-500 text-xs md:text-sm mt-2">Phone: <span class="font-mono text-slate-700 bg-slate-100 px-1 rounded">${user.phone}</span></p>
-                </a>
-                
-                <a href="https://chesstitansacademy.vercel.app/chessbot.html" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center mb-4"><i class="fas fa-chess-board text-lg md:text-xl"></i></div>
-                    <h3 class="font-bold text-base md:text-lg text-slate-800">Practice Board</h3>
-                    <p class="text-slate-500 text-xs md:text-sm mt-2">Chess Bot.</p>
-                </a>
-                
-            </div>
-
-            <div class="bg-white rounded-xl shadow-lg border border-brand-100 overflow-hidden mb-8">
-                 <div class="bg-brand-500 p-4 flex justify-between items-center text-white">
-                    <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-tasks"></i> Weekly Tasks</h3>
-                    <span class="text-xs bg-white/20 px-2 py-1 rounded">${myTasks.length} Assigned</span>
-                </div>
-                <div class="p-0">
-                    ${myTasks.length === 0 
-                        ? `<div class="p-8 text-center text-slate-400 italic">No tasks assigned for ${user.level} yet.</div>` 
-                        : `<div class="divide-y divide-slate-100">
-                            ${myTasks.map(t => `
-                                <div class="p-4 hover:bg-slate-50 flex items-center justify-between group transition-colors">
-                                    <div>
-                                        <div class="font-bold text-slate-800">${t.title}</div>
-                                        <div class="text-xs text-slate-400 mt-1"><i class="far fa-calendar mr-1"></i> Posted: ${t.date}</div>
-                                    </div>
-                                    <a href="${t.link}" target="_blank" class="bg-white border border-brand-200 text-brand-600 hover:bg-brand-600 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-sm">
-                                        Open Task <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                </div>
-                                `).join('')}
-                           </div>`
-                    }
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-r from-secondary-900 to-secondary-800 rounded-xl p-6 md:p-8 text-white relative overflow-hidden">
-                 <div class="absolute top-0 right-0 p-4 opacity-10 text-8xl md:text-9xl"><i class="fas fa-chess-rook"></i></div>
-                <h4 class="font-bold text-lg md:text-xl mb-2 relative z-10">Academy Announcement</h4>
-                <p class="text-slate-300 text-sm md:text-base max-w-2xl relative z-10">Welcome to Chess Titans Academy. Check your Weekly Tasks above regularly.</p>
-            </div>
-        </div>
+<!-- ✅ Beginner Level 1 Solution Button -->
+<div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+    <h5 class="fw-bold text-dark mb-3">NOVEMBER MONTHLY TOURNAMENT LINK</h5>
+    <a href="https://youtu.be/w-v_V0XQ0oQ" target="_blank"
+    class="btn btn-danger btn-lg w-100 fw-bold">How to Join Tournament Video</a>
+    <br>
+    <a href="https://lichess.org/swiss/ClomjYzA" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">Join Tournament Link</a>
+  </div>  
+</div> 
     </div>
-`;
-},
-            adminDashboard: (data) => {
-                const users = data.users || [];
-                const tasks = data.tasks || [];
-                const pendingUsers = users.filter(u => u.status === 'pending');
-                const rosterUsers = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
-                
-                return `
-                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
-                    <div class="flex h-full relative">
-                        <div id="adminSidebar" class="w-64 bg-secondary-900 text-slate-300 flex-shrink-0 flex flex-col absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30 sidebar-transition h-full border-r border-slate-800">
-                             <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-                            <div class="p-6 border-b border-white/10 relative z-10 flex justify-between items-center">
-                                <div class="flex items-center gap-3 text-white">
-                                    <div class="bg-brand-500 w-8 h-8 rounded flex items-center justify-center text-secondary-900"><i class="fas fa-chess-queen"></i></div>
-                                    <span class="font-bold text-lg tracking-wide">TitansAdmin</span>
-                                </div>
-                                <button onclick="toggleSidebar()" class="md:hidden text-white"><i class="fas fa-times"></i></button>
-                            </div>
-                            <nav class="flex-grow p-4 space-y-2 relative z-10">
-                                <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</div>
-                                <a href="#" class="block px-4 py-3 bg-brand-600 text-white rounded-lg flex items-center gap-3 shadow-lg"><i class="fas fa-users-cog w-5 text-center"></i> Students</a>
-                            </nav>
-                            <div class="p-4 border-t border-white/10 relative z-10">
-                                <button onclick="handleLogout()" class="w-full px-4 py-2 border border-slate-700 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-slate-400 rounded-lg transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                            </div>
-                        </div>
 
-                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
-                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
-                                <div class="flex items-center gap-3">
-                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
-                                    <div>
-                                        <h2 class="text-lg md:text-2xl font-bold text-slate-800">Dashboard</h2>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="refreshAdminDashboard()" class="text-brand-600 hover:bg-brand-50 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh Data</span></button>
-                                </div>
-                            </header>
-                            
-                            <div class="flex-grow p-4 md:p-8 overflow-y-auto">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-                                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start"><div><div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Pending</div><div class="text-3xl md:text-4xl font-bold text-brand-500 mt-2">${pendingUsers.length}</div></div><div class="bg-brand-50 p-2 rounded-lg text-brand-500"><i class="fas fa-user-clock text-xl"></i></div></div>
-                                    </div>
-                                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start"><div><div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Students</div><div class="text-3xl md:text-4xl font-bold text-secondary-900 mt-2">${rosterUsers.length}</div></div><div class="bg-green-50 p-2 rounded-lg text-green-600"><i class="fas fa-user-graduate text-xl"></i></div></div>
-                                    </div>
-                                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start"><div><div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Active Tasks</div><div class="text-3xl md:text-4xl font-bold text-slate-600 mt-2">${tasks.length}</div></div><div class="bg-blue-50 p-2 rounded-lg text-blue-600"><i class="fas fa-tasks text-xl"></i></div></div>
-                                    </div>
-                                </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                    <div class="md:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-brand-500"></i> Upload Task</h3>
-                                        <form id="addTaskForm" class="space-y-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Level</label>
-                                                <select id="taskLevel" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                                    <option value="">Select Level...</option>
-                                                    ${ACADEMY_LEVELS.map(l => `<option value="${l}">${l}</option>`).join('')}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Task Title</label>
-                                                <input type="text" id="taskTitle" required placeholder="e.g. Week 1 Tactics" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Task Link (URL)</label>
-                                                <input type="url" id="taskLink" required placeholder="https://drive.google.com/..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                            </div>
-                                            <button type="submit" id="btnAddTask" class="w-full bg-secondary-900 text-white font-bold py-2 rounded-lg hover:bg-black transition-colors">Publish Task</button>
-                                        </form>
-                                    </div>
 
-                                    <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-96">
-                                        <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                            <h3 class="font-bold text-slate-700">Active Tasks</h3>
-                                            <span class="text-xs text-slate-400">Showing all posted tasks</span>
-                                        </div>
-                                        <div class="overflow-y-auto flex-grow p-0">
-                                            <table class="w-full text-left text-sm text-slate-600">
-                                                <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider sticky top-0 border-b border-slate-100">
-                                                    <tr><th class="px-6 py-3">Level</th><th class="px-6 py-3">Title</th><th class="px-6 py-3 text-right">Action</th></tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-slate-100">
-                                                    ${tasks.length === 0 ? `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">No tasks uploaded.</td></tr>` : tasks.map(t => `
-                                                        <tr class="hover:bg-slate-50">
-                                                            <td class="px-6 py-3 font-medium text-brand-600 text-xs">${t.level}</td>
-                                                            <td class="px-6 py-3 font-bold text-slate-800">
-                                                                <a href="${t.link}" target="_blank" class="hover:underline flex items-center gap-2">${t.title} <i class="fas fa-external-link-alt text-xs text-slate-400"></i></a>
-                                                                <div class="text-[10px] text-slate-400">${t.date}</div>
-                                                            </td>
-                                                            <td class="px-6 py-3 text-right">
-                                                                <button onclick="handleDeleteTask('${t.id}', this)" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash-alt"></i></button>
-                                                            </td>
-                                                        </tr>`).join('')}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 md:mb-8 overflow-hidden">
-                                    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-brand-50">
-                                        <h3 class="font-bold text-brand-900 flex items-center gap-2 text-sm md:text-base"><i class="fas fa-hourglass-half"></i> Admission Requests</h3>
-                                        ${pendingUsers.length > 0 ? `<span class="bg-brand-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">${pendingUsers.length} New</span>` : ''}
-                                    </div>
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[600px]">
-                                            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider">
-                                                <tr><th class="px-6 py-4">Candidate</th><th class="px-6 py-4">Contact</th><th class="px-6 py-4 text-right">Decision</th></tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-slate-100">
-                                                ${pendingUsers.length === 0 ? `<tr><td colspan="3" class="px-6 py-12 text-center text-slate-400"><span>No pending applications.</span></td></tr>` : pendingUsers.map(u => `
-                                                    <tr class="hover:bg-orange-50/50 transition-colors">
-                                                        <td class="px-6 py-4 font-bold text-slate-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center"><i class="fas fa-user"></i></div>${u.username}</td>
-                                                        <td class="px-6 py-4 font-mono text-slate-500">${u.phone}</td>
-                                                        <td class="px-6 py-4 text-right space-x-2">
-                                                            <button onclick="handleApproval('${u.username}', 'approved', this)" class="bg-emerald-500 text-white hover:bg-emerald-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold"><i class="fas fa-check mr-1"></i> Accept</button>
-                                                            <button onclick="handleApproval('${u.username}', 'rejected', this)" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold"><i class="fas fa-times mr-1"></i> Reject</button>
-                                                        </td>
-                                                    </tr>`).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
 
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                        <h3 class="font-bold text-slate-700 text-sm md:text-base">Student Roster</h3>
-                                        <div class="relative w-48 md:w-64">
-                                            <input type="text" id="rosterSearch" onkeyup="filterRoster()" placeholder="Search student name..." class="w-full pl-9 pr-4 py-1.5 text-xs rounded-full border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[800px]">
-                                            <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
-                                                <tr><th class="px-6 py-3">Student Name</th><th class="px-6 py-3">Account Status</th><th class="px-6 py-3">Assign Level/Rank</th></tr>
-                                            </thead>
-                                            <tbody id="rosterTableBody" class="divide-y divide-slate-100">
-                                                 ${rosterUsers.length === 0 ? `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">No students in roster.</td></tr>` : rosterUsers.map(u => `
-                                                    <tr class="hover:bg-slate-50">
-                                                        <td class="px-6 py-4 font-medium text-slate-800 student-name-cell">
-                                                            <div>${u.username}</div>
-                                                            <div class="font-mono text-xs text-slate-400">${u.phone}</div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                             <div class="relative w-40">
-                                                                <select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all 
-                                                                    ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : 
-                                                                     u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
-                                                                     u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
-                                                                    <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
-                                                                    <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
-                                                                    <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
-                                                                </select>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                            <div class="relative w-48">
-                                                                <select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="${u.level || 'Unranked'}" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all">
-                                                                    <option value="Unranked">Select Rank...</option>
-                                                                    ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}" ${u.level === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-                                                                </select>
-                                                            </div>
-                                                        </td>
-                                                    </tr>`).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }
-        };
+    <!-- ✅ Beginner Level 2 -->
+    <div id="beginner2Homework" class="container text-center mt-4" style="display: none;">
+      <!-- <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 2</h4> -->
 
-        // --- CONTROLLER ---
+      <!-- ♟ Puzzle 1 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♙ PUZZLE 1</h4>
+        <p class="card-text text-muted">Try to make Checkmate for Black</p>
+        <a href="https://www.chess.com/analysis/game/pgn/2Hz5m6Ssu8/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
+      </div> -->
 
-        function router(route, data = null) {
-            const app = document.getElementById('app');
-            if (views[route]) {
-                app.innerHTML = views[route](data);
-                attachEventListeners(route);
-            }
-        }
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♙ PUZZLE 2</h4>
+        <p class="card-text text-muted">Use your Knight to deliver a surprising checkmate in 2 moves!</p>
+        <a href="https://www.chess.com/analysis/game/pgn/dY9r3FjN/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
 
-        async function refreshAdminDashboard() {
-            // Parallel fetch for speed
-            const [users, tasks] = await Promise.all([fetchUsers(), fetchTasks()]);
-            router('adminDashboard', { users: users, tasks: tasks });
-            showToast("Dashboard Refreshed", "info");
-        }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('adminSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function attachEventListeners(route) {
-            if (route === 'login') {
-                document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const btn = document.getElementById('btnLogin');
-                    const originalText = btn.innerHTML;
-                    setButtonLoading(btn, true);
-
-                    const user = document.getElementById('loginUser').value;
-                    const pass = document.getElementById('loginPass').value;
-                    
-                    const users = await fetchUsers();
-                    
-                    if(users.length === 0) {
-                        setButtonLoading(btn, false, originalText);
-                        return;
-                    }
-
-                    const account = users.find(u => String(u.username).toLowerCase() === String(user).toLowerCase() && String(u.password) === String(pass));
-
-                    setButtonLoading(btn, false, originalText);
-
-                    if (!account) { showToast('Invalid Credentials', 'error'); return; }
-                    
-                    if (account.status === 'blocked') { showToast('You have not completed the weekly task', 'error'); return; }
-                    if (account.status === 'expired') { showToast('Your weekly task plan is expired', 'error'); return; }
-
-                    if (account.role === 'admin') { 
-                        showToast('Welcome Admin', 'success'); 
-                        const tasks = await fetchTasks();
-                        router('adminDashboard', { users: users, tasks: tasks }); 
-                        return; 
-                    }
-                    if (account.status === 'pending') { showToast('Admission Pending', 'info'); return; }
-                    if (account.status === 'rejected') { showToast('Admission Denied', 'error'); return; }
-
-                    showToast('Welcome Student', 'success');
-                    const tasks = await fetchTasks();
-                    router('userHome', { user: account, tasks: tasks });
-                });
-            } else if (route === 'register') {
-                document.getElementById('registerForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const btn = document.getElementById('btnRegister');
-                    const originalText = btn.innerHTML;
-                    setButtonLoading(btn, true);
-                    const user = document.getElementById('regUser').value;
-                    const phone = document.getElementById('regPhone').value;
-                    const pass = document.getElementById('regPass').value;
-                    const confirm = document.getElementById('regPassConfirm').value;
-                    if (pass !== confirm) { showToast('Passwords do not match', 'error'); setButtonLoading(btn, false, originalText); return; }
-                    if (user.length < 3) { showToast('Username too short', 'error'); setButtonLoading(btn, false, originalText); return; }
-                    const response = await registerUserAPI({ username: user, password: pass, phone: phone });
-                    setButtonLoading(btn, false, originalText);
-                    if (response.success) { showToast('Application Sent!', 'success'); router('login'); } 
-                    else { showToast(response.message || 'Error registering', 'error'); }
-                });
-            } else if (route === 'adminDashboard') {
-                const taskForm = document.getElementById('addTaskForm');
-                if(taskForm) {
-                    taskForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const btn = document.getElementById('btnAddTask');
-                        const originalText = btn.innerHTML;
-                        btn.disabled = true;
-                        btn.innerHTML = 'Publishing...';
-                        
-                        const taskData = {
-                            level: document.getElementById('taskLevel').value,
-                            title: document.getElementById('taskTitle').value,
-                            link: document.getElementById('taskLink').value
-                        };
-                        
-                        const response = await addTaskAPI(taskData);
-                        if(response.success) {
-                            showToast('Task Uploaded!', 'success');
-                            await refreshAdminDashboard();
-                        } else {
-                            showToast(response.message || 'Failed to upload', 'error');
-                            btn.disabled = false;
-                            btn.innerHTML = originalText;
-                        }
-                    });
-                }
-            }
-        }
-
-        // --- GLOBAL HANDLERS ---
-        window.router = router;
-        window.refreshAdminDashboard = refreshAdminDashboard;
-        window.toggleSidebar = toggleSidebar;
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card">
+        <h4 class="fw-bold text-dark mb-3">♙ Beginner Level 2</h4>
+        <img src="images/Homework File/BL 2.1.jpg" alt="Beginner Level 2" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Try to Make Queen Trade <strong>“White to Move”</strong> .
+        </p>
+      </div> -->
         
-        window.handleLogout = function() {
-            showToast('Logged out', 'info');
-            router('login');
-        };
+<!-- ✅ Beginner Level 2 Solution Button -->
+  <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+    <h5 class="fw-bold text-dark mb-3">NOVEMBER MONTHLY TOURNAMENT LINK</h5>
+    <a href="https://youtu.be/w-v_V0XQ0oQ" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">How to Join Tournament Video</a>
+      <br>
+    <a href="https://lichess.org/swiss/ClomjYzA" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">Join Tournament Link</a>
+  </div>  
+    </div>
 
-        window.togglePassword = function(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+
+
+
+
+
+    <!-- ✅ Intermediate Level 1 -->
+    <div id="intermediateHomework" class="container mt-4" style="display: none;">
+      <!-- <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 1</h4> -->
+      <!-- ♟ Puzzle 1 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Find the Best move for White Concept WHITE PAWN Promotion.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/5fLVLstVp2/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div> -->
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Click below to open your chess puzzle and solve it carefully.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/LMd4itQBg/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle</a>
+      </div> -->
+      <!-- ♟ Puzzle 3 -->
+      <!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5 text-center">
+        <img src="images/Homework File/IL 1.1.jpg" alt="Intermediate Level 1" class="img-fluid rounded shadow-sm my-3 mx-auto d-block" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Find the Best Move for  <strong>“Black”</strong>Pin Concept .
+        </p>
+      </div> -->
+
+<!-- ✅ Intermediate Level 1 Solution Button -->
+ <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+    <h5 class="fw-bold text-dark mb-3">NOVEMBER MONTHLY TOURNAMENT LINK</h5>
+    <a href="https://youtu.be/w-v_V0XQ0oQ" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">How to Join Tournament Video</a>
+      <br>
+    <a href="https://lichess.org/swiss/ClomjYzA" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">Join Tournament Link</a>
+  </div>  
+    </div>
+
+
+
+
+
+
+    <!-- ✅ Intermediate Level 2 -->
+    <div id="intermediate2Homework" class="container text-center mt-4" style="display: none;">
+      <!-- <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 2</h4> -->
+
+      <!-- ♟ Puzzle 1 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Find the Best move for White.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/41iY1E5u5g/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
+      </div> -->
+
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Find a precise fork tactic to gain a winning advantage.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/Yh2uC3Qv/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♟ Puzzle 3 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-4 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 3</h4>
+        <p class="card-text text-muted">Find a precise fork tactic to gain a winning advantage.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/Yh2uC3Qv/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♟ Image & Challenge Section -->
+      <!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5">
+        <img src="images/Homework File/IL 2.1.jpg" alt="Intermediate Level 2" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Find the Best Move for  <strong>"Black"</strong> .
+        </p>
+      </div> -->
+<!-- ✅ Intermediate Level 2 Solution Button -->
+<div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4">
+    <h5 class="fw-bold text-dark mb-3">NOVEMBER MONTHLY TOURNAMENT LINK</h5>
+    <a href="https://youtu.be/w-v_V0XQ0oQ" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">How to Join Tournament Video</a>
+      <br>
+    <a href="https://lichess.org/swiss/ClomjYzA" target="_blank"
+      class="btn btn-danger btn-lg w-100 fw-bold">Join Tournament Link</a>
+  </div>    
+    </div>
+
+
+
+
+
+
+    <!-- ✅ Intermediate Level 3  -->
+    <div id="intermediate3Homework" class="container text-center mt-4" style="display: none;">
+      <!-- <h4 class="text-center mb-4 fw-bold text-dark">♔ Intermediate Level 3</h4> -->
+
+      <!-- ♟ Puzzle 1 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 1</h4>
+        <p class="card-text text-muted">Find the Best Moves for White.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/4NkewEH4uC/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 1</a>
+      </div> -->
+
+      <!-- ♟ Puzzle 2 -->
+      <!-- <div class="card puzzle-card text-center mx-auto mb-3 shadow-lg homework-card">
+        <h4 class="text-dark fw-bold">♔ PUZZLE 2</h4>
+        <p class="card-text text-muted">Find a hidden pin tactic to trap your opponent’s Queen.</p>
+        <a href="https://www.chess.com/analysis/game/pgn/testPuzzle2/analysis" target="_blank"
+          class="btn btn-success btn-lg w-100 mt-2">Open Puzzle 2</a>
+      </div> -->
+
+      <!-- ♟ Puzzle 3 -->
+      <!-- <div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-5">
+        <img src="images/Homework File/IL 3.1.jpg" alt="Intermediate Level 3" class="img-fluid rounded shadow-sm my-3" />
+        <h5 class="fw-bold text-danger">CHALLENGE NOTE</h5>
+        <p class="fw-semibold text-secondary mt-2">
+          Find the Best move for <strong>“Black”</strong> .
+        </p>
+      </div> -->
+
+<!-- ✅ Intermediate Level 3 - Solution Button -->
+<div class="card border-0 shadow-lg p-4 mx-auto homework-card mt-4 text-center">
+  <h5 class="fw-bold text-dark mb-3">NOVEMBER MONTHLY TOURNAMENT LINK</h5>
+  <a href="https://youtu.be/w-v_V0XQ0oQ" target="_blank" rel="noopener noreferrer"
+     class="btn btn-danger btn-lg w-100 fw-bold">How to Join Tournament Video</a>
+     <br>
+    <a href="https://lichess.org/swiss/ClomjYzA" target="_blank" rel="noopener noreferrer"
+     class="btn btn-danger btn-lg w-100 fw-bold">Join Tournament Link</a>
+</div> 
+    </div>
+
+    
+
+    <footer class="container-fluid text-center p-3 bg-dark text-white fixed-bottom shadow-lg">
+      &copy; 2025 <span class="fw-bold text-warning">Chess Titans Academy</span>. All rights reserved.
+    </footer>
+  </section>
+
+  <script>
+    // -------------------------
+    // USER DATABASE (original names + DOB)
+    // -------------------------
+    const users = {
+      // SHINING STARS STUDENTS
+      "Jovin Benson D": "22-12-2019",
+      "A.S.PRATYUSH": "01-12-2018",
+      "RishabRaghvieir.P.V": "20-11-2014",
+      "A.B.Arvind kumar": "28-11-2012",
+      "SRIRAGHAV SOLAIRAJ": "17-01-2017",
+      "P.MAGIZHAN": "26-11-2017",
+      "Sashwanth.K.K": "10-06-2012", 
+      "Deswanth.K.K": "10-03-2016",
+      "TS.Krishang": "22-03-2017",
+      "P.VIDYUT": "23-06-2015",
+      "B.kirthika sai": "07-11-2017",
+      "Sanjeeth Gokul": "23-12-2013",
+      "R.R.vidhyuthsai": "12-04-2016",
+      "K.S.SHIVANI": "11-02-2013",
+      "K.S.SABARISH": "12-06-2018",
+      "Nandika.R.Menon": "24-08-2018",
+      "A.Jeevan Raj": "01-05-2013",
+      "S.LOHITH":"10-11-2011",
+      "Guganesh.R":"14-07-2016",
+      "N.ANANDHARAJAN":"22-07-2014",
+      "K.T.BAVYESH":"09-12-2018",
+      "N.Aadheesh":"06-10-2018",
+      "C.SABARISH":"10-01-2019",
+      "V.Ashwin":"24-11-2015",
+      "S.SRINISHRAJU":"10-05-2018",
+      "K C Jaithik Prasanna":"08-02-2016",
+      "S.Swajith":"06-12-2013",
+      "Thaniga Shree S":"19-01-2015",
+      "Shaai vaibauv S":"10-04-2017",
+      "T.HERISH":"27-02-2018",
+      "S.TARUNESH":"17-06-2016",
+      "k.r.adhiruban":"06-11-2017",
+      "K Sai srimadh":"24-04-2017",
+      "hello":"01-11-2025",
+
+      // FLY HIGH ACHIEVERS STUDENTS 
+      "S.pranesh ananth": "02-11-2015",
+      "J.KIRTHIKA": "02-04-2017",
+      "J.RITHVIKA": "10-10-2018",
+      "N.ROHITH": "07-11-2018",
+      "N.S.Nilan": "06-12-2018",
+      "G.NISHA": "20-12-2014",
+      "K.MOHAMMED NOOR KHAN": "04-07-2014",
+      "M.MOHAMMED RIYAS":"21-07-2013",
+      "S.DHARSHAN":"12-04-2014",
+      "N.K.SASHWANTH":"15-10-2016",
+
+      // ONLINE STUDENTS 
+      "S.Srihas": "24-05-2014",
+      "M.R.SAHNAAZ": "06-09-2011",
+      "Pranov.S":"01-03-2013",
+      "N.BAVYUKTH":"28-04-2016",
+      "B.K.KAARTHIKA SRI":"29-03-2012",
+      "M.GERSHON":"18-09-2014",
+      "M.FABIAN":"08-06-2017",
+      "Saikrish S":"21-11-2012",
+
+
+
+      //ADMIN
+      "steve":"01-11-2002"
+
+    };
+
+    // -------------------------
+    // LEVEL ASSIGNMENTS (lowercase names for case-insensitive matching)
+    // You can edit these arrays to add/remove students to specific levels
+    // -------------------------
+    const levelGroups = {
+      beginner1: [
+      "jovin benson d",
+      "ts.krishang",
+      "k.s.sabarish",
+      //"j.kirthika",
+      //"j.rithvika",
+      //"n.rohith",
+      "n.s.nilan",
+      "s.pranesh ananth",
+      "k.t.bavyesh",
+      "c.sabarish",
+      "s.srinishraju",
+      "T.HERISH",
+      "Thaniga Shree S",
+      "S.TARUNESH",
+      "k.r.adhiruban",
+      "K Sai srimadh",
+      "N.K.SASHWANTH"
+      ],
+      beginner2: [
+      "a.s.pratyush",
+      "g.nisha",
+      "rishabraghvieir.p.v",
+      "sriraghav solairaj",
+      "k.s.shivani",
+      "k.mohammed noor khan",
+      "m.r.sahnaaz",
+      "nandika.r.menon",
+      "m.mohammed riyas",
+      "n.anandharajan",
+      "n.bavyukth",
+      "b.k.kaarthika sri",
+      "m.fabian",
+      "v.ashwin",
+      "s.dharshan",
+      "Shaai vaibauv S",
+      "Saikrish S"
+      ],
+      intermediate1: [
+       "p.magizhan",
+       "sanjeeth gokul",
+       "r.r.vidhyuthsai",
+       "s.srihas",
+       "a.jeevan raj",
+       "guganesh.r",
+       "n.aadheesh",
+       "m.gershon",
+       "K C Jaithik Prasanna",
+       //"S.Swajith"
+      ],
+      intermediate2: [
+      "s.lohith", 
+      "p.vidyut",
+      "deswanth.K.K"
+      ],
+      intermediate3: [
+      "a.b.arvind kumar",
+      "pranov.s",
+      "sashwanth.k.k"
+      ],
+      admin: [
+      "steve"
+      ]
+    };
+
+    // -------------------------
+    // SPECIAL USER STATES (lowercase)
+    // -------------------------
+    const renewalUsers = ["j.rithvika",
+      "j.kirthika",
+      "n.rohith",
+      "s.swajith",
+        ];
+    const warningUsers = ["A.Jeevan Raj","g.nisha"];
+
+    // Elements
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const loadingText = document.getElementById("loadingText");
+    const loginSection = document.getElementById("loginSection");
+    const homeworkSection = document.getElementById("homeworkSection");
+
+    const beginner1 = document.getElementById("beginnerHomework");
+    const beginner2 = document.getElementById("beginner2Homework");
+    const intermediate1 = document.getElementById("intermediateHomework");
+    const intermediate2 = document.getElementById("intermediate2Homework");
+    const intermediate3 = document.getElementById("intermediate3Homework");
+
+    const tabsContainer = document.getElementById("homeworkTabsContainer");
+
+    // Utility: mapping of group keys to DOM ids
+    const levelToDom = {
+      beginner1: { sectionId: "beginnerHomework", tabId: "beginnerTab" },
+      beginner2: { sectionId: "beginner2Homework", tabId: "beginner2Tab" },
+      intermediate1: { sectionId: "intermediateHomework", tabId: "intermediateTab" },
+      intermediate2: { sectionId: "intermediate2Homework", tabId: "intermediate2Tab" },
+      intermediate3: { sectionId: "intermediate3Homework", tabId: "intermediate3Tab" }
+    };
+
+    // Hide everything helper
+    function hideAllPuzzles() {
+      Object.values(levelToDom).forEach(v => {
+        const sec = document.getElementById(v.sectionId);
+        if (sec) sec.style.display = "none";
+      });
+    }
+
+    function hideAllTabs() {
+      const tabs = tabsContainer.querySelectorAll(".nav-item");
+      tabs.forEach(tab => tab.style.display = "none");
+    }
+
+    function clearActiveTabLinks() {
+      const links = document.querySelectorAll("#homeworkTabs .nav-link");
+      links.forEach(l => l.classList.remove("active"));
+    }
+
+    // Normalize date from input (YYYY-MM-DD) to DD-MM-YYYY
+    function normalizeDate(value) {
+      if (!value) return "";
+      const [y, m, d] = value.split("-");
+      return `${d.padStart(2, "0")}-${m.padStart(2, "0")}-${y}`;
+    }
+
+    // Show a specific level (by level key)
+    function showAssignedLevel(levelKey) {
+      hideAllPuzzles();
+      hideAllTabs();
+      clearActiveTabLinks();
+
+      const mapping = levelToDom[levelKey];
+      if (!mapping) return;
+
+      const section = document.getElementById(mapping.sectionId);
+      const tabBtn = document.getElementById(mapping.tabId);
+      if (section) section.style.display = "block";
+      if (tabBtn && tabBtn.parentElement) tabBtn.parentElement.style.display = "inline-block";
+      if (tabBtn) tabBtn.classList.add("active");
+    }
+
+    // Make tabs clickable so logged-in users can switch (non-destructive)
+    Object.entries(levelToDom).forEach(([levelKey, dom]) => {
+      const btn = document.getElementById(dom.tabId);
+      const section = document.getElementById(dom.sectionId);
+      if (btn && section) {
+        btn.addEventListener("click", () => {
+          hideAllPuzzles();
+          clearActiveTabLinks();
+          btn.classList.add("active");
+          section.style.display = "block";
+        });
+      }
+    });
+
+    // LOGIN flow
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      message.textContent = "";
+      clearActiveTabLinks();
+
+      const usernameRaw = document.getElementById("username").value.trim();
+      const username = usernameRaw.toLowerCase();
+      const password = normalizeDate(document.getElementById("password").value.trim());
+
+      // ✅ Special user notifications (checked before authentication)
+      if (renewalUsers.includes(username)) {
+        message.textContent = "⚠️ Your Weekly Puzzle Plan has expired. Please contact Chess Titans Academy to renew ₹200 per student (valid for 3 months) Gpay Number:- 9444748538.";
+        message.className = "text-warning fw-semibold";
+        return;
+      }
+      if (warningUsers.includes(username)) {
+        message.textContent = "⚠️ Your account temporarily blocked because you haven’t completed your assigned Weekly Task yet. Kindly reach out to your Chess Titans Academy tutor for support.";
+        message.className = "text-danger fw-semibold";
+        return;
+      }
+
+      // find matching user key in users (case-insensitive)
+      const matchedKey = Object.keys(users).find(k => k.trim().toLowerCase() === username);
+      if (!matchedKey) {
+        message.textContent = "❌ Invalid username or Date of Birth!";
+        message.className = "text-danger fw-semibold";
+        return;
+      }
+
+      const expectedDob = users[matchedKey];
+      if (expectedDob !== password) {
+        message.textContent = "❌ Invalid username or Date of Birth!";
+        message.className = "text-danger fw-semibold";
+        return;
+      }
+
+      // ✅ Valid credentials — show searching message first
+      message.textContent = "🔎 Searching Student Details...";
+      message.className = "text-info fw-semibold";
+
+      // Small delay to show searching text, then show overlay loading and finally open assigned level
+      setTimeout(() => {
+        loadingText.textContent = "♟ Preparing Your Weekly Puzzle.....";
+        loadingOverlay.style.display = "flex";
+
+        setTimeout(() => {
+          // hide overlay and open assigned section (guarded to avoid runtime errors if elements are missing)
+          if (loadingOverlay) loadingOverlay.style.display = "none";
+          if (loginSection) loginSection.style.display = "none";
+          if (homeworkSection) homeworkSection.style.display = "block";
+
+          // reset view
+          hideAllPuzzles();
+          hideAllTabs();
+          clearActiveTabLinks();
+
+          // normalize username for group checks
+          const uname = username; // already lowercase
+
+          // Admin (steve) sees all levels
+          if (levelGroups.admin.includes(uname)) {
+            // show all tabs and sections
+            Object.values(levelToDom).forEach(v => {
+              const sec = document.getElementById(v.sectionId);
+              const tab = document.getElementById(v.tabId);
+              if (sec) sec.style.display = "block";
+              if (tab && tab.parentElement) tab.parentElement.style.display = "inline-block";
+            });
+            // set first tab active
+            const firstTab = document.getElementById(levelToDom.beginner1.tabId);
+            if (firstTab) firstTab.classList.add("active");
+            message.textContent = "✅ Logged in as Admin.";
+            message.className = "text-success fw-semibold";
+            return;
+          }
+
+          // Otherwise find which group the user belongs to
+          let found = false;
+          for (const [groupKey, names] of Object.entries(levelGroups)) {
+            if (groupKey === "admin") continue;
+            // compare lowercased entries
+            const match = names.find(n => n.trim().toLowerCase() === uname);
+            if (match) {
+              // show the assigned level
+              showAssignedLevel(groupKey);
+              message.textContent = "✅ Logged in.";
+              message.className = "text-success fw-semibold";
+              found = true;
+              break;
             }
-        };
+          }
 
-        window.filterRoster = function() {
-            const input = document.getElementById("rosterSearch");
-            const filter = input.value.toUpperCase();
-            const tableBody = document.getElementById("rosterTableBody");
-            const tr = tableBody.getElementsByTagName("tr");
+          // if (!found) {
+          //   // fallback: if no group, show beginner by default
+          //   showAssignedLevel("beginner1");
+          //   message.textContent = "⚠️ No specific level assigned — defaulted to Beginner Level 1.";
+          //   message.className = "text-warning fw-semibold";
+          // }
 
-            for (let i = 0; i < tr.length; i++) {
-                // The name is in the first cell (td index 0), inside a div
-                const td = tr[i].getElementsByTagName("td")[0];
-                if (td) {
-                    const txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }       
-            }
-        };
+        }, 4000); // overlay visible time
+      }, 3000); // searching text visible time
+    });
 
-        window.handleDeleteTask = async function(id, btn) {
-            if(!confirm('Delete this task?')) return;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const response = await deleteTaskAPI(id);
-            if(response.success) {
-                showToast('Task Deleted', 'success');
-                await refreshAdminDashboard();
-            } else {
-                showToast(response.message || 'Error deleting', 'error');
-                btn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            }
-        };
+    // LOGOUT function
+    function logout() {
+      homeworkSection.style.display = "none";
+      loginSection.style.display = "flex";
+      form.reset();
+      message.textContent = "";
+      hideAllPuzzles();
+      // restore nav tabs visible (so login screen shows tabs all)
+      const allTabs = tabsContainer.querySelectorAll(".nav-item");
+      allTabs.forEach(tab => tab.style.display = "inline-block");
+      clearActiveTabLinks();
+      // default active
+      const defaultTab = document.getElementById("beginnerTab");
+      if (defaultTab) defaultTab.classList.add("active");
+    }
 
-        window.handleApproval = async function(username, newStatus, btnElement) {
-            const originalContent = btnElement.innerHTML;
-            btnElement.disabled = true;
-            btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const response = await updateUserStatusAPI(username, newStatus);
-            if (response.success) {
-                showToast(`Student ${newStatus}`, newStatus === 'approved' ? 'success' : 'info');
-                await refreshAdminDashboard();
-            } else {
-                showToast('Action failed', 'error');
-                btnElement.disabled = false;
-                btnElement.innerHTML = originalContent;
-            }
-        };
+    // expose logout to global (onclick in markup uses it)
+    window.logout = logout;
+        
+    // Disable right-click context menu
+    // Disable right-click
+    document.addEventListener("contextmenu", event => event.preventDefault());
 
-        window.handleStatusUpdate = async function(username, newStatus, selectElement) {
-            const originalValue = selectElement.getAttribute('data-prev');
-            selectElement.disabled = true;
-            selectElement.classList.add('opacity-50', 'cursor-wait');
-            let message = "Updating status...";
-            if(newStatus === 'blocked') message = "Blocking user...";
-            if(newStatus === 'expired') message = "Expiring user...";
-            if(newStatus === 'approved') message = "Activating user...";
-            showToast(message, 'info');
-            const response = await updateUserStatusAPI(username, newStatus);
-            selectElement.disabled = false;
-            selectElement.classList.remove('opacity-50', 'cursor-wait');
-            if (response.success) {
-                showToast(`Status updated to ${newStatus}`, 'success');
-                selectElement.setAttribute('data-prev', newStatus);
-                await refreshAdminDashboard(); 
-            } else {
-                showToast('Failed to update status', 'error');
-                selectElement.value = originalValue; 
-            }
-        };
+    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, and Ctrl+U
+    document.onkeydown = function (event) {
+      if (
+        event.key === "F12" || 
+        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "i") ||
+        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "j") ||
+        (event.ctrlKey && event.key.toLowerCase() === "u")
+      ) {
+        event.preventDefault();
+        return false;
+      }
+    };
 
-        window.handleLevelUpdate = async function(username, newLevel, selectElement) {
-            const originalValue = selectElement.getAttribute('data-prev') || 'Unranked';
-            selectElement.disabled = true;
-            selectElement.classList.add('opacity-50', 'cursor-wait');
-            showToast(`Assigning ${newLevel}...`, 'info');
-            const response = await updateUserLevelAPI(username, newLevel);
-            selectElement.disabled = false;
-            selectElement.classList.remove('opacity-50', 'cursor-wait');
-            if (response.success) {
-                showToast(`Rank updated to ${newLevel}`, 'success');
-                selectElement.setAttribute('data-prev', newLevel);
-            } else {
-                showToast('Failed to save rank', 'error');
-                selectElement.value = originalValue; 
-            }
-        };
+    // Optional: Block Ctrl+S (Save), Ctrl+P (Print)
+    document.addEventListener("keydown", event => {
+      if (
+        (event.ctrlKey && event.key.toLowerCase() === "s") ||
+        (event.ctrlKey && event.key.toLowerCase() === "p")
+      ) {
+        event.preventDefault();
+        return false;
+      }
+    });
+      function goToNextPage() {
+    // Change 'nextpage.html' to the page you want to go to
+    window.location.href = "chessbot.html";
+  }
+  </script>
+</body>
 
-        // Start App
-        router('login');
+</html>
 
-    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- NOTIFICATION BANNER  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<!-- Bootstrap (optional, used for utilities) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Baloo+Bhai+2:wght@600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --orange-1:#ff8a00;
+    --orange-2:#ffb13b;
+    --dark:#111;
+  }
+
+  html,body{height:100%;margin:0;font-family:'Poppins',sans-serif;background:#fffaf0;}
+
+  /* Fullscreen celebration container */
+  #celebration{
+    display:none; /* show via JS */
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    overflow:hidden;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.45));
+  }
+
+  /* burst rays layer */
+  #celebration .rays {
+    position:absolute;
+    inset:0;
+    background: radial-gradient(circle at center, rgb(0, 0, 0) 0%, transparent 30%);
+    transform-origin:center;
+    animation:slowSpin 14s linear infinite;
+    filter: blur(6px) contrast(1.05);
+    mix-blend-mode: screen;
+  }
+
+  @keyframes slowSpin { to { transform: rotate(360deg); } }
+
+  /* trophy silhouette (centered, faded) */
+  #celebration .trophy {
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:65vmin;               /* scales with viewport */
+    max-width:900px;
+    opacity:0.10;
+    pointer-events:none;
+    filter: drop-shadow(0 6px 12px rgba(7, 5, 2, 0.08));
+  }
+
+  /* content card — centered and responsive */
+  .celebration-card {
+    position:relative;
+    z-index:3;
+    width:min(92%, 780px);
+    margin:auto;
+    padding:4vmin 5vmin;
+    border-radius:18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.59), rgba(255, 255, 255, 0.634));
+    border: 2px solid rgba(255,136,0,0.12);
+    backdrop-filter: blur(6px) saturate(120%);
+    text-align:center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .celebration-card h1{
+    font-family:'Baloo Bhai 2', cursive;
+    margin:0;
+    color:var(--orange-1);
+    font-size:8.2vmin;           /* responsive size */
+    line-height:0.95;
+    letter-spacing:0.5vmin;
+    text-shadow: 0 6px 18px rgba(255, 136, 0, 0.667);
+  }
+
+  .celebration-card p.subtitle {
+    margin: .9rem 0 1.6rem 0;
+    color:#000000;
+    opacity:0.95;
+    font-weight:600;
+    font-size:3.2vmin;
+  }
+
+  /* Level list — responsive grid for names */
+  .levels {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:12px;
+    margin-top:1rem;
+  }
+  .level-card {
+    background: linear-gradient(180deg, rgb(1, 0, 0), rgb(0, 0, 0));
+    border-radius:12px;
+    padding:12px 14px;
+    border:1px solid rgba(255,136,0,0.08);
+    color:#fff;
+  }
+  .level-title{
+    font-family:'Baloo Bhai 2';
+    color:var(--orange-1);
+    font-size:3.6vmin;
+    margin:0 0 6px 0;
+  }
+  .member-name{ font-size:3.2vmin; margin:2px 0; color:#fff; opacity:0.95;}
+
+  /* close button large (top-right) */
+  .celebration-close {
+    position: absolute;
+    top:2.6vmin;
+    right:2.6vmin;
+    z-index:10;
+    background:rgba(0, 0, 0, 0.312);
+    border:2px solid rgba(1, 1, 1, 0.212);
+    color:rgb(0, 0, 0);
+    width:6.5vmin;
+    height:6.5vmin;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    font-size:3.2vmin;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,0.35);
+  }
+
+  /* small hint under card */
+  .celebration-hint {
+    margin-top:1rem;
+    font-size:4vmin;
+    color:#000000;
+    opacity:100;
+  }
+
+  /* fireworks burst (absolute circles) */
+  .burst {
+    position:absolute;
+    width:8vmin;
+    height:8vmin;
+    left:50%;
+    top:20%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    pointer-events:none;
+    z-index:2;
+    opacity:0;
+    mix-blend-mode: screen;
+  }
+
+  /* responsive tweaks for desktop larger screens */
+  @media (min-width:900px){
+    .celebration-card h1{ font-size:64px; }
+    .celebration-card p.subtitle{ font-size:18px; }
+    .level-title{ font-size:18px; }
+    .member-name{ font-size:16px; }
+    .celebration-close{ width:48px; height:48px; font-size:20px; top:18px; right:18px; }
+  }
+
+  /* ensure big visual on small phones */
+  @media (max-width:420px){
+    .celebration-card{ padding:6vmin 5vmin; border-radius:14px; }
+    .levels{ gap:10px; }
+  }
+
+  /* subtle animation for the card entrance */
+  .celebration-card { transform: translateY(18px) scale(.98); opacity:0; animation:cardIn .7s cubic-bezier(.2,.9,.4,1) forwards; }
+  @keyframes cardIn { to { transform:none; opacity:1; } }
+</style>
+</head>
+<body>
+
+<!-- celebration overlay -->
+<div id="celebration" role="dialog" aria-modal="true" aria-label="Winners Celebration">
+  <div class="rays" aria-hidden="true"></div>
+
+  <!-- trophy SVG silhouette (faded) -->
+  <svg class="trophy" viewBox="0 0 512 512" aria-hidden="true">
+    <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#ffb84d"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs>
+    <path fill="url(#g1)" d="M400 80h-48c0-44-36-80-80-80s-80 36-80 80H112c-44 0-80 36-80 80v16c0 53 43 96 96 96 0 53 43 96 96 96h-8v40H176c-8 0-16 8-16 16v16h192v-16c0-8-8-16-16-16h-24v-40h-8c53 0 96-43 96-96 53 0 96-43 96-96V160c0-44-36-80-80-80z"/>
+  </svg>
+
+  <!-- fireworks placeholder elements (added/animated by JS) -->
+  <div id="bursts"></div>
+
+  <!-- main content card -->
+  <div class="celebration-card container text-center">
+    <div class="celebration-close" id="closeBtn" title="Close">✕</div>
+    <h1>CONGRATULATIONS!</h1>
+    <p class="subtitle">DECEMBER MONTH Top performers — well done!</p>
+
+    <div class="levels" id="levelsList" aria-live="polite">
+      <!-- JS will populate levels here -->
+    </div>
+
+    <div class="celebration-hint">Keep learning. Keep winning!</div>
+  </div>
+</div>
+
+<!-- canvas-confetti (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+<script>
+/* ====== DATA: replace with your real names ====== */
+const levels = [
+  { title: "Beginner Level 1 ", names: ["S.SRINISHRAJU", "S.PRANESH ANANTH", "S.TARUNESH"] },
+  { title: "Beginner Level 2 ", names: ["RISHABRAGHVIEIR.P.V", "SHAAI VAIBAUV", "K.MOHAMMED NOOR KHAN"] },
+  { title: "Intermediate Level 1 ", names: ["N.AADHEESH", "SANJEETH GOKUL", "P. MAGIZHAN"] },
+  { title: "Intermediate Level 2 ", names: ["P.VIDYUT"] },
+  { title: "Intermediate Level 3 ", names: ["SASHWANTH.K.K"] }
+];
+
+/* ====== Build level cards (responsive) ====== */
+function renderLevels() {
+  const container = document.getElementById('levelsList');
+  container.innerHTML = '';
+  levels.forEach(l => {
+    const card = document.createElement('div');
+    card.className = 'level-card';
+    const title = document.createElement('div');
+    title.className = 'level-title';
+    title.textContent = l.title;
+    card.appendChild(title);
+    l.names.forEach(n => {
+      const nm = document.createElement('div');
+      nm.className = 'member-name';
+      nm.textContent = '• ' + n;
+      card.appendChild(nm);
+    });
+    container.appendChild(card);
+  });
+}
+
+/* ====== Confetti bursts using canvas-confetti ====== */
+let confettiTimer = null;
+function startConfetti() {
+  // big initial burst
+  confetti({
+    particleCount: 180,
+    spread: 140,
+    origin: { y: 0.45 },
+    colors: ['#ff6a00','#ff8a00','#ffbb33','#fff2e6']
+  });
+
+  // continuing smaller bursts for a few seconds
+  let shots = 0;
+  confettiTimer = setInterval(() => {
+    confetti({
+      particleCount: 40,
+      spread: 100,
+      origin: { x: Math.random(), y: 0.2 + Math.random()*0.6 },
+      scalar: 0.9 + Math.random()*0.6,
+      colors: ['#ff6a00','#ff8a00','#ffbb33']
+    });
+    shots++;
+    if (shots > 8) {
+      clearInterval(confettiTimer);
+      confettiTimer = null;
+    }
+  }, 350);
+}
+
+/* ====== CSS-like fireworks (radial bursts using ephemeral DOM nodes) ====== */
+function fireworkBurst(xPct, yPct) {
+  const bursts = document.getElementById('bursts');
+  const b = document.createElement('div');
+  b.className = 'burst';
+  b.style.left = xPct + 'vw';
+  b.style.top = yPct + 'vh';
+  b.style.background = 'radial-gradient(circle, rgba(255,200,120,0.9), rgba(255,120,20,0.85))';
+  b.style.opacity = '0.95';
+  bursts.appendChild(b);
+
+  // expand then remove
+  b.animate([
+    { transform: 'translate(-50%,-50%) scale(0.02)', opacity: 100 },
+    { transform: 'translate(-50%,-50%) scale(1.0)', opacity: 0.0 }
+  ], {
+    duration: 700 + Math.random()*500,
+    easing: 'cubic-bezier(.2,.9,.3,1)'
+  });
+
+  setTimeout(()=> b.remove(), 1200);
+}
+
+/* ====== Show the fullscreen celebration ====== */
+const celebrationEl = document.getElementById('celebration');
+const closeBtn = document.getElementById('closeBtn');
+
+function showCelebration(autoCloseMs = 6500) {
+  renderLevels();
+  celebrationEl.style.display = 'flex';
+
+  // start visual effects
+  startConfetti();
+  // a few fireworks across the screen
+  setTimeout(()=> fireworkBurst(18,28), 120);
+  setTimeout(()=> fireworkBurst(72,24), 240);
+  setTimeout(()=> fireworkBurst(38,38), 420);
+  setTimeout(()=> fireworkBurst(60,46), 560);
+  setTimeout(()=> fireworkBurst(48,22), 720);
+
+  // subtle repeated bursts while visible
+  const repeat = setInterval(()=> {
+    fireworkBurst(12+Math.random()*76, 18+Math.random()*60);
+  }, 900);
+
+  // auto-close after X ms and stop repeating bursts
+  if (autoCloseMs) {
+    setTimeout(()=> {
+      clearInterval(repeat);
+      closeCelebration();
+    }, autoCloseMs);
+  }
+
+  // also stop confetti if still running after 10s
+  setTimeout(()=> { if (confettiTimer) { clearInterval(confettiTimer); confettiTimer = null; } }, 10000);
+}
+
+function closeCelebration(){
+  celebrationEl.style.display = 'none';
+  // cleanup any leftover burst nodes
+  const bursts = document.getElementById('bursts'); while (bursts.firstChild) bursts.removeChild(bursts.firstChild);
+  if (confettiTimer) { clearInterval(confettiTimer); confettiTimer = null; }
+}
+
+/* bind close */
+closeBtn.addEventListener('click', closeCelebration);
+
+/* show on load (you can call showCelebration() manually when winners determined) */
+window.addEventListener('load', ()=> setTimeout(()=> showCelebration(0), 0) );
+
+/* keyboard escape to close */
+window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeCelebration(); });
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
