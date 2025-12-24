@@ -697,10 +697,19 @@
             var moveColor = (game.turn() === 'b') ? 'Black' : 'White';
             if (game.in_checkmate()) { 
                 var winner = (game.turn() === 'b') ? 'White' : 'Black';
-                showGameOver(winner);
+                status = 'Game Over: ' + winner + ' Wins';
+                if (isGameActive) showGameOver(winner);
             }
-            else if (game.in_draw()) { status = 'Game over, drawn position'; clearInterval(timerInterval); stopPingLoop(); showGameOver('Draw', 'Game Drawn'); }
-            else { status = moveColor + ' to move'; if (game.in_check()) status += ', ' + moveColor + ' is in check'; }
+            else if (game.in_draw()) { 
+                status = 'Game over, drawn position'; 
+                if (isGameActive) {
+                    clearInterval(timerInterval); stopPingLoop(); showGameOver('Draw', 'Game Drawn'); 
+                }
+            }
+            else { 
+                status = moveColor + ' to move'; 
+                if (game.in_check()) status += ', ' + moveColor + ' is in check'; 
+            }
             $status.html(status);
         }
 
