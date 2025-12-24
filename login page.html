@@ -786,3 +786,356 @@ userHome: (data) => {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+<!-- NOTIFICATION BANNER  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<!-- Bootstrap (optional, used for utilities) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Baloo+Bhai+2:wght@600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --orange-1:#ff8a00;
+    --orange-2:#ffb13b;
+    --dark:#111;
+  }
+
+  html,body{height:100%;margin:0;font-family:'Poppins',sans-serif;background:#fffaf0;}
+
+  /* Fullscreen celebration container */
+  #celebration{
+    display:none; /* show via JS */
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    overflow:hidden;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.45));
+  }
+
+  /* burst rays layer */
+  #celebration .rays {
+    position:absolute;
+    inset:0;
+    background: radial-gradient(circle at center, rgb(0, 0, 0) 0%, transparent 30%);
+    transform-origin:center;
+    animation:slowSpin 14s linear infinite;
+    filter: blur(6px) contrast(1.05);
+    mix-blend-mode: screen;
+  }
+
+  @keyframes slowSpin { to { transform: rotate(360deg); } }
+
+  /* trophy silhouette (centered, faded) */
+  #celebration .trophy {
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:65vmin;               /* scales with viewport */
+    max-width:900px;
+    opacity:0.10;
+    pointer-events:none;
+    filter: drop-shadow(0 6px 12px rgba(7, 5, 2, 0.08));
+  }
+
+  /* content card — centered and responsive */
+  .celebration-card {
+    position:relative;
+    z-index:3;
+    width:min(92%, 780px);
+    margin:auto;
+    padding:4vmin 5vmin;
+    border-radius:18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.59), rgba(255, 255, 255, 0.634));
+    border: 2px solid rgba(255,136,0,0.12);
+    backdrop-filter: blur(6px) saturate(120%);
+    text-align:center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .celebration-card h1{
+    font-family:'Baloo Bhai 2', cursive;
+    margin:0;
+    color:var(--orange-1);
+    font-size:8.2vmin;           /* responsive size */
+    line-height:0.95;
+    letter-spacing:0.5vmin;
+    text-shadow: 0 6px 18px rgba(255, 136, 0, 0.667);
+  }
+
+  .celebration-card p.subtitle {
+    margin: .9rem 0 1.6rem 0;
+    color:#000000;
+    opacity:0.95;
+    font-weight:600;
+    font-size:3.2vmin;
+  }
+
+  /* Level list — responsive grid for names */
+  .levels {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:12px;
+    margin-top:1rem;
+  }
+  .level-card {
+    background: linear-gradient(180deg, rgb(1, 0, 0), rgb(0, 0, 0));
+    border-radius:12px;
+    padding:12px 14px;
+    border:1px solid rgba(255,136,0,0.08);
+    color:#fff;
+  }
+  .level-title{
+    font-family:'Baloo Bhai 2';
+    color:var(--orange-1);
+    font-size:3.6vmin;
+    margin:0 0 6px 0;
+  }
+  .member-name{ font-size:3.2vmin; margin:2px 0; color:#fff; opacity:0.95;}
+
+  /* close button large (top-right) */
+  .celebration-close {
+    position: absolute;
+    top:2.6vmin;
+    right:2.6vmin;
+    z-index:10;
+    background:rgba(0, 0, 0, 0.312);
+    border:2px solid rgba(1, 1, 1, 0.212);
+    color:rgb(0, 0, 0);
+    width:6.5vmin;
+    height:6.5vmin;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    font-size:3.2vmin;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,0.35);
+  }
+
+  /* small hint under card */
+  .celebration-hint {
+    margin-top:1rem;
+    font-size:4vmin;
+    color:#000000;
+    opacity:100;
+  }
+
+  /* fireworks burst (absolute circles) */
+  .burst {
+    position:absolute;
+    width:8vmin;
+    height:8vmin;
+    left:50%;
+    top:20%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    pointer-events:none;
+    z-index:2;
+    opacity:0;
+    mix-blend-mode: screen;
+  }
+
+  /* responsive tweaks for desktop larger screens */
+  @media (min-width:900px){
+    .celebration-card h1{ font-size:64px; }
+    .celebration-card p.subtitle{ font-size:18px; }
+    .level-title{ font-size:18px; }
+    .member-name{ font-size:16px; }
+    .celebration-close{ width:48px; height:48px; font-size:20px; top:18px; right:18px; }
+  }
+
+  /* ensure big visual on small phones */
+  @media (max-width:420px){
+    .celebration-card{ padding:6vmin 5vmin; border-radius:14px; }
+    .levels{ gap:10px; }
+  }
+
+  /* subtle animation for the card entrance */
+  .celebration-card { transform: translateY(18px) scale(.98); opacity:0; animation:cardIn .7s cubic-bezier(.2,.9,.4,1) forwards; }
+  @keyframes cardIn { to { transform:none; opacity:1; } }
+</style>
+</head>
+<body>
+
+<!-- celebration overlay -->
+<div id="celebration" role="dialog" aria-modal="true" aria-label="Winners Celebration">
+  <div class="rays" aria-hidden="true"></div>
+
+  <!-- trophy SVG silhouette (faded) -->
+  <svg class="trophy" viewBox="0 0 512 512" aria-hidden="true">
+    <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#ffb84d"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs>
+    <path fill="url(#g1)" d="M400 80h-48c0-44-36-80-80-80s-80 36-80 80H112c-44 0-80 36-80 80v16c0 53 43 96 96 96 0 53 43 96 96 96h-8v40H176c-8 0-16 8-16 16v16h192v-16c0-8-8-16-16-16h-24v-40h-8c53 0 96-43 96-96 53 0 96-43 96-96V160c0-44-36-80-80-80z"/>
+  </svg>
+
+  <!-- fireworks placeholder elements (added/animated by JS) -->
+  <div id="bursts"></div>
+
+  <!-- main content card -->
+  <div class="celebration-card container text-center">
+    <div class="celebration-close" id="closeBtn" title="Close">✕</div>
+    <h1>CONGRATULATIONS!</h1>
+    <p class="subtitle">DECEMBER MONTH Top performers — well done!</p>
+
+    <div class="levels" id="levelsList" aria-live="polite">
+      <!-- JS will populate levels here -->
+    </div>
+
+    <div class="celebration-hint">Keep learning. Keep winning!</div>
+  </div>
+</div>
+
+<!-- canvas-confetti (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+<script>
+/* ====== DATA: replace with your real names ====== */
+const levels = [
+  { title: "Beginner Level 1 ", names: ["S.SRINISHRAJU", "S.PRANESH ANANTH", "S.TARUNESH"] },
+  { title: "Beginner Level 2 ", names: ["RISHABRAGHVIEIR.P.V", "SHAAI VAIBAUV", "K.MOHAMMED NOOR KHAN"] },
+  { title: "Intermediate Level 1 ", names: ["N.AADHEESH", "SANJEETH GOKUL", "P. MAGIZHAN"] },
+  { title: "Intermediate Level 2 ", names: ["P.VIDYUT"] },
+  { title: "Intermediate Level 3 ", names: ["SASHWANTH.K.K"] }
+];
+
+/* ====== Build level cards (responsive) ====== */
+function renderLevels() {
+  const container = document.getElementById('levelsList');
+  container.innerHTML = '';
+  levels.forEach(l => {
+    const card = document.createElement('div');
+    card.className = 'level-card';
+    const title = document.createElement('div');
+    title.className = 'level-title';
+    title.textContent = l.title;
+    card.appendChild(title);
+    l.names.forEach(n => {
+      const nm = document.createElement('div');
+      nm.className = 'member-name';
+      nm.textContent = '• ' + n;
+      card.appendChild(nm);
+    });
+    container.appendChild(card);
+  });
+}
+
+/* ====== Confetti bursts using canvas-confetti ====== */
+let confettiTimer = null;
+function startConfetti() {
+  // big initial burst
+  confetti({
+    particleCount: 180,
+    spread: 140,
+    origin: { y: 0.45 },
+    colors: ['#ff6a00','#ff8a00','#ffbb33','#fff2e6']
+  });
+
+  // continuing smaller bursts for a few seconds
+  let shots = 0;
+  confettiTimer = setInterval(() => {
+    confetti({
+      particleCount: 40,
+      spread: 100,
+      origin: { x: Math.random(), y: 0.2 + Math.random()*0.6 },
+      scalar: 0.9 + Math.random()*0.6,
+      colors: ['#ff6a00','#ff8a00','#ffbb33']
+    });
+    shots++;
+    if (shots > 8) {
+      clearInterval(confettiTimer);
+      confettiTimer = null;
+    }
+  }, 350);
+}
+
+/* ====== CSS-like fireworks (radial bursts using ephemeral DOM nodes) ====== */
+function fireworkBurst(xPct, yPct) {
+  const bursts = document.getElementById('bursts');
+  const b = document.createElement('div');
+  b.className = 'burst';
+  b.style.left = xPct + 'vw';
+  b.style.top = yPct + 'vh';
+  b.style.background = 'radial-gradient(circle, rgba(255,200,120,0.9), rgba(255,120,20,0.85))';
+  b.style.opacity = '0.95';
+  bursts.appendChild(b);
+
+  // expand then remove
+  b.animate([
+    { transform: 'translate(-50%,-50%) scale(0.02)', opacity: 100 },
+    { transform: 'translate(-50%,-50%) scale(1.0)', opacity: 0.0 }
+  ], {
+    duration: 700 + Math.random()*500,
+    easing: 'cubic-bezier(.2,.9,.3,1)'
+  });
+
+  setTimeout(()=> b.remove(), 1200);
+}
+
+/* ====== Show the fullscreen celebration ====== */
+const celebrationEl = document.getElementById('celebration');
+const closeBtn = document.getElementById('closeBtn');
+
+function showCelebration(autoCloseMs = 6500) {
+  renderLevels();
+  celebrationEl.style.display = 'flex';
+
+  // start visual effects
+  startConfetti();
+  // a few fireworks across the screen
+  setTimeout(()=> fireworkBurst(18,28), 120);
+  setTimeout(()=> fireworkBurst(72,24), 240);
+  setTimeout(()=> fireworkBurst(38,38), 420);
+  setTimeout(()=> fireworkBurst(60,46), 560);
+  setTimeout(()=> fireworkBurst(48,22), 720);
+
+  // subtle repeated bursts while visible
+  const repeat = setInterval(()=> {
+    fireworkBurst(12+Math.random()*76, 18+Math.random()*60);
+  }, 900);
+
+  // auto-close after X ms and stop repeating bursts
+  if (autoCloseMs) {
+    setTimeout(()=> {
+      clearInterval(repeat);
+      closeCelebration();
+    }, autoCloseMs);
+  }
+
+  // also stop confetti if still running after 10s
+  setTimeout(()=> { if (confettiTimer) { clearInterval(confettiTimer); confettiTimer = null; } }, 10000);
+}
+
+function closeCelebration(){
+  celebrationEl.style.display = 'none';
+  // cleanup any leftover burst nodes
+  const bursts = document.getElementById('bursts'); while (bursts.firstChild) bursts.removeChild(bursts.firstChild);
+  if (confettiTimer) { clearInterval(confettiTimer); confettiTimer = null; }
+}
+
+/* bind close */
+closeBtn.addEventListener('click', closeCelebration);
+
+/* show on load (you can call showCelebration() manually when winners determined) */
+window.addEventListener('load', ()=> setTimeout(()=> showCelebration(0), 0) );
+
+/* keyboard escape to close */
+window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeCelebration(); });
+</script>
+</body>
+</html>
