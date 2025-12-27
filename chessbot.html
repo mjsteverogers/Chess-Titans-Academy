@@ -264,11 +264,20 @@
             text-transform: uppercase; box-shadow: 0 4px 0 #d35400;
         }
         button.primary:hover { background-color: #f39c12; box-shadow: 0 4px 0 #e67e22; }
+
+        button.setup-btn {
+            background-color: #8e44ad; border: none; font-weight: bold;
+            text-transform: uppercase; box-shadow: 0 4px 0 #6c3483;
+        }
+        button.setup-btn:hover { background-color: #9b59b6; box-shadow: 0 4px 0 #8e44ad; }
         
-        #inviteLinkGroup, #timeControlGroup, #onlineSetupGroup, #shareGameGroup {
+        #inviteLinkGroup, #timeControlGroup, #onlineSetupGroup, #shareGameGroup, #setupControls {
             display: none; background: rgba(255,255,255,0.1); padding: 10px;
             border-radius: 6px; border: 1px dashed #f39c12; margin-bottom: 15px;
         }
+        /* Highlight border for setup mode */
+        #setupControls { border-color: #8e44ad; background: rgba(142, 68, 173, 0.15); }
+
         #pgnOutput { height: 60px; font-size: 12px; resize: none; }
         #status { 
             margin-top: 10px; padding: 15px; background: rgba(0,0,0,0.5);
@@ -276,6 +285,24 @@
         }
         .ai-controls.hidden { display: none; }
         .illegal-counter { font-size: 12px; color: #e74c3c; font-weight: bold; display: block; margin-top: 2px; }
+
+        /* Custom style for spare pieces in chessboard.js */
+        .spare-pieces-top, .spare-pieces-bottom {
+             background-color: rgba(255,255,255,0.1);
+             border-radius: 4px;
+             margin: 5px 0;
+             padding: 5px;
+             text-align: center;
+        }
+        /* Ensure images are visible */
+        .spare-pieces-top img, .spare-pieces-bottom img {
+            display: inline-block;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .spare-pieces-top img:hover, .spare-pieces-bottom img:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -350,6 +377,7 @@
                 <label>Game Mode</label>
                 <button id="modeAiBtn" class="primary">Play vs Computer</button>
                 <button id="modeFriendBtn">Play vs Friend (Online)</button>
+                <button id="modeSetupBtn" class="setup-btn">Setup Position</button>
             </div>
 
             <div id="timeControlGroup">
@@ -369,6 +397,24 @@
                     <option value="b">Black</option>
                 </select>
                 <div style="font-size:12px; color:#aaa; margin-top:5px;">(Friend plays opposite)</div>
+            </div>
+
+            <div id="setupControls">
+                <label style="color: #8e44ad; font-weight:800;">Board Editor</label>
+                <div class="control-group">
+                    <button onclick="board.clear()" style="background:#c0392b;">Clear Board</button>
+                    <button onclick="board.start()" style="background:#2980b9;">Reset to Start</button>
+                    <button onclick="board.flip()" style="background:#7f8c8d;">Flip Board</button>
+                </div>
+                <div class="control-group">
+                    <label>Side to Move Next:</label>
+                    <select id="setupTurn">
+                        <option value="w">White to Move</option>
+                        <option value="b">Black to Move</option>
+                    </select>
+                </div>
+                <button onclick="playFromSetup()" class="setup-btn" style="background-color: #27ae60; box-shadow: 0 4px 0 #2ecc71;">Play vs Computer (Level 4)</button>
+                <button onclick="shareSetupLink()" style="background-color: #f39c12; margin-top:10px;">Share Position Link</button>
             </div>
 
             <div id="inviteLinkGroup">
@@ -407,7 +453,7 @@
                 <button id="lichessBtn" style="background:#333; margin-top:5px;">Analyze on Lichess</button>
             </div>
 
-            <div class="control-group">
+            <div class="control-group" id="activeGameControls">
                 <button id="startBtn" class="primary">New Game / Reset</button>
                 <button id="flipBtn">Flip Board</button>
                 <button id="showShareBtn" style="background: #34495e;">Save / Analyze</button>
@@ -458,19 +504,11 @@
 
         // --- LOCAL STORAGE HELPERS ---
         function saveLocalState() {
-            // UPDATED: We only save peer ID so identity is kept.
-            // Game state (FEN, PGN) is NO LONGER saved to localStorage.
-            // Reloading the page will reset the game.
             if(myPeerId) localStorage.setItem('chess_my_id', myPeerId);
         }
 
         function restoreLocalState() {
-            // UPDATED: Only restore ID logic, no game state logic.
-            // This ensures a fresh game on every load.
-            if(gameMode === 'online') {
-                // If url has game params, we might want to switch UI, but board stays fresh.
-                 // We don't restore PGN/FEN anymore.
-            }
+            if(gameMode === 'online') { }
         }
 
         // --- 1. INITIALIZATION ---
@@ -575,20 +613,17 @@
             $('#resignBtn').hide(); // Hide resign button on game over
             touchedSquare = null; 
             $('.square-55d63').removeClass('touched-square');
-            // We don't save FEN anymore, so nothing to remove from LocalStorage
             updateGameUI(); // Trigger UI update for buttons
         }
         
         function restartGame() { $('#gameOverModal').hide(); $('#startBtn').click(); }
         function closeModalReview() { 
             $('#gameOverModal').hide(); 
-            // isGameActive is already false, buttons will enable
             updateGameUI(); 
         }
         function shareGame() { $('#gameOverModal').hide(); $('#shareGameGroup').show(); document.getElementById('shareGameGroup').scrollIntoView(); }
         
         function enableAnalysisButtons(enabled) { 
-            // Re-calc state based on game status
             updateGameUI();
         }
         
@@ -626,7 +661,6 @@
                 if (game.turn() === 'w') { timeWhite--; if (timeWhite <= 0) endGameByTimeout('Black'); } 
                 else { timeBlack--; if (timeBlack <= 0) endGameByTimeout('White'); }
                 updateClockUI();
-                // Removed periodic saving to localStorage
             }, 1000);
         }
         function updateClockUI() {
@@ -676,18 +710,12 @@
             $('#pgnOutput').val(game.pgn());
             
             // NAVIGATION BUTTON STATE
-            // Buttons enabled only if game is NOT active
             if (!isGameActive) {
-                // Enabled logic:
-                // Prev/Start: Enabled if there is history to undo
                 var hasHistory = game.history().length > 0;
                 $('#btnStart, #btnPrev').prop('disabled', !hasHistory);
-
-                // Next/End: Enabled if there are undone moves to redo
                 var hasUndone = undoneMoves.length > 0;
                 $('#btnNext, #btnEnd').prop('disabled', !hasUndone);
             } else {
-                // Game is active, disable all
                 $('.nav-btn-sm').prop('disabled', true);
             }
         }
@@ -767,8 +795,7 @@
             if (gameMode === 'online' && !isTimerRunning) startTimer();
             board.position(game.fen());
             updateGameUI();
-            // Removed saveLocalState()
-
+            
             if (gameMode === 'online') {
                 if (conn && conn.open) {
                     conn.send({ type: 'move', from: source, to: target, promotion: promotionPiece, timeWhite: timeWhite, timeBlack: timeBlack, fen: game.fen() }); 
@@ -778,6 +805,11 @@
         }
 
         function onDragStart (source, piece, position, orientation) {
+            // Setup Mode Dragging
+            if (gameMode === 'setup') {
+                return true;
+            }
+
             // Disable drag if review mode (game not active)
             if (!isGameActive) return false;
             
@@ -807,6 +839,12 @@
         }
 
         function onDrop (source, target) {
+            // Setup mode logic - allow drop anywhere
+            if (gameMode === 'setup') {
+                if (source === 'spare' && target === 'offboard') return;
+                return; 
+            }
+
             if (source === target) return;
 
             // 1. CHECK IF MOVE IS A PROMOTION
@@ -841,7 +879,13 @@
             executeMove(source, target, 'q');
         }
 
-        function onSnapEnd () { board.position(game.fen()); }
+        function onSnapEnd () { 
+            // Do not snap board to game FEN in setup mode
+            if(gameMode !== 'setup') {
+                board.position(game.fen()); 
+            }
+        }
+
         function makeEngineMove() {
             if(!isEngineReady || game.game_over()) return;
             var level = parseInt($('#difficulty').val());
@@ -860,11 +904,48 @@
             const urlParams = new URLSearchParams(window.location.search);
             const joinId = urlParams.get('game');
             const analysisPgn = urlParams.get('analysis');
+            const customFen = urlParams.get('customFen');
+
+            // 1. Check for Custom Position from Setup Mode
+            if (customFen) {
+                // Load Custom Game Immediately
+                var decodedFen = decodeURIComponent(customFen);
+                var loadResult = game.load(decodedFen);
+                
+                if (!loadResult) { alert("Error loading custom position."); return; }
+                
+                // Set Mode to AI and force level 4
+                gameMode = 'ai';
+                isGameActive = true;
+                $('#difficulty').val('14'); 
+                
+                // Hide Setup Button (so they can't edit, only play)
+                $('#modeSetupBtn').hide();
+                $('#modeFriendBtn').hide();
+                
+                // Determine player color based on turn
+                var turn = game.turn();
+                $('#aiPlayerColor').val(turn);
+                
+                // Initialize Board
+                board = Chessboard('board', {
+                    draggable: true,
+                    position: decodedFen,
+                    onDragStart: onDragStart, 
+                    onDrop: onDrop, 
+                    onSnapEnd: onSnapEnd,
+                    pieceTheme: PIECE_THEME_URL,
+                    orientation: turn === 'w' ? 'white' : 'black'
+                });
+                
+                updateGameUI();
+                return; // Stop other init logic
+            }
 
             if (analysisPgn) {
                 gameMode = 'analysis';
                 isGameActive = false; // Analysis starts inactive
-                $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide();
+                $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide(); $('#modeSetupBtn').hide();
                 $('#shareGameGroup').show(); enableAnalysisButtons(true); 
                 try { game.load_pgn(decodeURIComponent(analysisPgn)); board.position(game.fen()); updateGameUI(); } catch(e) {}
                 return;
@@ -881,7 +962,6 @@
             if (joinId) {
                 gameMode = 'online'; 
                 var hostColorParam = urlParams.get('hostColor'); 
-                // Don't load FEN from local storage for online games anymore
                 if(hostColorParam === 'b') playerSide = 'w'; else playerSide = 'b';
                 if(urlParams.get('time')) $('#timeControl').val(urlParams.get('time'));
                 
@@ -903,7 +983,6 @@
                 if (game.history().length > 0) { conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack }); }
             });
             
-            // UPDATED: Handle Opponent Disconnect explicitly
             conn.on('close', function() { 
                 setConnectionStatus("Opponent Disconnected", "#e74c3c"); 
                 stopPingLoop(); 
@@ -924,12 +1003,10 @@
                     $('.square-55d63').removeClass('touched-square');
                     if(!isTimerRunning) startTimer();
                     updateGameUI(); 
-                    // No saveLocalState
                 }
                 if (data.type === 'sync') {
                     game.load(data.fen); timeWhite = data.timeWhite; timeBlack = data.timeBlack;
                     board.position(game.fen()); updateGameUI(); 
-                    // No saveLocalState
                 }
                 if (data.type === 'reset') { location.reload(); }
                 if (data.type === 'illegal_penalty') { handleIllegalMove(data.color); }
@@ -942,7 +1019,6 @@
             });
         }
         
-        // Ensure connection closes on reload
         window.addEventListener('beforeunload', function() {
             if (conn) conn.close();
         });
@@ -979,9 +1055,11 @@
         }
 
         function switchToOnlineUI(skipReset) {
-            $('#aiControls').addClass('hidden'); $('#inviteLinkGroup').show(); $('#timeControlGroup').show(); $('#onlineSetupGroup').show();
+            $('#aiControls').addClass('hidden'); $('#inviteLinkGroup').show(); $('#timeControlGroup').show(); $('#onlineSetupGroup').show(); $('#setupControls').hide();
+            $('#activeGameControls').show();
             $('.clock').css('display', 'block');
-            $('#modeAiBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('opacity', '1'); $('#modeFriendBtn').css('border', '2px solid #fff');
+            $('#modeAiBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('opacity', '1'); $('#modeFriendBtn').css('border', '2px solid #fff'); $('#modeSetupBtn').css('opacity', '0.5'); $('#modeSetupBtn').css('border', 'none');
+            
             if(myPeerId && !conn && !skipReset) {
                 var chosenColor = $('#onlineHostColor').val();
                 playerSide = chosenColor;
@@ -993,37 +1071,149 @@
             if(!game.game_over()) $('#resignBtn').css('display', 'flex');
         }
 
+        // --- 7. SETUP MODE FUNCTIONS ---
+
+        function enterSetupMode() {
+            gameMode = 'setup';
+            isGameActive = false;
+            
+            // Hide/Show Controls
+            $('#aiControls').addClass('hidden'); 
+            $('#inviteLinkGroup').hide(); 
+            $('#timeControlGroup').hide(); 
+            $('#onlineSetupGroup').hide(); 
+            $('.clock').hide();
+            $('#activeGameControls').hide(); // Hide normal game buttons
+            $('#setupControls').show(); // Show setup specific buttons
+            $('#resignBtn').hide();
+
+            // Highlight button
+            $('#modeAiBtn').css('opacity', '0.5'); $('#modeAiBtn').css('border', 'none');
+            $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
+            $('#modeSetupBtn').css('opacity', '1'); $('#modeSetupBtn').css('border', '2px solid #fff');
+
+            // Re-Initialize Board with Spare Pieces
+            // We must destroy the old board to change the 'sparePieces' config
+            board.destroy();
+            board = Chessboard('board', {
+                draggable: true,
+                dropOffBoard: 'trash',
+                sparePieces: true,
+                position: 'start',
+                onDragStart: onDragStart, 
+                onDrop: onDrop, 
+                onSnapEnd: onSnapEnd,
+                pieceTheme: PIECE_THEME_URL // FIXED: Added Piece Theme
+            });
+            
+            $status.html("Setup Mode: Drag pieces to board.");
+            $evaluation.text("N/A");
+        }
+
+        function getSetupFen() {
+            var fenPlacement = board.fen();
+            var turnColor = $('#setupTurn').val();
+            return `${fenPlacement} ${turnColor} - - 0 1`;
+        }
+
+        function playFromSetup() {
+            var fullFen = getSetupFen();
+            var loaded = game.load(fullFen);
+            
+            if (!loaded) {
+                alert("Invalid Position! (Check Kings)");
+                return;
+            }
+
+            // If valid, switch to AI mode logic
+            gameMode = 'ai';
+            isGameActive = true;
+            
+            // Set Difficulty to 4 (Titan)
+            $('#difficulty').val('14');
+            
+            // Update UI
+            $('#setupControls').hide();
+            $('#activeGameControls').show();
+            $('#aiControls').removeClass('hidden');
+            
+            $('#modeSetupBtn').css('opacity', '0.5'); $('#modeSetupBtn').css('border', 'none');
+            $('#modeAiBtn').css('opacity', '1'); $('#modeAiBtn').css('border', '2px solid #fff');
+            
+            // IMPORTANT: Re-init board WITHOUT spare pieces to play
+            board.destroy();
+            board = Chessboard('board', {
+                draggable: true,
+                position: fullFen,
+                onDragStart: onDragStart, 
+                onDrop: onDrop, 
+                onSnapEnd: onSnapEnd,
+                pieceTheme: PIECE_THEME_URL
+            });
+            
+            var turnColor = $('#setupTurn').val();
+            $('#aiPlayerColor').val(turnColor);
+            board.orientation(turnColor === 'w' ? 'white' : 'black');
+            
+            illegalCount = { w: 0, b: 0 }; 
+            updateGameUI();
+            $('#resignBtn').css('display', 'flex');
+        }
+
+        function shareSetupLink() {
+            var fullFen = getSetupFen();
+            var baseUrl = window.location.href.split('?')[0];
+            var shareUrl = baseUrl + "?customFen=" + encodeURIComponent(fullFen);
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("Link Copied! Anyone who opens this link will play this position vs Computer (Titan Level).");
+            });
+        }
+
         // --- EVENT BINDINGS ---
         $('#modeAiBtn').click(function() {
             gameMode = 'ai';
             isGameActive = true;
-            $('#aiControls').removeClass('hidden'); $('#inviteLinkGroup').hide(); $('#timeControlGroup').hide(); $('#onlineSetupGroup').hide(); $('.clock').hide();
+            $('#aiControls').removeClass('hidden'); $('#inviteLinkGroup').hide(); $('#timeControlGroup').hide(); $('#onlineSetupGroup').hide(); $('.clock').hide(); $('#setupControls').hide(); $('#activeGameControls').show();
+            
             $('#modeAiBtn').css('opacity', '1'); $('#modeAiBtn').css('border', '2px solid #fff');
             $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
+            $('#modeSetupBtn').css('opacity', '0.5'); $('#modeSetupBtn').css('border', 'none');
+            
             window.history.pushState({}, document.title, window.location.pathname);
             touchedSquare = null; stopPingLoop(); 
+            
+            // Re-init board normal
+            board.destroy();
+            board = Chessboard('board', { draggable: true, position: 'start', onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd, pieceTheme: PIECE_THEME_URL });
+            
             game.reset(); clearInterval(timerInterval); isTimerRunning = false; 
             
-            // Respect the dropdown selection when switching modes
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
-            board.start(); 
             
             illegalCount = { w: 0, b: 0 }; updateGameUI(); enableAnalysisButtons(false);
-            // No local storage save
             $('#resignBtn').css('display', 'flex');
         });
+
         $('#modeFriendBtn').click(function() { 
             if(!peer) initMultiplayer(); 
-            gameMode = 'online'; // No localStorage save
+            gameMode = 'online'; 
+            // Re-init board normal if coming from setup
+             board.destroy();
+            board = Chessboard('board', { draggable: true, position: 'start', onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd, pieceTheme: PIECE_THEME_URL });
+            
             switchToOnlineUI(false); if(myPeerId) updateInviteLink(); 
         });
+
+        // NEW SETUP BTN EVENT
+        $('#modeSetupBtn').click(function() {
+            enterSetupMode();
+        });
+
         $('#timeControl').on('change', function() { resetTimers(); if (gameMode === 'online' && !conn) updateInviteLink(); });
         $('#onlineHostColor').on('change', function() { if (gameMode === 'online' && !conn) { playerSide = $(this).val(); board.orientation(playerSide === 'w' ? 'white' : 'black'); updateInviteLink(); updateGameUI(); } });
         
-        // NEW: Handle AI Player Color change immediately
         $('#aiPlayerColor').on('change', function() {
-            // If in AI mode, restart the game so logic (orientation + AI first move) applies automatically
             if (gameMode === 'ai') {
                 $('#startBtn').click();
             }
