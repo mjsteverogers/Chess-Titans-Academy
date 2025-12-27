@@ -606,18 +606,29 @@ userHome: (data) => {
                                                 <tr><th class="px-6 py-3">Student Name</th><th class="px-6 py-3">Account Status</th><th class="px-6 py-3">Assign Level/Rank</th></tr>
                                             </thead>
                                             <tbody id="rosterTableBody" class="divide-y divide-slate-100">
-                                                 ${rosterUsers.length === 0 ? `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">No students in roster.</td></tr>` : rosterUsers.map(u => `
+                                                 ${rosterUsers.length === 0 ? `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">No students in roster.</td></tr>` : rosterUsers.map(u => {
+                                                    
+                                                    // CHECK IF STUDENT SUBMITTED
+                                                    const hasSubmission = submissions.some(s => s.username === u.username);
+                                                    const statusDot = hasSubmission 
+                                                        ? `<span class="w-3 h-3 rounded-full bg-green-500 inline-block ml-2 shadow-sm" title="Task Submitted"></span>` 
+                                                        : `<span class="w-3 h-3 rounded-full bg-red-500 inline-block ml-2 shadow-sm" title="No Submission"></span>`;
+
+                                                    return `
                                                     <tr class="hover:bg-slate-50">
                                                         <td class="px-6 py-4 font-medium text-slate-800 student-name-cell">
-                                                            <div>${u.username}</div>
+                                                            <div class="flex items-center">
+                                                                ${u.username}
+                                                                ${statusDot}
+                                                            </div>
                                                             <div class="font-mono text-xs text-slate-400">${u.phone}</div>
                                                         </td>
                                                         <td class="px-6 py-4">
                                                              <div class="relative w-40">
                                                                 <select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all 
                                                                     ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : 
-                                                                     u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
-                                                                     u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
+                                                                    u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
+                                                                    u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
                                                                     <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
                                                                     <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
                                                                     <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
@@ -632,7 +643,8 @@ userHome: (data) => {
                                                                 </select>
                                                             </div>
                                                         </td>
-                                                    </tr>`).join('')}
+                                                    </tr>`;
+                                                 }).join('')}
                                             </tbody>
                                         </table>
                                     </div>
@@ -642,7 +654,7 @@ userHome: (data) => {
                     </div>
                 </div>
                 `;
-            }
+            },
         };
 
         // --- CONTROLLER ---
@@ -957,7 +969,7 @@ userHome: (data) => {
                         progressBar.style.width = `100%`;
                         percentText.innerText = `100%`;
                         statusText.innerText = "Done!";
-                        showToast("Evidence Uploaded Successfully!", "success");
+                        showToast("Solution Uploaded Successfully!", "success");
                         
                         // Wait 1 second then refresh
                         setTimeout(async () => {
