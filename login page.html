@@ -65,7 +65,7 @@
     <script>
         // --- API CONFIGURATION ---
         // ⚠️ IMPORTANT: PASTE YOUR DEPLOYMENT URL HERE
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxBWHpZ2l8KfTBf1CkiEZPDDSzQePEVjJtBhYgeinDRxpZKPupDAczHdDEpiZ5XjEVyHw/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyYWLjLQce_GEYefd10eG3WNsGd6jbbDttv_wYQKyS1Xk4oqTeQ_UboD6k-9_tuVJGR4A/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -112,7 +112,6 @@
            return await sendPostRequest(data);
         }
 
-        // UPDATED: Now accepts remarks
         async function updateSubmissionStatusAPI(id, status, remarks) {
              return await sendPostRequest({ action: 'gradeSubmission', id: id, status: status, remarks: remarks });
         }
@@ -308,53 +307,91 @@ userHome: (data) => {
                         ? `<div class="p-8 text-center text-slate-400 italic">No tasks assigned for ${user.level} yet.</div>` 
                         : `<div class="divide-y divide-slate-100">
                             ${myTasks.map(t => {
+                                const isSolution = t.type === 'Solution';
+                                
+                                // NEW LOGIC: Check Release Time
+                                let isLocked = false;
+                                let releaseDateString = "";
+                                if (isSolution && t.releaseTime) {
+                                    const now = new Date();
+                                    const release = new Date(t.releaseTime);
+                                    if (now < release) {
+                                        isLocked = true;
+                                        releaseDateString = release.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                                    }
+                                }
+
                                 const sub = submissions.find(s => s.taskId == t.id && s.username === user.username);
                                 let statusHtml = '';
                                 
-                                // Logic for display remarks
                                 const remarksHtml = (sub && sub.remarks) 
                                     ? `<div class="mt-2 text-xs text-slate-500 italic border-l-2 border-brand-200 pl-2 bg-slate-50 rounded-r py-1"><span class="font-bold not-italic text-brand-600">Admin Remarks:</span> ${sub.remarks}</div>` 
                                     : '';
 
-                                if(!sub) {
-                                    statusHtml = `
+                                if(isSolution) {
+                                    // SOLUTION TYPE
+                                    if (isLocked) {
+                                        // LOCKED STATE
+                                        statusHtml = `
                                             <div class="flex items-center gap-2 mt-2 md:mt-0">
-                                                <a href="${t.link}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-1">
-                                                     <i class="fas fa-eye"></i> View Task
-                                                </a>
-                                                <input type="file" id="file-${t.id}" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}')">
-                                                <button onclick="document.getElementById('file-${t.id}').click()" class="bg-secondary-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all shadow-sm">
-                                                    <i class="fas fa-upload mr-1"></i> Upload Answer
-                                                </button>
-                                            </div>`;
-                                } else if (sub.status === 'pending') {
-                                    statusHtml = `
-                                    <div class="flex flex-col items-end">
-                                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i> Under Review</span>
-                                    </div>`;
-                                } else if (sub.status === 'correct') {
-                                    statusHtml = `
-                                    <div class="flex flex-col items-end">
-                                        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-check-circle mr-1"></i> Completed</span>
-                                        ${remarksHtml}
-                                    </div>`;
-                                } else if (sub.status === 'incorrect') {
-                                    statusHtml = `
-                                            <div class="flex flex-col items-end gap-1">
-                                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-times-circle mr-1"></i> Correction Needed</span>
-                                                ${remarksHtml}
-                                                <div class="flex gap-2">
-                                                    <a href="${t.link}" target="_blank" class="text-blue-600 underline text-xs font-bold">View Task Again</a>
-                                                    <button onclick="document.getElementById('file-${t.id}').click()" class="text-xs text-brand-600 underline font-bold">Re-upload</button>
+                                                <div class="bg-slate-100 text-slate-500 px-4 py-2 rounded-lg text-xs font-bold cursor-not-allowed flex items-center gap-2 border border-slate-200">
+                                                     <i class="fas fa-lock"></i> Unlocks: ${releaseDateString}
                                                 </div>
-                                                <input type="file" id="file-${t.id}" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}')">
                                             </div>`;
+                                    } else {
+                                        // UNLOCKED STATE
+                                        statusHtml = `
+                                            <div class="flex items-center gap-2 mt-2 md:mt-0">
+                                                <a href="${t.link}" target="_blank" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-1">
+                                                     <i class="fas fa-play-circle"></i> Watch Solution
+                                                </a>
+                                            </div>`;
+                                    }
+                                } else {
+                                    // QUESTION TYPE
+                                    if(!sub) {
+                                        statusHtml = `
+                                                <div class="flex items-center gap-2 mt-2 md:mt-0">
+                                                    <a href="${t.link}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-1">
+                                                         <i class="fas fa-eye"></i> View Task
+                                                    </a>
+                                                    <input type="file" id="file-${t.id}" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}')">
+                                                    <button onclick="document.getElementById('file-${t.id}').click()" class="bg-secondary-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all shadow-sm">
+                                                        <i class="fas fa-upload mr-1"></i> Upload Answer
+                                                    </button>
+                                                </div>`;
+                                    } else if (sub.status === 'pending') {
+                                        statusHtml = `
+                                        <div class="flex flex-col items-end">
+                                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i> Under Review</span>
+                                        </div>`;
+                                    } else if (sub.status === 'correct') {
+                                        statusHtml = `
+                                        <div class="flex flex-col items-end">
+                                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-check-circle mr-1"></i> Completed</span>
+                                            ${remarksHtml}
+                                        </div>`;
+                                    } else if (sub.status === 'incorrect') {
+                                        statusHtml = `
+                                                <div class="flex flex-col items-end gap-1">
+                                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-times-circle mr-1"></i> Correction Needed</span>
+                                                    ${remarksHtml}
+                                                    <div class="flex gap-2">
+                                                        <a href="${t.link}" target="_blank" class="text-blue-600 underline text-xs font-bold">View Task Again</a>
+                                                        <button onclick="document.getElementById('file-${t.id}').click()" class="text-xs text-brand-600 underline font-bold">Re-upload</button>
+                                                    </div>
+                                                    <input type="file" id="file-${t.id}" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}')">
+                                                </div>`;
+                                    }
                                 }
 
                                 return `
                                 <div class="p-4 flex flex-col md:flex-row md:items-center justify-between group transition-colors hover:bg-slate-50 gap-4">
                                     <div class="flex-grow">
-                                        <div class="font-bold text-slate-800 text-sm md:text-base">${t.title}</div>
+                                        <div class="flex items-center gap-2">
+                                            ${isSolution ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase">Solution</span>' : '<span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase">Task</span>'}
+                                            <div class="font-bold text-slate-800 text-sm md:text-base">${t.title}</div>
+                                        </div>
                                         <div class="text-xs text-slate-400 mt-1 flex items-center gap-2">
                                             <i class="far fa-calendar"></i> ${t.date}
                                         </div>
@@ -492,7 +529,6 @@ userHome: (data) => {
                                                     let rowClass = "";
                                                     if(s.status === 'pending') rowClass = "bg-orange-50/40";
                                                     
-                                                    // Find user level dynamically
                                                     const student = users.find(u => u.username === s.username);
                                                     const studentLevel = student ? (student.level || 'Unranked') : 'Unknown';
 
@@ -542,8 +578,22 @@ userHome: (data) => {
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                     <div class="md:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-brand-500"></i> Upload Task</h3>
+                                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-brand-500"></i> Upload Task/Solution</h3>
                                         <form id="addTaskForm" class="space-y-4">
+                                            <div>
+                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Upload Type</label>
+                                                <select id="taskType" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                    <option value="Question">Question</option>
+                                                    <option value="Solution">Solution</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div id="solutionTimeDiv" class="hidden">
+                                                <label class="block text-xs font-bold text-brand-600 uppercase mb-1">Schedule Solution Release</label>
+                                                <input type="datetime-local" id="releaseTime" class="w-full border border-brand-200 bg-brand-50 rounded-lg p-2 text-sm focus:border-brand-500 outline-none text-slate-600">
+                                                <p class="text-[10px] text-slate-400 mt-1">Leave empty to release immediately.</p>
+                                            </div>
+
                                             <div>
                                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Level</label>
                                                 <select id="taskLevel" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
@@ -552,30 +602,42 @@ userHome: (data) => {
                                                 </select>
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Task Title</label>
+                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
                                                 <input type="text" id="taskTitle" required placeholder="e.g. Week 1 Tactics" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Task Link (URL)</label>
+                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">File Link (URL)</label>
                                                 <input type="url" id="taskLink" required placeholder="https://drive.google.com/..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
                                             </div>
-                                            <button type="submit" id="btnAddTask" class="w-full bg-secondary-900 text-white font-bold py-2 rounded-lg hover:bg-black transition-colors">Publish Task</button>
+                                            <button type="submit" id="btnAddTask" class="w-full bg-secondary-900 text-white font-bold py-2 rounded-lg hover:bg-black transition-colors">Publish</button>
                                         </form>
                                     </div>
 
                                     <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-96">
                                         <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                            <h3 class="font-bold text-slate-700">Active Tasks</h3>
+                                            <h3 class="font-bold text-slate-700">Active Uploads</h3>
                                             <span class="text-xs text-slate-400">Showing all posted tasks</span>
                                         </div>
                                         <div class="overflow-y-auto flex-grow p-0">
                                             <table class="w-full text-left text-sm text-slate-600">
                                                 <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider sticky top-0 border-b border-slate-100">
-                                                    <tr><th class="px-6 py-3">Level</th><th class="px-6 py-3">Title</th><th class="px-6 py-3 text-right">Action</th></tr>
+                                                    <tr><th class="px-6 py-3">Type</th><th class="px-6 py-3">Level</th><th class="px-6 py-3">Title</th><th class="px-6 py-3 text-right">Action</th></tr>
                                                 </thead>
                                                 <tbody class="divide-y divide-slate-100">
-                                                    ${tasks.length === 0 ? `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">No tasks uploaded.</td></tr>` : tasks.map(t => `
+                                                    ${tasks.length === 0 ? `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No tasks uploaded.</td></tr>` : tasks.map(t => {
+                                                        const typeBadge = t.type === 'Solution' ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase">Solution</span>' : '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase">Question</span>';
+                                                        
+                                                        // Check if scheduled
+                                                        const scheduledBadge = (t.type === 'Solution' && t.releaseTime) 
+                                                            ? `<div class="text-[10px] text-slate-400 mt-1"><i class="far fa-clock"></i> ${new Date(t.releaseTime).toLocaleString([], {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})}</div>`
+                                                            : '';
+
+                                                        return `
                                                         <tr class="hover:bg-slate-50">
+                                                            <td class="px-6 py-3">
+                                                                ${typeBadge}
+                                                                ${scheduledBadge}
+                                                            </td>
                                                             <td class="px-6 py-3 font-medium text-brand-600 text-xs">${t.level}</td>
                                                             <td class="px-6 py-3 font-bold text-slate-800">
                                                                 <a href="${t.link}" target="_blank" class="hover:underline flex items-center gap-2">${t.title} <i class="fas fa-external-link-alt text-xs text-slate-400"></i></a>
@@ -584,7 +646,8 @@ userHome: (data) => {
                                                             <td class="px-6 py-3 text-right">
                                                                 <button onclick="handleDeleteTask('${t.id}', this)" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash-alt"></i></button>
                                                             </td>
-                                                        </tr>`).join('')}
+                                                        </tr>`
+                                                        }).join('')}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -769,6 +832,22 @@ userHome: (data) => {
                 });
             } else if (route === 'adminDashboard') {
                 const taskForm = document.getElementById('addTaskForm');
+                
+                // NEW: Listener to toggle the Time Picker visibility
+                const typeSelect = document.getElementById('taskType');
+                const timeDiv = document.getElementById('solutionTimeDiv');
+                
+                if(typeSelect && timeDiv) {
+                    typeSelect.addEventListener('change', (e) => {
+                        if(e.target.value === 'Solution') {
+                            timeDiv.classList.remove('hidden');
+                        } else {
+                            timeDiv.classList.add('hidden');
+                            document.getElementById('releaseTime').value = ""; // Clear if switching back
+                        }
+                    });
+                }
+
                 if(taskForm) {
                     taskForm.addEventListener('submit', async (e) => {
                         e.preventDefault();
@@ -778,6 +857,8 @@ userHome: (data) => {
                         btn.innerHTML = 'Publishing...';
                         
                         const taskData = {
+                            type: document.getElementById('taskType').value,
+                            releaseTime: document.getElementById('releaseTime').value, // NEW Field
                             level: document.getElementById('taskLevel').value,
                             title: document.getElementById('taskTitle').value,
                             link: document.getElementById('taskLink').value
@@ -785,7 +866,7 @@ userHome: (data) => {
                         
                         const response = await addTaskAPI(taskData);
                         if(response.success) {
-                            showToast('Task Uploaded!', 'success');
+                            showToast('Uploaded Successfully!', 'success');
                             await refreshAdminDashboard();
                         } else {
                             showToast(response.message || 'Failed to upload', 'error');
@@ -821,7 +902,7 @@ userHome: (data) => {
             }
         };
 
-        // NEW: Filter Submissions Logic
+        // Filter Submissions Logic
         window.filterSubmissions = function() {
             const input = document.getElementById("submissionSearch");
             const filter = input.value.toUpperCase();
@@ -859,11 +940,11 @@ userHome: (data) => {
         };
 
         window.handleDeleteTask = async function(id, btn) {
-            if(!confirm('Delete this task?')) return;
+            if(!confirm('Delete this upload?')) return;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             const response = await deleteTaskAPI(id);
             if(response.success) {
-                showToast('Task Deleted', 'success');
+                showToast('Deleted', 'success');
                 await refreshAdminDashboard();
             } else {
                 showToast(response.message || 'Error deleting', 'error');
@@ -1015,9 +1096,8 @@ userHome: (data) => {
             reader.readAsDataURL(file);
         };
 
-        // NEW: Handles Submission Grade + Remarks
+        // Handles Submission Grade + Remarks
         window.handleSubmissionGrade = async function(id, status, btn) {
-            // Find the remark input associated with this ID
             const remarkInput = document.getElementById(`remark-${id}`);
             const remarks = remarkInput ? remarkInput.value : "";
 
