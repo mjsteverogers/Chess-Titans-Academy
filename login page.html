@@ -62,7 +62,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx7wrQ4-xCkmdY4bFnZeUDovaV2-dgcqrzvozd2s3EYiFIaP_KNurJcrtZQ014EzH6MQQ/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwY6rD_I1jEt97Q_egzGX-AQrv8ehnwHZHw_rTo9JTsv7Lte6OV_RVCqALIviNd8v1OHQ/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -73,6 +73,7 @@
 
         // --- GLOBAL STATE ---
         let CURRENT_VIEW = 'login'; 
+        let expireTimerInterval = null; // Store interval ID
 
         // --- DATA MANAGEMENT ---
         async function fetchUsers() {
@@ -98,6 +99,14 @@
 
         async function updateUserLevelAPI(username, level) {
             return await sendPostRequest({ action: 'updateLevel', username: username, level: level });
+        }
+        
+        async function updateUserDatesAPI(username, type, value) {
+            return await sendPostRequest({ action: 'updateUserDates', username: username, type: type, value: value });
+        }
+        
+        async function forceCheckExpirationsAPI() {
+            return await sendPostRequest({ action: 'forceCheckExpirations' });
         }
 
         async function addTaskAPI(taskData) {
@@ -136,7 +145,6 @@
                 try {
                     return JSON.parse(text);
                 } catch (e) {
-                    console.error("Server returned non-JSON:", text);
                     return { success: false, message: "Server Timeout: File likely too large." };
                 }
             } catch (error) { 
@@ -167,6 +175,51 @@
                 btn.disabled = false;
                 btn.innerHTML = text;
             }
+        }
+        
+        function formatDateForInput(isoString) {
+            if(!isoString) return "";
+            const d = new Date(isoString);
+            if(isNaN(d.getTime())) return "";
+            const localDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
+            return localDate.toISOString().slice(0, 16); 
+        }
+
+        // --- NEW: Real-Time Timer Logic ---
+        function startRealtimeTimer(expiryDateStr) {
+            if(expireTimerInterval) clearInterval(expireTimerInterval);
+            
+            const timerEl = document.getElementById('expire-timer');
+            if(!timerEl || !expiryDateStr) return;
+
+            const target = new Date(expiryDateStr).getTime();
+
+            const update = () => {
+                const now = new Date().getTime();
+                const diff = target - now;
+
+                if (diff <= 0) {
+                    timerEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Expired`;
+                    timerEl.className = "px-2 py-0.5 rounded bg-red-100 text-red-600 text-[10px] md:text-xs font-bold border border-red-200 flex items-center gap-1";
+                    clearInterval(expireTimerInterval);
+                    // Optional: We could trigger a page refresh here to lock them out fully
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                let timeString = "";
+                if(days > 0) timeString += `${days}d `;
+                timeString += `${hours}h ${minutes}m ${seconds}s`;
+
+                timerEl.innerHTML = `<i class="fas fa-stopwatch"></i> ${timeString}`;
+            };
+
+            update(); // Run immediately
+            expireTimerInterval = setInterval(update, 1000);
         }
 
         // --- VIEWS ---
@@ -259,8 +312,10 @@
             `,
             userHome: (data) => {
                 const user = data.user;
+                const isExpired = user.status === 'expired';
                 const isUnranked = !user.level || user.level === 'Unranked';
-                const myTasks = isUnranked ? [] : data.tasks.filter(t => t.level === user.level);
+                const isRestricted = isUnranked || isExpired;
+                const myTasks = isRestricted ? [] : data.tasks.filter(t => t.level === user.level);
                 const submissions = data.submissions || [];
 
                 return `
@@ -276,6 +331,8 @@
                                     <span class="px-2 py-0.5 rounded bg-secondary-900 text-white text-[10px] md:text-xs font-bold tracking-wider uppercase truncate">
                                         <i class="fas fa-crown text-[10px] text-yellow-400 mr-1"></i> ${user.level || 'Unranked'}
                                     </span>
+                                    ${isExpired ? '<span class="px-2 py-0.5 rounded bg-red-100 text-red-600 text-[10px] md:text-xs font-bold uppercase border border-red-200">Plan Expired</span>' : ''}
+                                    ${!isExpired && user.expireDate ? `<span id="expire-timer" class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 text-[10px] md:text-xs font-bold border border-indigo-100 flex items-center gap-1 font-mono min-w-[80px] justify-center"><i class="fas fa-hourglass-half fa-spin"></i> Loading...</span>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -301,7 +358,7 @@
                                 <p class="text-slate-500 text-xs md:text-sm mt-2">Chess Bot.</p>
                             </a>
                             
-                            ${!isUnranked 
+                            ${!isRestricted 
                                 ? `
                                 <a href="https://docs.google.com/document/d/1D9HAwAox_SFL9HE-Y8MVS1VmiBI6MCExy2cMOTQbfpk/edit?usp=sharing" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center mb-4"><i class="fas fa-clipboard-list text-lg md:text-xl"></i></div>
@@ -314,7 +371,9 @@
                                      <div class="absolute -right-2 -top-0 bg-red-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">LOCKED</div>
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center mb-4"><i class="fas fa-lock text-lg md:text-xl"></i></div>
                                     <h3 class="font-bold text-base md:text-lg text-slate-400">Existing Weekly Task List</h3>
-                                    <p class="text-brand-600 font-bold text-xs md:text-sm mt-2"><i class="fas fa-info-circle"></i> Pay Rs 200 to Access</p>
+                                    <p class="text-brand-600 font-bold text-xs md:text-sm mt-2">
+                                        <i class="fas fa-info-circle"></i> ${isExpired ? 'Pay Rs 200 to Renew' : 'Pay Rs 200 to Access'}
+                                    </p>
                                 </div>
                                 `
                             }
@@ -323,23 +382,23 @@
                         <div class="bg-white rounded-xl shadow-lg border border-brand-100 overflow-hidden mb-8">
                              <div class="bg-brand-500 p-4 flex justify-between items-center text-white">
                                 <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-tasks"></i> Weekly Tasks</h3>
-                                ${!isUnranked ? `<span class="text-xs bg-white/20 px-2 py-1 rounded">${myTasks.length} Assigned</span>` : ''}
+                                ${!isRestricted ? `<span class="text-xs bg-white/20 px-2 py-1 rounded">${myTasks.length} Assigned</span>` : ''}
                             </div>
                             <div class="p-0">
-                                ${isUnranked 
+                                ${isRestricted 
                                     ? `
                                     <div class="p-8 text-center flex flex-col items-center justify-center fade-in">
                                         <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
                                             <i class="fas fa-lock text-3xl"></i>
                                         </div>
-                                        <h3 class="text-xl font-bold text-slate-800 mb-2">Weekly Tasks Locked</h3>
+                                        <h3 class="text-xl font-bold text-slate-800 mb-2">${isExpired ? 'Weekly Plan Expired' : 'Weekly Tasks Locked'}</h3>
                                         <p class="text-slate-600 mb-6 max-w-md mx-auto text-sm md:text-base">
-                                            You have to pay to access the weekly task.
+                                            ${isExpired ? 'Your weekly task plan has expired. Please renew to continue learning.' : 'You have to pay to access the weekly task.'}
                                         </p>
                                         <div class="bg-orange-50 border border-orange-200 rounded-xl p-6 w-full max-w-xs shadow-sm">
                                             <p class="font-bold text-brand-600 text-2xl mb-1">Rs 200</p>
-                                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">3 Months Validity</p>
-                                            <a href="upi://pay?pa=mahimairaj678@okaxis&pn=Steve Steve&am=200&cu=INR" class="bg-white py-2 px-3 rounded-lg border border-orange-100 flex items-center justify-center gap-2 text-slate-800 font-bold font-mono text-sm hover:bg-orange-100 transition-colors cursor-pointer block">
+                                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">${isExpired ? 'Renewal Fee' : '3 Months Validity'}</p>
+                                            <a href="upi://pay?pa=9444748538@upi&pn=ChessTitansAcademy&am=200&cu=INR" class="bg-white py-2 px-3 rounded-lg border border-orange-100 flex items-center justify-center gap-2 text-slate-800 font-bold font-mono text-sm hover:bg-orange-100 transition-colors cursor-pointer block">
                                                 <i class="fab fa-google-pay text-brand-500 text-lg"></i> 9444748538
                                             </a>
                                         </div>
@@ -399,452 +458,6 @@
                 </div>
             `;
             },
-            
-            // --- Unranked Students View ---
-            unrankedStudents: (data) => {
-                const users = data.users || [];
-                const allStudents = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
-                const unrankedList = allStudents.filter(u => !u.level || u.level === 'Unranked');
-
-                return `
-                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
-                    <div class="flex h-full relative">
-                        <div id="adminSidebar" class="w-64 bg-secondary-900 text-slate-300 flex-shrink-0 flex flex-col absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-50 sidebar-transition h-full border-r border-slate-800">
-                             <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-                            <div class="p-6 border-b border-white/10 relative z-10 flex justify-between items-center">
-                                <div class="flex items-center gap-3 text-white">
-                                    <div class="bg-brand-500 w-8 h-8 rounded flex items-center justify-center text-secondary-900"><i class="fas fa-chess-queen"></i></div>
-                                    <span class="font-bold text-lg tracking-wide">TitansAdmin</span>
-                                </div>
-                                <button onclick="toggleSidebar()" class="md:hidden text-white p-2"><i class="fas fa-times text-xl"></i></button>
-                            </div>
-                            <nav class="flex-grow p-4 space-y-2 relative z-10">
-                                <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</div>
-                                <button onclick="router('adminDashboard', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
-                                    <i class="fas fa-arrow-left w-5 text-center"></i> Back to Dashboard
-                                </button>
-                                <div class="bg-brand-600 text-white rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg mt-2">
-                                    <i class="fas fa-user-tag w-5 text-center"></i> Unranked Students
-                                </div>
-                            </nav>
-                            <div class="p-4 border-t border-white/10 relative z-10">
-                                <button onclick="handleLogout()" class="w-full px-4 py-2 border border-slate-700 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-slate-400 rounded-lg transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                            </div>
-                        </div>
-                        
-                        <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
-
-                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
-                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
-                                <div class="flex items-center gap-3">
-                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
-                                    <div><h2 class="text-lg md:text-2xl font-bold text-slate-800">Unranked Students</h2></div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="refreshData()" class="text-brand-600 hover:bg-brand-50 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh Data</span></button>
-                                </div>
-                            </header>
-                            
-                            <div class="flex-grow p-4 md:p-8 overflow-y-auto">
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-                                    <div class="p-4 border-b border-slate-100 bg-orange-50 flex justify-between items-center">
-                                        <h3 class="font-bold text-brand-800 text-sm md:text-base"><i class="fas fa-user-tag mr-2"></i>New Students List</h3>
-                                        <div class="relative w-48 md:w-64">
-                                            <input type="text" id="unrankedSearch" onkeyup="filterUnranked()" placeholder="Search..." class="w-full pl-9 pr-4 py-1.5 text-xs rounded-full border border-orange-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-400 text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[800px]">
-                                            <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
-                                                <tr><th class="px-6 py-3">Student Name</th><th class="px-6 py-3">Account Status</th><th class="px-6 py-3">Assign Level/Rank</th><th class="px-6 py-3 text-right">Delete</th></tr>
-                                            </thead>
-                                            <tbody id="unrankedTableBody" class="divide-y divide-slate-100">
-                                                 ${unrankedList.length === 0 ? `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No unranked students found.</td></tr>` : unrankedList.map(u => {
-                                                    return `
-                                                    <tr class="hover:bg-orange-50/30">
-                                                        <td class="px-6 py-4 font-medium text-slate-800 student-name-cell">
-                                                            <div class="flex items-center">
-                                                                ${u.username}
-                                                                <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-[10px] text-slate-500 border border-slate-200">New</span>
-                                                            </div>
-                                                            <div class="font-mono text-xs text-slate-400">${u.phone}</div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                             <div class="relative w-40">
-                                                                <select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all 
-                                                                    ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : 
-                                                                    u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
-                                                                    u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
-                                                                    <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
-                                                                    <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
-                                                                    <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
-                                                                </select>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                            <div class="relative w-48">
-                                                                <select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="Unranked" class="w-full bg-white border-2 border-brand-100 text-brand-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all font-bold">
-                                                                    <option value="Unranked">Select Rank...</option>
-                                                                    ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('')}
-                                                                </select>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4 text-right">
-                                                            <button onclick="handleDeleteUser('${u.username}', this)" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
-                                                        </td>
-                                                    </tr>`;
-                                                 }).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-            },
-            adminDashboard: (data) => {
-                const users = data.users || [];
-                const tasks = data.tasks || [];
-                const submissions = data.submissions || [];
-                const pendingUsers = users.filter(u => u.status === 'pending');
-                
-                // SPLIT STUDENTS
-                const allStudents = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
-                const unrankedList = allStudents.filter(u => !u.level || u.level === 'Unranked');
-                const rankedList = allStudents.filter(u => u.level && u.level !== 'Unranked');
-
-                const pendingSubmissions = submissions.filter(s => s.status === 'pending');
-                
-                // Cache data for navigation
-                window.cachedData = data; 
-
-                return `
-                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
-                    <div class="flex h-full relative">
-                        <div id="adminSidebar" class="w-64 bg-secondary-900 text-slate-300 flex-shrink-0 flex flex-col absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-50 sidebar-transition h-full border-r border-slate-800">
-                             <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-                            <div class="p-6 border-b border-white/10 relative z-10 flex justify-between items-center">
-                                <div class="flex items-center gap-3 text-white">
-                                    <div class="bg-brand-500 w-8 h-8 rounded flex items-center justify-center text-secondary-900"><i class="fas fa-chess-queen"></i></div>
-                                    <span class="font-bold text-lg tracking-wide">TitansAdmin</span>
-                                </div>
-                                <button onclick="toggleSidebar()" class="md:hidden text-white p-2"><i class="fas fa-times text-xl"></i></button>
-                            </div>
-                            <nav class="flex-grow p-4 space-y-2 relative z-10 overflow-y-auto">
-                                <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</div>
-                                <a href="#" class="block px-4 py-3 bg-brand-600 text-white rounded-lg flex items-center gap-3 shadow-lg"><i class="fas fa-users-cog w-5 text-center"></i> Dashboard</a>
-                                
-                                <button onclick="router('unrankedStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
-                                    <i class="fas fa-user-tag w-5 text-center"></i>
-                                    <span>Unranked Students</span>
-                                    ${unrankedList.length > 0 ? `<span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">${unrankedList.length}</span>` : ''}
-                                </button>
-                            </nav>
-                            <div class="p-4 border-t border-white/10 relative z-10">
-                                <button onclick="handleLogout()" class="w-full px-4 py-2 border border-slate-700 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-slate-400 rounded-lg transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                            </div>
-                        </div>
-                        
-                        <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
-
-                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
-                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
-                                <div class="flex items-center gap-3">
-                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
-                                    <div>
-                                        <h2 class="text-lg md:text-2xl font-bold text-slate-800">Dashboard</h2>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="refreshData()" class="text-brand-600 hover:bg-brand-50 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh Data</span></button>
-                                </div>
-                            </header>
-                            
-                            <div class="flex-grow p-4 md:p-8 overflow-y-auto">
-                                
-                                <div class="flex flex-nowrap overflow-x-auto gap-4 md:gap-6 mb-6 md:mb-8 pb-4 snap-x-mandatory">
-                                    <div class="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Pending Submissions</div>
-                                                <div class="text-3xl md:text-4xl font-bold text-brand-500 mt-2">${pendingSubmissions.length}</div>
-                                            </div>
-                                            <div class="bg-brand-5 p-2 rounded-lg text-brand-500"><i class="fas fa-video text-xl"></i></div>
-                                        </div>
-                                    </div>
-                                    <div class="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Pending Admissions</div>
-                                                <div class="text-3xl md:text-4xl font-bold text-orange-500 mt-2">${pendingUsers.length}</div>
-                                            </div>
-                                            <div class="bg-orange-50 p-2 rounded-lg text-orange-500"><i class="fas fa-user-clock text-xl"></i></div>
-                                        </div>
-                                    </div>
-                                    <div class="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Total Students</div>
-                                                <div class="text-3xl md:text-4xl font-bold text-secondary-900 mt-2">${allStudents.length}</div>
-                                            </div>
-                                            <div class="bg-green-50 p-2 rounded-lg text-green-600"><i class="fas fa-user-graduate text-xl"></i></div>
-                                        </div>
-                                    </div>
-                                    <div class="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Active Tasks</div>
-                                                <div class="text-3xl md:text-4xl font-bold text-slate-600 mt-2">${tasks.length}</div>
-                                            </div>
-                                            <div class="bg-blue-50 p-2 rounded-lg text-blue-600"><i class="fas fa-tasks text-xl"></i></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 md:mb-8 overflow-hidden">
-                                     <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-3 bg-brand-50">
-                                        <div class="flex items-center gap-4 w-full md:w-auto">
-                                            <h3 class="font-bold text-brand-900 flex items-center gap-2 text-sm md:text-base whitespace-nowrap"><i class="fas fa-check-double"></i> Task Submissions</h3>
-                                            <div class="relative flex-grow md:w-64">
-                                                <input type="text" id="submissionSearch" onkeyup="filterSubmissions()" placeholder="Search submission name..." class="w-full pl-8 pr-4 py-1.5 text-xs rounded-full border border-slate-300 focus:border-brand-500 outline-none bg-white/80 focus:bg-white transition-all">
-                                                <i class="fas fa-search absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
-                                            </div>
-                                        </div>
-                                        <button onclick="handleDeleteAllSubmissions()" class="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded font-bold transition-colors shadow-sm"><i class="fas fa-trash-alt mr-1"></i> Delete All</button>
-                                    </div>
-                                    <div class="overflow-x-auto max-h-96">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[700px]">
-                                            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider sticky top-0">
-                                                <tr><th class="px-6 py-4">Student</th><th class="px-6 py-4">Task</th><th class="px-6 py-4">Proof</th><th class="px-6 py-4 text-center">Correction</th><th class="px-6 py-4 text-right">Delete</th></tr>
-                                            </thead>
-                                            <tbody id="submissionTableBody" class="divide-y divide-slate-100">
-                                                ${submissions.length === 0 ? `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400">No submissions uploaded yet.</td></tr>` : submissions.map(s => {
-                                                    const taskTitle = s.taskTitle || 'Unknown Task';
-                                                    let rowClass = "";
-                                                    if(s.status === 'pending') rowClass = "bg-orange-50/40";
-                                                    
-                                                    const student = users.find(u => u.username === s.username);
-                                                    const studentLevel = student ? (student.level || 'Unranked') : 'Unknown';
-
-                                                    return `
-                                                    <tr class="hover:bg-slate-50 ${rowClass} transition-colors">
-                                                        <td class="px-6 py-4 font-bold text-slate-800 submission-name-cell">
-                                                            <div>${s.username}</div>
-                                                            <div class="inline-block bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 mt-1">${studentLevel}</div>
-                                                        </td>
-                                                        <td class="px-6 py-4 text-slate-600">${taskTitle}</td>
-                                                        <td class="px-6 py-4">
-                                                            <a href="${s.fileLink}" target="_blank" class="text-brand-600 hover:text-brand-800 font-bold underline flex items-center gap-2">
-                                                                <i class="fas fa-play-circle text-lg"></i> View File
-                                                            </a>
-                                                        </td>
-                                                        <td class="px-6 py-4 text-center">
-                                                            ${s.status === 'correct' 
-                                                                ? `<div>
-                                                                    <span class="text-emerald-600 font-bold text-xs"><i class="fas fa-check"></i> Correct</span>
-                                                                    ${s.remarks ? `<div class="text-[10px] text-slate-400 mt-1 italic">"${s.remarks}"</div>` : ''}
-                                                                   </div>` 
-                                                                : s.status === 'incorrect'
-                                                                ? `<div>
-                                                                    <span class="text-red-500 font-bold text-xs">Asked to Redo</span>
-                                                                    ${s.remarks ? `<div class="text-[10px] text-slate-400 mt-1 italic">"${s.remarks}"</div>` : ''}
-                                                                   </div>`
-                                                                : `
-                                                                <div class="flex flex-col gap-2">
-                                                                    <input type="text" id="remark-${s.id}" placeholder="Enter remarks..." class="w-full text-xs border border-slate-200 rounded px-2 py-1 outline-none focus:border-brand-500">
-                                                                    <div class="flex justify-center gap-2">
-                                                                        <button onclick="handleSubmissionGrade('${s.id}', 'correct', this)" class="bg-emerald-500 text-white hover:bg-emerald-600 px-3 py-1 rounded text-xs font-bold transition-colors">Correct</button>
-                                                                        <button onclick="handleSubmissionGrade('${s.id}', 'incorrect', this)" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1 rounded text-xs font-bold transition-colors">Incorrect</button>
-                                                                    </div>
-                                                                </div>
-                                                                `
-                                                                }
-                                                        </td>
-                                                        <td class="px-6 py-4 text-right">
-                                                            <button onclick="handleDeleteSubmission('${s.id}', this)" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
-                                                        </td>
-                                                    </tr>`;
-                                                }).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                    <div class="md:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-brand-500"></i> Upload Task/Solution</h3>
-                                        <form id="addTaskForm" class="space-y-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Upload Type</label>
-                                                <select id="taskType" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                                    <option value="Question">Question</option>
-                                                    <option value="Solution">Solution</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div id="solutionTimeDiv" class="hidden">
-                                                <label class="block text-xs font-bold text-brand-600 uppercase mb-1">Schedule Solution Release</label>
-                                                <input type="datetime-local" id="releaseTime" class="w-full border border-brand-200 bg-brand-50 rounded-lg p-2 text-sm focus:border-brand-500 outline-none text-slate-600">
-                                                <p class="text-[10px] text-slate-400 mt-1">Leave empty to release immediately.</p>
-                                            </div>
-
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Level</label>
-                                                <select id="taskLevel" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                                    <option value="">Select Level...</option>
-                                                    ${ACADEMY_LEVELS.map(l => `<option value="${l}">${l}</option>`).join('')}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
-                                                <input type="text" id="taskTitle" required placeholder="e.g. Week 1 Tactics" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">File Link (URL)</label>
-                                                <input type="url" id="taskLink" required placeholder="https://drive.google.com/..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                            </div>
-                                            <button type="submit" id="btnAddTask" class="w-full bg-secondary-900 text-white font-bold py-2 rounded-lg hover:bg-black transition-colors">Publish</button>
-                                        </form>
-                                    </div>
-
-                                    <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-96">
-                                        <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                            <div>
-                                                <h3 class="font-bold text-slate-700">Active Uploads</h3>
-                                                <span class="text-xs text-slate-400">Showing all posted tasks</span>
-                                            </div>
-                                            <button onclick="handleDeleteAllTasks()" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded font-bold transition-colors shadow-sm"><i class="fas fa-trash-alt mr-1"></i> Delete All</button>
-                                        </div>
-                                        <div class="overflow-y-auto flex-grow p-0">
-                                            <table class="w-full text-left text-sm text-slate-600">
-                                                <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider sticky top-0 border-b border-slate-100">
-                                                    <tr><th class="px-6 py-3">Type</th><th class="px-6 py-3">Level</th><th class="px-6 py-3">Title</th><th class="px-6 py-3 text-right">Action</th></tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-slate-100">
-                                                    ${tasks.length === 0 ? `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No tasks uploaded.</td></tr>` : tasks.map(t => {
-                                                        const typeBadge = t.type === 'Solution' ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase">Solution</span>' : '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase">Question</span>';
-                                                        
-                                                        // Check if scheduled
-                                                        const scheduledBadge = (t.type === 'Solution' && t.releaseTime) 
-                                                            ? `<div class="text-[10px] text-slate-400 mt-1"><i class="far fa-clock"></i> ${new Date(t.releaseTime).toLocaleString([], {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})}</div>`
-                                                            : '';
-
-                                                        return `
-                                                        <tr class="hover:bg-slate-50">
-                                                            <td class="px-6 py-3">
-                                                                ${typeBadge}
-                                                                ${scheduledBadge}
-                                                            </td>
-                                                            <td class="px-6 py-3 font-medium text-brand-600 text-xs">${t.level}</td>
-                                                            <td class="px-6 py-3 font-bold text-slate-800">
-                                                                <a href="${t.link}" target="_blank" class="hover:underline flex items-center gap-2">${t.title} <i class="fas fa-external-link-alt text-xs text-slate-400"></i></a>
-                                                                <div class="text-[10px] text-slate-400">${t.date}</div>
-                                                            </td>
-                                                            <td class="px-6 py-3 text-right">
-                                                                <button onclick="handleDeleteTask('${t.id}', this)" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash-alt"></i></button>
-                                                            </td>
-                                                        </tr>`
-                                                        }).join('')}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 md:mb-8 overflow-hidden">
-                                    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-brand-50">
-                                        <h3 class="font-bold text-brand-900 flex items-center gap-2 text-sm md:text-base"><i class="fas fa-hourglass-half"></i> Admission Requests</h3>
-                                        ${pendingUsers.length > 0 ? `<span class="bg-brand-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">${pendingUsers.length} New</span>` : ''}
-                                    </div>
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[600px]">
-                                            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider">
-                                                <tr><th class="px-6 py-4">Candidate</th><th class="px-6 py-4">Contact</th><th class="px-6 py-4 text-right">Decision</th></tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-slate-100">
-                                                ${pendingUsers.length === 0 ? `<tr><td colspan="3" class="px-6 py-12 text-center text-slate-400"><span>No pending applications.</span></td></tr>` : pendingUsers.map(u => `
-                                                    <tr class="hover:bg-orange-50/50 transition-colors">
-                                                        <td class="px-6 py-4 font-bold text-slate-800 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center"><i class="fas fa-user"></i></div>${u.username}</td>
-                                                        <td class="px-6 py-4 font-mono text-slate-500">${u.phone}</td>
-                                                        <td class="px-6 py-4 text-right space-x-2">
-                                                            <button onclick="handleApproval('${u.username}', 'approved', this)" class="bg-emerald-500 text-white hover:bg-emerald-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold"><i class="fas fa-check mr-1"></i> Accept</button>
-                                                            <button onclick="handleApproval('${u.username}', 'rejected', this)" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold"><i class="fas fa-times mr-1"></i> Reject</button>
-                                                        </td>
-                                                    </tr>`).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                        <h3 class="font-bold text-slate-700 text-sm md:text-base">Student Roster</h3>
-                                        <div class="relative w-48 md:w-64">
-                                            <input type="text" id="rosterSearch" onkeyup="filterRoster()" placeholder="Search student name..." class="w-full pl-9 pr-4 py-1.5 text-xs rounded-full border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[800px]">
-                                            <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
-                                                <tr><th class="px-6 py-3">Student Name</th><th class="px-6 py-3">Account Status</th><th class="px-6 py-3">Assign Level/Rank</th><th class="px-6 py-3 text-right">Delete</th></tr>
-                                            </thead>
-                                            <tbody id="rosterTableBody" class="divide-y divide-slate-100">
-                                                 ${rankedList.length === 0 ? `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No ranked students.</td></tr>` : rankedList.map(u => {
-                                                    
-                                                    // CHECK IF STUDENT SUBMITTED
-                                                    const hasSubmission = submissions.some(s => s.username === u.username);
-                                                    const statusDot = hasSubmission 
-                                                        ? `<span class="w-3 h-3 rounded-full bg-green-500 inline-block ml-2 shadow-sm" title="Task Submitted"></span>` 
-                                                        : `<span class="w-3 h-3 rounded-full bg-red-500 inline-block ml-2 shadow-sm" title="No Submission"></span>`;
-
-                                                    return `
-                                                    <tr class="hover:bg-slate-50">
-                                                        <td class="px-6 py-4 font-medium text-slate-800 student-name-cell">
-                                                            <div class="flex items-center">
-                                                                ${u.username}
-                                                                ${statusDot}
-                                                            </div>
-                                                            <div class="font-mono text-xs text-slate-400">${u.phone}</div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                             <div class="relative w-40">
-                                                                <select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all 
-                                                                    ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : 
-                                                                    u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
-                                                                    u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
-                                                                    <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
-                                                                    <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
-                                                                    <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
-                                                                </select>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                            <div class="relative w-48">
-                                                                <select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="${u.level || 'Unranked'}" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all">
-                                                                    <option value="Unranked">Select Rank...</option>
-                                                                    ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}" ${u.level === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-                                                                </select>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4 text-right">
-                                                            <button onclick="handleDeleteUser('${u.username}', this)" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
-                                                        </td>
-                                                    </tr>`;
-                                                 }).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-            },
         };
 
         // --- CONTROLLER ---
@@ -852,10 +465,18 @@
         function router(route, data = null) {
             CURRENT_VIEW = route; 
             
+            // Clear timer if navigating away from userHome (or refresh it if staying)
+            if(expireTimerInterval) clearInterval(expireTimerInterval);
+
             const app = document.getElementById('app');
             if (views[route]) {
                 app.innerHTML = views[route](data);
                 attachEventListeners(route);
+                
+                // Start timer if on userHome and expireDate exists
+                if (route === 'userHome' && data && data.user && data.user.expireDate && data.user.status !== 'expired') {
+                    startRealtimeTimer(data.user.expireDate);
+                }
             }
         }
 
@@ -867,8 +488,13 @@
             // Smart Refresh: Stay on current view
             if (CURRENT_VIEW === 'unrankedStudents') {
                 router('unrankedStudents', { users, tasks, submissions });
-            } else {
+            } else if (CURRENT_VIEW === 'adminDashboard') {
                 router('adminDashboard', { users, tasks, submissions });
+            } else if (CURRENT_VIEW === 'userHome') {
+                // Determine current user
+                const username = document.querySelector('h2').innerText.replace('Hello, ', '');
+                const currentUser = users.find(u => u.username === username);
+                router('userHome', { user: currentUser, tasks, submissions });
             }
             showToast("Data Refreshed", "info");
         }
@@ -913,9 +539,22 @@
 
                     if (!account) { showToast('Invalid Credentials', 'error'); return; }
                     
+                    // --- NEW IMMEDIATE CHECK ON LOGIN ---
+                    const now = new Date();
+                    if(account.expireDate) {
+                        const expireTime = new Date(account.expireDate);
+                        if(now.getTime() > expireTime.getTime()) {
+                            // If frontend detects expired time, force status to expired locally
+                            // And fire off an async update to backend
+                            if(account.status === 'approved') {
+                                updateUserStatusAPI(account.username, 'expired');
+                                account.status = 'expired';
+                            }
+                        }
+                    }
+                    
                     if (account.status === 'blocked') { showToast('You have not completed the weekly task', 'error'); return; }
-                    if (account.status === 'expired') { showToast('Your weekly task plan is expired', 'error'); return; }
-
+                    
                     if (account.role === 'admin') { 
                         showToast('Welcome Admin', 'success'); 
                         // Fetch everything for admin
@@ -1143,6 +782,56 @@
                 showToast('Failed to save rank', 'error');
                 selectElement.value = originalValue; 
             }
+        };
+        
+        // NEW: Handle Date Updates with ISO Conversion
+        window.handleDateUpdate = async function(username, type, value, inputElement) {
+            inputElement.disabled = true;
+            inputElement.classList.add('opacity-50', 'cursor-wait');
+            showToast(`Saving ${type}...`, 'info');
+            
+            // CONVERT LOCAL TIME TO ISO STRING (UTC) FOR SERVER
+            let isoValue = "";
+            if (value) {
+                const dateObj = new Date(value);
+                isoValue = dateObj.toISOString();
+            }
+
+            const response = await updateUserDatesAPI(username, type, isoValue);
+            
+            inputElement.disabled = false;
+            inputElement.classList.remove('opacity-50', 'cursor-wait');
+            
+            if (response.success) {
+                showToast(`${type} Saved`, 'success');
+                await refreshData(); // Refresh UI to reflect status change immediately
+            } else {
+                showToast('Failed to save date', 'error');
+            }
+        };
+        
+        // --- NEW: Force Check Logic ---
+        window.handleForceCheck = async function() {
+            const btn = document.getElementById('btnForceCheck');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> Checking...`;
+            
+            const response = await forceCheckExpirationsAPI();
+            
+            if(response.success) {
+                if(response.count > 0) {
+                    showToast(`${response.count} users marked as expired.`, 'success');
+                } else {
+                    showToast(`All users are up to date.`, 'info');
+                }
+                await refreshData();
+            } else {
+                showToast('Error checking expirations.', 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         };
 
         // --- NEW FILE UPLOAD HANDLERS ---
@@ -1392,4 +1081,3 @@
     </script>
 </body>
 </html>
-
