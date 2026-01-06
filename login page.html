@@ -62,7 +62,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwrTI6vLg1E5bp2S8VnEwjUrxZfv8-3IKhRK2nhuzBn8laGo0NDMrBks664JIm7sRiPmg/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx3i-muqv_blnttwxGwq0TwpF8_COlNfEkMcV71-w51M_TuF1EREKPPVANER69sjiRTQw/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -70,6 +70,53 @@
             'Advance Level 1', 'Advance Level 2', 'Advance Level 3',
             'Advance Pro'
         ];
+
+        // --- PRICING LOGIC ---
+        function getLevelPrice(level) {
+            if (!level || level === 'Unranked') return 200; // Default
+            if (level.includes('Advance Pro')) return 500;
+            if (level.includes('Advance Level')) return 400;
+            if (level.includes('Intermediate')) return 300;
+            if (level.includes('Beginner')) return 200;
+            return 200; // Fallback
+        }
+
+        // --- MATERIAL LINKS LOGIC ---
+        function getMaterialLinks(level) {
+            // Common Notes Link (Used as main for Unranked, and secondary for others)
+            const commonNotesLink = "https://drive.google.com/drive/folders/1iDA0-CcGfVwJNyWDtUpc0Qon2c-oGghO?usp=sharing";
+            
+            if (!level || level === 'Unranked') {
+                return {
+                    course: commonNotesLink, // Unranked sees Common Notes as their course material
+                    notes: null // Don't show a second card
+                };
+            }
+
+            if (level.includes('Beginner')) {
+                return {
+                    course: "https://drive.google.com/drive/folders/1iRWADoVKAKNRhjjolGJ_GIhNXDbnaAyy?usp=sharing",
+                    notes: commonNotesLink
+                };
+            }
+
+            if (level.includes('Intermediate')) {
+                return {
+                    course: "https://drive.google.com/drive/folders/1CdEedjWBRkhV62aMVnt_rX_YD9riKGHt?usp=sharing",
+                    notes: commonNotesLink
+                };
+            }
+
+            if (level.includes('Advance')) { // Covers Advance 1, 2, 3 and Pro
+                return {
+                    course: "https://drive.google.com/drive/folders/1tVXXHNm4zB2JEPEvz_FXG6enijdFIFLy?usp=sharing",
+                    notes: commonNotesLink
+                };
+            }
+
+            // Fallback
+            return { course: commonNotesLink, notes: null };
+        }
 
         // --- GLOBAL STATE ---
         let CURRENT_VIEW = 'login'; 
@@ -88,6 +135,10 @@
         async function fetchSubmissions() {
             try { return await (await fetch(`${API_URL}?action=getSubmissions`)).json(); } catch (error) { return []; }
         }
+        
+        async function fetchSettings() {
+            try { return await (await fetch(`${API_URL}?action=getSettings`)).json(); } catch (error) { return {}; }
+        }
 
         async function registerUserAPI(userData) {
             return await sendPostRequest({ action: 'register', data: userData });
@@ -103,6 +154,10 @@
         
         async function updateUserDatesAPI(username, type, value) {
             return await sendPostRequest({ action: 'updateUserDates', username: username, type: type, value: value });
+        }
+        
+        async function updateSettingsAPI(tLink, tVideo) {
+             return await sendPostRequest({ action: 'updateSettings', tournamentLink: tLink, tournamentVideo: tVideo });
         }
         
         async function forceCheckExpirationsAPI() {
@@ -214,7 +269,7 @@
                 if(days > 0) timeString += `${days}d `;
                 timeString += `${hours}h ${minutes}m ${seconds}s`;
 
-                timerEl.innerHTML = `<i class="fas fa-clock"></i> ${timeString}`;
+                timerEl.innerHTML = `<span class="mr-1 opacity-70">Time Left:</span> <i class="fas fa-clock"></i> ${timeString}`;
             };
 
             update();
@@ -316,6 +371,14 @@
                 const isRestricted = isUnranked || isExpired;
                 const myTasks = isRestricted ? [] : data.tasks.filter(t => t.level === user.level);
                 const submissions = data.submissions || [];
+                const settings = data.settings || {};
+                
+                const tournamentLink = settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html";
+                const tournamentVideo = settings.TournamentVideo || "";
+                
+                // --- DYNAMIC PRICE & LINKS CALCULATION ---
+                const renewalPrice = getLevelPrice(user.level);
+                const materials = getMaterialLinks(user.level);
 
                 return `
                 <div class="glass-panel w-full max-w-5xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[85vh] border-0">
@@ -341,16 +404,36 @@
                     </div>
                     <div class="flex-grow p-4 md:p-8 bg-orange-50/30 overflow-y-auto">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-                            <a href="https://drive.google.com/drive/folders/1c1BJRTYlsD87HbgpEQNKlymkJ-FhQa9F?usp=sharing" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                            
+                            <a href="${materials.course}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center mb-4"><i class="fas fa-book-open text-lg md:text-xl"></i></div>
                                 <h3 class="font-bold text-base md:text-lg text-slate-800">Course Materials</h3>
                                 <p class="text-slate-500 text-xs md:text-sm mt-2">Study well for <strong>${user.level || 'Beginner'}</strong>.</p>
                             </a>
-                            <a href="https://chesstitansacademy.vercel.app/Tournament.html" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
-                                <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
-                                <h3 class="font-bold text-base md:text-lg text-slate-800">Tournament Status</h3>
-                                <p class="text-slate-500 text-xs md:text-sm mt-2">Phone: <span class="font-mono text-slate-700 bg-slate-100 px-1 rounded">${user.phone}</span></p>
+
+                            ${materials.notes ? `
+                            <a href="${materials.notes}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                                <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4"><i class="fas fa-sticky-note text-lg md:text-xl"></i></div>
+                                <h3 class="font-bold text-base md:text-lg text-slate-800">Common Notes</h3>
+                                <p class="text-slate-500 text-xs md:text-sm mt-2">Essential notes for all levels.</p>
                             </a>
+                            ` : ''}
+
+                            <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all relative group">
+                                <a href="${tournamentLink}" target="_blank" class="absolute inset-0 z-0"></a>
+                                <div class="relative z-10 pointer-events-none">
+                                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
+                                    <h3 class="font-bold text-base md:text-lg text-slate-800">Tournament Status</h3>
+                                    <p class="text-slate-500 text-xs md:text-sm mt-2">Check pairings & standings.</p>
+                                </div>
+                                ${tournamentVideo ? `
+                                <div class="mt-3 relative z-20">
+                                    <a href="${tournamentVideo}" target="_blank" class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm">
+                                        <i class="fas fa-video"></i> Watch Video
+                                    </a>
+                                </div>` : ''}
+                            </div>
+
                             <a href="https://chesstitansacademy.vercel.app/chessbot.html" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center mb-4"><i class="fas fa-chess-board text-lg md:text-xl"></i></div>
                                 <h3 class="font-bold text-base md:text-lg text-slate-800">Practice Board</h3>
@@ -371,7 +454,7 @@
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center mb-4"><i class="fas fa-lock text-lg md:text-xl"></i></div>
                                     <h3 class="font-bold text-base md:text-lg text-slate-400">Existing Weekly Task List</h3>
                                     <p class="text-brand-600 font-bold text-xs md:text-sm mt-2">
-                                        <i class="fas fa-info-circle"></i> ${isExpired ? 'Pay Rs 200 to Renew' : 'Pay Rs 200 to Access'}
+                                        <i class="fas fa-info-circle"></i> ${isExpired ? `Pay Rs ${renewalPrice} to Renew` : `Pay Rs ${renewalPrice} to Access`}
                                     </p>
                                 </div>
                                 `
@@ -395,9 +478,9 @@
                                             ${isExpired ? 'Your weekly task plan has expired. Please renew to continue learning.' : 'You have to pay to access the weekly task.'}
                                         </p>
                                         <div class="bg-orange-50 border border-orange-200 rounded-xl p-6 w-full max-w-xs shadow-sm">
-                                            <p class="font-bold text-brand-600 text-2xl mb-1">Rs 200</p>
+                                            <p class="font-bold text-brand-600 text-2xl mb-1">Rs ${renewalPrice}</p>
                                             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">${isExpired ? 'Renewal Fee' : '3 Months Validity'}</p>
-                                            <a href="upi://pay?pa=mahimairaj678@oksbi&pn=Steve Steve&am=200&cu=INR" class="bg-white py-2 px-3 rounded-lg border border-orange-100 flex items-center justify-center gap-2 text-slate-800 font-bold font-mono text-sm hover:bg-orange-100 transition-colors cursor-pointer block">
+                                            <a href="upi://pay?pa=mahimairaj678@oksbi&pn=Steve Steve&am=${renewalPrice}&cu=INR" class="bg-white py-2 px-3 rounded-lg border border-orange-100 flex items-center justify-center gap-2 text-slate-800 font-bold font-mono text-sm hover:bg-orange-100 transition-colors cursor-pointer block">
                                                 <i class="fab fa-google-pay text-brand-500 text-lg"></i> 9444748538
                                             </a>
                                         </div>
@@ -478,13 +561,13 @@
                             </div>
                             <nav class="flex-grow p-4 space-y-2 relative z-10">
                                 <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</div>
-                                <button onclick="router('adminDashboard', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
+                                <button onclick="router('adminDashboard', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions, settings: window.cachedData.settings})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
                                     <i class="fas fa-arrow-left w-5 text-center"></i> Back to Dashboard
                                 </button>
                                 <div class="bg-brand-600 text-white rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg mt-2">
                                     <i class="fas fa-user-tag w-5 text-center"></i> Unranked Students
                                 </div>
-                                <button onclick="router('expiredStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors mt-1">
+                                <button onclick="router('expiredStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions, settings: window.cachedData.settings})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors mt-1">
                                     <i class="fas fa-clock w-5 text-center"></i> Plan Expired Students ${expiredBadge}
                                 </button>
                             </nav>
@@ -599,10 +682,10 @@
                             </div>
                             <nav class="flex-grow p-4 space-y-2 relative z-10">
                                 <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</div>
-                                <button onclick="router('adminDashboard', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
+                                <button onclick="router('adminDashboard', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions, settings: window.cachedData.settings})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
                                     <i class="fas fa-arrow-left w-5 text-center"></i> Back to Dashboard
                                 </button>
-                                <button onclick="router('unrankedStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
+                                <button onclick="router('unrankedStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions, settings: window.cachedData.settings})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
                                     <i class="fas fa-user-tag w-5 text-center"></i> Unranked Students
                                 </button>
                                 <div class="bg-red-600 text-white rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg mt-1">
@@ -688,6 +771,7 @@
                 const users = data.users || [];
                 const tasks = data.tasks || [];
                 const submissions = data.submissions || [];
+                const settings = data.settings || {};
                 const pendingUsers = users.filter(u => u.status === 'pending');
                 
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
@@ -696,7 +780,6 @@
 
                 const pendingSubmissions = submissions.filter(s => s.status === 'pending');
                 
-                // Calculate expired count for badge
                 const expiredCount = users.filter(u => u.status === 'expired').length;
                 const expiredBadge = expiredCount > 0 ? `<span class="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${expiredCount}</span>` : '';
                 
@@ -718,12 +801,12 @@
                                 <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</div>
                                 <a href="#" class="block px-4 py-3 bg-brand-600 text-white rounded-lg flex items-center gap-3 shadow-lg"><i class="fas fa-users-cog w-5 text-center"></i> Dashboard</a>
                                 
-                                <button onclick="router('unrankedStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
+                                <button onclick="router('unrankedStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions, settings: window.cachedData.settings})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors">
                                     <i class="fas fa-user-tag w-5 text-center"></i>
                                     <span>Unranked Students</span>
                                     ${unrankedList.length > 0 ? `<span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">${unrankedList.length}</span>` : ''}
                                 </button>
-                                <button onclick="router('expiredStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors mt-1">
+                                <button onclick="router('expiredStudents', {users: window.cachedData.users, tasks: window.cachedData.tasks, submissions: window.cachedData.submissions, settings: window.cachedData.settings})" class="w-full text-left px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg flex items-center gap-3 transition-colors mt-1">
                                     <i class="fas fa-clock w-5 text-center"></i> Plan Expired Students ${expiredBadge}
                                 </button>
                             </nav>
@@ -858,43 +941,60 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                    <div class="md:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-brand-500"></i> Upload Task/Solution</h3>
-                                        <form id="addTaskForm" class="space-y-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Upload Type</label>
-                                                <select id="taskType" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                                    <option value="Question">Question</option>
-                                                    <option value="Solution">Solution</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div id="solutionTimeDiv" class="hidden">
-                                                <label class="block text-xs font-bold text-brand-600 uppercase mb-1">Schedule Solution Release</label>
-                                                <input type="datetime-local" id="releaseTime" class="w-full border border-brand-200 bg-brand-50 rounded-lg p-2 text-sm focus:border-brand-500 outline-none text-slate-600">
-                                                <p class="text-[10px] text-slate-400 mt-1">Leave empty to release immediately.</p>
-                                            </div>
+                                    <div class="md:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col gap-6">
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt text-brand-500"></i> Upload Task/Solution</h3>
+                                            <form id="addTaskForm" class="space-y-4">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Upload Type</label>
+                                                    <select id="taskType" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                        <option value="Question">Question</option>
+                                                        <option value="Solution">Solution</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div id="solutionTimeDiv" class="hidden">
+                                                    <label class="block text-xs font-bold text-brand-600 uppercase mb-1">Schedule Solution Release</label>
+                                                    <input type="datetime-local" id="releaseTime" class="w-full border border-brand-200 bg-brand-50 rounded-lg p-2 text-sm focus:border-brand-500 outline-none text-slate-600">
+                                                    <p class="text-[10px] text-slate-400 mt-1">Leave empty to release immediately.</p>
+                                                </div>
 
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Level</label>
-                                                <select id="taskLevel" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                                    <option value="">Select Level...</option>
-                                                    ${ACADEMY_LEVELS.map(l => `<option value="${l}">${l}</option>`).join('')}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
-                                                <input type="text" id="taskTitle" required placeholder="e.g. Week 1 Tactics" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">File Link (URL)</label>
-                                                <input type="url" id="taskLink" required placeholder="https://drive.google.com/..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
-                                            </div>
-                                            <button type="submit" id="btnAddTask" class="w-full bg-secondary-900 text-white font-bold py-2 rounded-lg hover:bg-black transition-colors">Publish</button>
-                                        </form>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Level</label>
+                                                    <select id="taskLevel" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                        <option value="">Select Level...</option>
+                                                        ${ACADEMY_LEVELS.map(l => `<option value="${l}">${l}</option>`).join('')}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
+                                                    <input type="text" id="taskTitle" required placeholder="e.g. Week 1 Tactics" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">File Link (URL)</label>
+                                                    <input type="url" id="taskLink" required placeholder="https://drive.google.com/..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                </div>
+                                                <button type="submit" id="btnAddTask" class="w-full bg-secondary-900 text-white font-bold py-2 rounded-lg hover:bg-black transition-colors">Publish</button>
+                                            </form>
+                                        </div>
+                                        
+                                        <div class="border-t border-slate-100 pt-4">
+                                            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-globe text-blue-500"></i> Global Tournament Updates</h3>
+                                            <form id="globalSettingsForm" class="space-y-4">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tournament Page Link</label>
+                                                    <input type="text" id="settingTourLink" value="${settings.TournamentLink || ''}" placeholder="URL for Tournament Card" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tournament Video Link</label>
+                                                    <input type="text" id="settingTourVideo" value="${settings.TournamentVideo || ''}" placeholder="Optional Video URL" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                                </div>
+                                                <button type="submit" id="btnUpdateSettings" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors">Update Global Links</button>
+                                            </form>
+                                        </div>
                                     </div>
 
-                                    <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-96">
+                                    <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-full min-h-[500px]">
                                         <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                                             <div>
                                                 <h3 class="font-bold text-slate-700">Active Uploads</h3>
@@ -1039,22 +1139,22 @@
         }
 
         async function refreshData() {
-            const [users, tasks, submissions] = await Promise.all([fetchUsers(), fetchTasks(), fetchSubmissions()]);
+            const [users, tasks, submissions, settings] = await Promise.all([fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings()]);
             // Update cache
-            window.cachedData = { users, tasks, submissions };
+            window.cachedData = { users, tasks, submissions, settings };
             
             // Smart Refresh: Stay on current view
             if (CURRENT_VIEW === 'unrankedStudents') {
-                router('unrankedStudents', { users, tasks, submissions });
+                router('unrankedStudents', { users, tasks, submissions, settings });
             } else if (CURRENT_VIEW === 'adminDashboard') {
-                router('adminDashboard', { users, tasks, submissions });
+                router('adminDashboard', { users, tasks, submissions, settings });
             } else if (CURRENT_VIEW === 'expiredStudents') {
-                router('expiredStudents', { users, tasks, submissions });
+                router('expiredStudents', { users, tasks, submissions, settings });
             } else if (CURRENT_VIEW === 'userHome') {
                 // Determine current user
                 const username = document.querySelector('h2').innerText.replace('Hello, ', '');
                 const currentUser = users.find(u => u.username === username);
-                router('userHome', { user: currentUser, tasks, submissions });
+                router('userHome', { user: currentUser, tasks, submissions, settings });
             }
             showToast("Data Refreshed", "info");
         }
@@ -1104,8 +1204,8 @@
                     if (account.role === 'admin') { 
                         showToast('Welcome Admin', 'success'); 
                         // Fetch everything for admin
-                        const [tasks, submissions] = await Promise.all([fetchTasks(), fetchSubmissions()]);
-                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions }); 
+                        const [tasks, submissions, settings] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings()]);
+                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings }); 
                         return; 
                     }
 
@@ -1131,8 +1231,8 @@
 
                     showToast('Welcome Student', 'success');
                     // Fetch data for student
-                    const [tasks, submissions] = await Promise.all([fetchTasks(), fetchSubmissions()]);
-                    router('userHome', { user: account, tasks: tasks, submissions: submissions });
+                    const [tasks, submissions, settings] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings()]);
+                    router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings });
                 });
             } else if (route === 'register') {
                 document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -1153,6 +1253,7 @@
                 });
             } else if (route === 'adminDashboard') {
                 const taskForm = document.getElementById('addTaskForm');
+                const settingsForm = document.getElementById('globalSettingsForm');
                 
                 // NEW: Listener to toggle the Time Picker visibility
                 const typeSelect = document.getElementById('taskType');
@@ -1166,6 +1267,25 @@
                             timeDiv.classList.add('hidden');
                             document.getElementById('releaseTime').value = ""; // Clear if switching back
                         }
+                    });
+                }
+                
+                if(settingsForm) {
+                    settingsForm.addEventListener('submit', async (e) => {
+                         e.preventDefault();
+                         const btn = document.getElementById('btnUpdateSettings');
+                         const originalText = btn.innerHTML;
+                         setButtonLoading(btn, true);
+                         const tLink = document.getElementById('settingTourLink').value;
+                         const tVideo = document.getElementById('settingTourVideo').value;
+                         const response = await updateSettingsAPI(tLink, tVideo);
+                         if(response.success) {
+                             showToast('Global Links Updated!', 'success');
+                             await refreshData();
+                         } else {
+                             showToast('Failed to update', 'error');
+                         }
+                         setButtonLoading(btn, false, originalText);
                     });
                 }
 
@@ -1468,8 +1588,8 @@
                              const currentUser = document.querySelector('h2').innerText.replace('Hello, ', '');
                              const users = await fetchUsers();
                              const account = users.find(u => u.username === currentUser);
-                             const [tasks, submissions] = await Promise.all([fetchTasks(), fetchSubmissions()]);
-                             router('userHome', { user: account, tasks: tasks, submissions: submissions });
+                             const [tasks, submissions, settings] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings()]);
+                             router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings });
                         }, 1000);
 
                     } else {
@@ -1645,6 +1765,3 @@
     </script>
 </body>
 </html>
-
-
-
