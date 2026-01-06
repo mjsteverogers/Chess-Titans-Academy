@@ -373,8 +373,18 @@
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
                 
-                const tournamentLink = settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html";
-                const tournamentVideo = settings.TournamentVideo || "";
+                // --- LOGIC UPDATE HERE ---
+                let tournamentLink, tournamentVideo;
+
+                if (isUnranked) {
+                    // Unranked Students: Show only the existing hardcoded link, NO video
+                    tournamentLink = "https://chesstitansacademy.vercel.app/Tournament.html";
+                    tournamentVideo = ""; // Ensure video is hidden
+                } else {
+                    // Ranked (Level Assigned) Students: Show Global Links from Admin
+                    tournamentLink = settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html";
+                    tournamentVideo = settings.TournamentVideo || "";
+                }
                 
                 // --- DYNAMIC PRICE & LINKS CALCULATION ---
                 const renewalPrice = getLevelPrice(user.level);
