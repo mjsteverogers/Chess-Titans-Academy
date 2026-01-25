@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkmate Connect</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Scrollbar for Chat */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        video {
+            transform: scaleX(-1); /* Mirror local video */
+        }
+        .screen-share-video {
+            transform: scaleX(1) !important; /* Don't mirror screen share */
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans h-screen flex flex-col overflow-hidden">
+
+    <!-- LOBBY VIEW -->
+    <div id="lobby-view" class="flex-1 flex items-center justify-center p-4">
+        <div class="max-w-4xl w-full grid md:grid-cols-2 gap-8 items-center">
+            
+            <!-- Branding -->
+            <div class="space-y-6">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-emerald-600 p-3 rounded-lg">
+                        <i data-lucide="crown" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h1 class="text-4xl font-bold text-white tracking-tight">Checkmate Connect</h1>
+                </div>
+                <p class="text-lg text-slate-400">
+                    The premier video classroom for chess analysis. Share your screen, discuss moves, and teach grandmaster strategies in real-time.
+                </p>
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                        <i data-lucide="monitor" class="text-emerald-500 mb-2"></i>
+                        <h3 class="font-semibold text-white">Screen Sharing</h3>
+                        <p class="text-sm text-slate-500">Analyze boards live</p>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                        <i data-lucide="users" class="text-blue-500 mb-2"></i>
+                        <h3 class="font-semibold text-white">Classroom Mode</h3>
+                        <p class="text-sm text-slate-500">Connect with students</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Join Form -->
+            <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-2xl font-bold text-white mb-6">Join Session</h2>
+                
+                <div id="error-message" class="hidden mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm"></div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Your Name</label>
+                        <input type="text" id="username" placeholder="e.g. GM Carlsen"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-slate-800"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-slate-900 text-slate-500">I am a</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="setRole('student')" id="btn-role-student"
+                            class="p-3 rounded-xl border flex flex-col items-center gap-2 transition-all bg-emerald-600/10 border-emerald-500 text-emerald-400">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                            <span>Student</span>
+                        </button>
+                        <button onclick="setRole('teacher')" id="btn-role-teacher"
+                            class="p-3 rounded-xl border flex flex-col items-center gap-2 transition-all bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400">
+                            <i data-lucide="crown" class="w-5 h-5"></i>
+                            <span>Teacher</span>
+                        </button>
+                    </div>
+
+                    <div id="room-input-container">
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Room ID</label>
+                        <input type="text" id="room-id" placeholder="Paste ID from teacher"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono">
+                    </div>
+
+                    <button id="btn-connect" onclick="handleConnect()"
+                        class="w-full py-3 text-lg mt-4 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Join Class
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOM VIEW -->
+    <div id="room-view" class="hidden flex-col h-full">
+        <!-- Header -->
+        <header class="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="crown" class="text-emerald-500 w-6 h-6"></i>
+                <h1 class="font-bold text-white hidden md:block">Checkmate Connect</h1>
+                <div class="h-6 w-px bg-slate-700 mx-2 hidden md:block"></div>
+                <div class="flex items-center space-x-2 bg-slate-800 py-1.5 px-3 rounded-full border border-slate-700">
+                    <span class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Room ID</span>
+                    <code id="display-room-id" class="text-sm font-mono text-emerald-400 select-all">...</code>
+                    <button onclick="copyRoomId()" class="text-slate-400 hover:text-white ml-2" title="Copy Link">
+                        <i data-lucide="copy" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="toggleChat()" id="btn-chat-toggle"
+                    class="p-2 rounded-full relative bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <span id="chat-badge" class="hidden absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Video Grid -->
+            <div id="video-grid-container" class="flex-1 p-4 overflow-y-auto custom-scroll transition-all duration-300">
+                <div id="video-grid" class="grid gap-4 h-full grid-cols-1 md:grid-cols-2 max-w-6xl mx-auto">
+                    <!-- Local Video added by JS -->
+                </div>
+                
+                <!-- Waiting Placeholder -->
+                <div id="waiting-placeholder" class="hidden flex-col items-center justify-center h-full border-2 border-dashed border-slate-800 rounded-xl text-slate-500">
+                    <i data-lucide="users" class="w-12 h-12 mb-4 opacity-50"></i>
+                    <p>Waiting for students to join...</p>
+                    <p class="text-sm mt-2">Share the link above to invite them.</p>
+                </div>
+            </div>
+
+            <!-- Chat Sidebar -->
+            <div id="chat-sidebar" class="hidden w-80 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 transition-all duration-300">
+                <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="font-semibold text-white">Class Chat</h3>
+                    <button onclick="toggleChat()"><i data-lucide="x" class="w-5 h-5 text-slate-400 hover:text-white"></i></button>
+                </div>
+                
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
+                    <div class="text-center text-slate-600 text-sm mt-10">No messages yet. Say hi!</div>
+                </div>
+
+                <form onsubmit="sendMessage(event)" class="p-4 border-t border-slate-800 bg-slate-900">
+                    <div class="relative">
+                        <input type="text" id="chat-input" placeholder="Type a message..."
+                            class="w-full bg-slate-950 border border-slate-700 rounded-full pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                        <button type="submit"
+                            class="absolute right-1.5 top-1.5 p-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer Controls -->
+        <div class="h-20 bg-slate-900 border-t border-slate-800 flex items-center justify-center gap-4 shrink-0 px-4">
+            <button onclick="toggleAudio()" id="btn-audio" class="p-4 rounded-full bg-slate-800 text-white hover:bg-slate-700 transition-all" title="Mute/Unmute">
+                <i data-lucide="mic" class="w-6 h-6"></i>
+            </button>
+
+            <button onclick="toggleVideo()" id="btn-video" class="p-4 rounded-full bg-slate-800 text-white hover:bg-slate-700 transition-all" title="Video On/Off">
+                <i data-lucide="video" class="w-6 h-6"></i>
+            </button>
+
+            <button onclick="toggleScreenShare()" id="btn-screen" class="hidden p-4 rounded-full bg-slate-800 text-white hover:bg-slate-700 transition-all" title="Share Screen">
+                <i data-lucide="monitor" class="w-6 h-6"></i>
+            </button>
+
+            <button onclick="leaveRoom()" class="p-4 rounded-full bg-red-600 text-white hover:bg-red-700 ml-4 shadow-lg shadow-red-900/20" title="Leave">
+                <i data-lucide="phone-off" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- State ---
+        let state = {
+            role: 'student', // 'teacher' | 'student'
+            username: '',
+            roomId: '',
+            localStream: null,
+            screenStream: null,
+            peer: null,
+            calls: {}, // Map of active MediaConnections
+            connections: {}, // Map of active DataConnections (Chat)
+            isMuted: false,
+            isVideoOff: false,
+            isScreenSharing: false,
+            isChatOpen: false
+        };
+
+        // --- Init ---
+        lucide.createIcons();
+
+        // Check URL for room ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlRoom = urlParams.get('room');
+        if (urlRoom) {
+            document.getElementById('room-id').value = urlRoom;
+            setRole('student');
+        }
+
+        // --- UI Functions ---
+
+        function setRole(role) {
+            state.role = role;
+            
+            // UI Updates
+            const btnStudent = document.getElementById('btn-role-student');
+            const btnTeacher = document.getElementById('btn-role-teacher');
+            const roomInput = document.getElementById('room-input-container');
+            const btnConnect = document.getElementById('btn-connect');
+            const btnScreen = document.getElementById('btn-screen');
+
+            if (role === 'student') {
+                btnStudent.className = "p-3 rounded-xl border flex flex-col items-center gap-2 transition-all bg-emerald-600/10 border-emerald-500 text-emerald-400";
+                btnTeacher.className = "p-3 rounded-xl border flex flex-col items-center gap-2 transition-all bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400";
+                roomInput.classList.remove('hidden');
+                btnConnect.innerText = "Join Class";
+                btnScreen.classList.add('hidden'); // Hide screen share for students
+            } else {
+                btnTeacher.className = "p-3 rounded-xl border flex flex-col items-center gap-2 transition-all bg-emerald-600/10 border-emerald-500 text-emerald-400";
+                btnStudent.className = "p-3 rounded-xl border flex flex-col items-center gap-2 transition-all bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400";
+                roomInput.classList.add('hidden');
+                btnConnect.innerText = "Start New Class";
+                btnScreen.classList.remove('hidden'); // Show screen share for teacher
+            }
+            lucide.createIcons();
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('error-message');
+            el.innerText = msg;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        function toggleChat() {
+            state.isChatOpen = !state.isChatOpen;
+            const sidebar = document.getElementById('chat-sidebar');
+            const btn = document.getElementById('btn-chat-toggle');
+            const badge = document.getElementById('chat-badge');
+            
+            if (state.isChatOpen) {
+                sidebar.classList.remove('hidden');
+                btn.classList.remove('bg-slate-800', 'text-slate-400');
+                btn.classList.add('bg-emerald-600', 'text-white');
+                badge.classList.add('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+                btn.classList.add('bg-slate-800', 'text-slate-400');
+                btn.classList.remove('bg-emerald-600', 'text-white');
+            }
+        }
+
+        function updateGridLayout() {
+            const grid = document.getElementById('video-grid');
+            const count = grid.children.length;
+            
+            grid.className = 'grid gap-4 h-full max-w-6xl mx-auto transition-all duration-300';
+            
+            if (count <= 1) grid.classList.add('grid-cols-1', 'md:grid-cols-2');
+            else if (count === 2) grid.classList.add('grid-cols-1', 'md:grid-cols-2');
+            else grid.classList.add('grid-cols-2', 'md:grid-cols-3');
+            
+            // Show waiting placeholder if teacher is alone
+            if (state.role === 'teacher' && count === 1) {
+                document.getElementById('waiting-placeholder').classList.remove('hidden');
+                document.getElementById('waiting-placeholder').classList.add('flex');
+            } else {
+                document.getElementById('waiting-placeholder').classList.add('hidden');
+                document.getElementById('waiting-placeholder').classList.remove('flex');
+            }
+        }
+
+        // --- Logic ---
+
+        async function handleConnect() {
+            const usernameInput = document.getElementById('username');
+            state.username = usernameInput.value.trim();
+            
+            if (!state.username) return showError("Please enter your name");
+
+            // Disable button
+            document.getElementById('btn-connect').disabled = true;
+            document.getElementById('btn-connect').innerText = "Connecting...";
+
+            try {
+                // 1. Get Media
+                state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                
+                // 2. Determine ID
+                let myId = null;
+                if (state.role === 'teacher') {
+                    // Generate ID
+                    state.roomId = `chess-${Math.random().toString(36).substr(2, 6)}`;
+                    myId = state.roomId;
+                } else {
+                    state.roomId = document.getElementById('room-id').value.trim();
+                    if (!state.roomId) throw new Error("Please enter a Room ID");
+                }
+
+                // 3. Init Peer
+                state.peer = new Peer(myId, { debug: 1 });
+
+                state.peer.on('open', (id) => {
+                    console.log('Connected as:', id);
+                    switchToRoomView();
+                    
+                    // Add local video
+                    addVideo(state.localStream, state.username, true);
+                    
+                    // If student, call teacher
+                    if (state.role === 'student') {
+                        connectToTeacher();
+                    }
+                });
+
+                state.peer.on('call', (call) => {
+                    console.log('Incoming call');
+                    call.answer(state.localStream);
+                    handleCall(call);
+                });
+
+                state.peer.on('connection', (conn) => {
+                    handleDataConnection(conn);
+                });
+
+                state.peer.on('error', (err) => {
+                    console.error(err);
+                    showError(`Connection Error: ${err.type}`);
+                    document.getElementById('btn-connect').disabled = false;
+                });
+
+            } catch (err) {
+                console.error(err);
+                showError("Could not access camera/mic. Please allow permissions.");
+                document.getElementById('btn-connect').disabled = false;
+                document.getElementById('btn-connect').innerText = state.role === 'teacher' ? "Start New Class" : "Join Class";
+            }
+        }
+
+        function switchToRoomView() {
+            document.getElementById('lobby-view').classList.add('hidden');
+            document.getElementById('room-view').classList.remove('hidden');
+            document.getElementById('room-view').classList.add('flex');
+            document.getElementById('display-room-id').innerText = state.roomId;
+        }
+
+        function connectToTeacher() {
+            // Call for video
+            const call = state.peer.call(state.roomId, state.localStream, {
+                metadata: { name: state.username }
+            });
+            handleCall(call);
+
+            // Connect for chat
+            const conn = state.peer.connect(state.roomId, {
+                metadata: { name: state.username }
+            });
+            handleDataConnection(conn);
+        }
+
+        function handleCall(call) {
+            state.calls[call.peer] = call;
+
+            call.on('stream', (remoteStream) => {
+                // If stream already exists, don't add
+                if (document.getElementById(`video-container-${call.peer}`)) return;
+
+                const name = call.metadata?.name || 'User';
+                addVideo(remoteStream, name, false, call.peer);
+            });
+
+            call.on('close', () => {
+                removeVideo(call.peer);
+                delete state.calls[call.peer];
+            });
+
+            call.on('error', () => {
+                removeVideo(call.peer);
+            });
+        }
+
+        function handleDataConnection(conn) {
+            state.connections[conn.peer] = conn;
+
+            conn.on('data', (data) => {
+                if (data.type === 'chat') {
+                    addChatMessage(data.payload);
+                }
+            });
+
+            conn.on('close', () => {
+                delete state.connections[conn.peer];
+            });
+        }
+
+        // --- Video DOM Manipulation ---
+
+        function addVideo(stream, label, isLocal, peerId = 'local') {
+            const grid = document.getElementById('video-grid');
+            const containerId = `video-container-${peerId}`;
+
+            // Avoid duplicates
+            if (document.getElementById(containerId)) return;
+
+            const container = document.createElement('div');
+            container.id = containerId;
+            container.className = `relative bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-700 aspect-video group ${isLocal ? 'ring-2 ring-emerald-500/50' : ''}`;
+            
+            // Video Element
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.playsInline = true;
+            if (isLocal) video.muted = true;
+            video.className = `w-full h-full object-cover ${isLocal ? 'local-video' : ''}`; // Mirror local only
+            
+            // Overlay
+            const overlay = document.createElement('div');
+            overlay.className = "absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-center";
+            overlay.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <div class="bg-slate-800/80 backdrop-blur-sm p-1.5 rounded-full">
+                        <i data-lucide="user" class="w-3 h-3 text-emerald-400"></i>
+                    </div>
+                    <span class="text-white text-sm font-medium shadow-black drop-shadow-md truncate max-w-[120px]">
+                        ${label} ${isLocal ? '(You)' : ''}
+                    </span>
+                </div>
+            `;
+
+            container.appendChild(video);
+            container.appendChild(overlay);
+            grid.appendChild(container);
+            
+            lucide.createIcons();
+            updateGridLayout();
+        }
+
+        function removeVideo(peerId) {
+            const el = document.getElementById(`video-container-${peerId}`);
+            if (el) el.remove();
+            updateGridLayout();
+        }
+
+        // --- Chat Logic ---
+
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const payload = {
+                id: Date.now(),
+                sender: state.username,
+                text: text,
+                role: state.role
+            };
+
+            // Display locally
+            addChatMessage(payload);
+
+            // Send to all
+            Object.values(state.connections).forEach(conn => {
+                if (conn.open) conn.send({ type: 'chat', payload });
+            });
+
+            input.value = '';
+        }
+
+        function addChatMessage(msg) {
+            const container = document.getElementById('chat-messages');
+            
+            // Check if this is the first message (remove "No messages" text)
+            if (container.children.length === 1 && container.children[0].classList.contains('text-center')) {
+                container.innerHTML = '';
+            }
+
+            const isMe = msg.sender === state.username;
+            
+            const div = document.createElement('div');
+            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+            div.innerHTML = `
+                <div class="flex items-baseline space-x-2 mb-1">
+                     <span class="text-xs text-slate-400 font-medium">${msg.sender}</span>
+                     ${msg.role === 'teacher' ? '<i data-lucide="crown" class="w-3 h-3 text-emerald-500 inline"></i>' : ''}
+                </div>
+                <div class="px-3 py-2 rounded-lg text-sm max-w-[90%] break-words ${isMe ? 'bg-emerald-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'}">
+                    ${msg.text}
+                </div>
+            `;
+            
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+
+            // Show badge if chat closed
+            if (!state.isChatOpen) {
+                document.getElementById('chat-badge').classList.remove('hidden');
+            }
+        }
+
+        // --- Controls ---
+
+        function toggleAudio() {
+            if (state.localStream) {
+                const track = state.localStream.getAudioTracks()[0];
+                track.enabled = !track.enabled;
+                state.isMuted = !track.enabled;
+                
+                const btn = document.getElementById('btn-audio');
+                if (state.isMuted) {
+                    btn.classList.add('bg-red-500/20', 'text-red-500');
+                    btn.classList.remove('bg-slate-800', 'text-white');
+                    btn.innerHTML = '<i data-lucide="mic-off" class="w-6 h-6"></i>';
+                } else {
+                    btn.classList.remove('bg-red-500/20', 'text-red-500');
+                    btn.classList.add('bg-slate-800', 'text-white');
+                    btn.innerHTML = '<i data-lucide="mic" class="w-6 h-6"></i>';
+                }
+                lucide.createIcons();
+            }
+        }
+
+        function toggleVideo() {
+            if (state.localStream) {
+                const track = state.localStream.getVideoTracks()[0];
+                track.enabled = !track.enabled;
+                state.isVideoOff = !track.enabled;
+
+                const btn = document.getElementById('btn-video');
+                if (state.isVideoOff) {
+                    btn.classList.add('bg-red-500/20', 'text-red-500');
+                    btn.classList.remove('bg-slate-800', 'text-white');
+                    btn.innerHTML = '<i data-lucide="video-off" class="w-6 h-6"></i>';
+                } else {
+                    btn.classList.remove('bg-red-500/20', 'text-red-500');
+                    btn.classList.add('bg-slate-800', 'text-white');
+                    btn.innerHTML = '<i data-lucide="video" class="w-6 h-6"></i>';
+                }
+                lucide.createIcons();
+            }
+        }
+
+        async function toggleScreenShare() {
+            if (state.isScreenSharing) {
+                // STOP Sharing
+                stopScreenShare();
+            } else {
+                // START Sharing
+                try {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    state.screenStream = stream;
+                    state.isScreenSharing = true;
+
+                    // UI Update
+                    const btn = document.getElementById('btn-screen');
+                    btn.classList.add('bg-blue-600', 'text-white', 'shadow-blue-500/20');
+                    btn.classList.remove('bg-slate-800');
+
+                    // 1. Update Local Video View
+                    const localVidContainer = document.getElementById('video-container-local');
+                    const videoTag = localVidContainer.querySelector('video');
+                    videoTag.srcObject = stream;
+                    videoTag.classList.remove('local-video'); // Remove mirror effect
+                    videoTag.classList.add('screen-share-video'); // Ensure proper scale
+
+                    // 2. Replace Track for Peers
+                    const screenTrack = stream.getVideoTracks()[0];
+                    
+                    Object.values(state.calls).forEach(call => {
+                        const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                        if (sender) sender.replaceTrack(screenTrack);
+                    });
+
+                    // Handle native stop button
+                    screenTrack.onended = () => stopScreenShare();
+
+                } catch (err) {
+                    console.error("Screen share cancelled", err);
+                }
+            }
+        }
+
+        function stopScreenShare() {
+            if (state.screenStream) {
+                state.screenStream.getTracks().forEach(t => t.stop());
+                state.screenStream = null;
+            }
+            state.isScreenSharing = false;
+
+            // UI Update
+            const btn = document.getElementById('btn-screen');
+            btn.classList.remove('bg-blue-600', 'text-white', 'shadow-blue-500/20');
+            btn.classList.add('bg-slate-800', 'text-white');
+
+            // 1. Revert Local Video
+            const localVidContainer = document.getElementById('video-container-local');
+            const videoTag = localVidContainer.querySelector('video');
+            videoTag.srcObject = state.localStream;
+            videoTag.classList.add('local-video'); // Restore mirror
+            videoTag.classList.remove('screen-share-video');
+
+            // 2. Revert Track for Peers
+            const cameraTrack = state.localStream.getVideoTracks()[0];
+            Object.values(state.calls).forEach(call => {
+                const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                if (sender) sender.replaceTrack(cameraTrack);
+            });
+        }
+
+        function copyRoomId() {
+            const url = `${window.location.origin}${window.location.pathname}?room=${state.roomId}`;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.querySelector('#display-room-id + button');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-500"></i>';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    lucide.createIcons();
+                }, 2000);
+            });
+        }
+
+        function leaveRoom() {
+            if (state.localStream) state.localStream.getTracks().forEach(t => t.stop());
+            if (state.screenStream) state.screenStream.getTracks().forEach(t => t.stop());
+            if (state.peer) state.peer.destroy();
+            window.location.href = window.location.pathname;
+        }
+
+    </script>
+</body>
+</html>
