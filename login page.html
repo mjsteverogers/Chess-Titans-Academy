@@ -62,18 +62,20 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyVM5EHBhb2-q6gW0qdP3Mde90kIpEmtIfV9V5UQNi7eTayjJnFm6okkDO-tXxHd00Y2Q/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzoDwdpxsakIWAzEfNE1dk4yE6RPSGi9avW4kg2JFz7O6W4lSlOMiyF_hxMEuB86zAMVw/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
             'Intermediate Level 1', 'Intermediate Level 2',
             'Advance Level 1', 'Advance Level 2', 'Advance Level 3',
-            'Advance Pro'
+            'Advance Pro',
+            'Tournament Puzzles'
         ];
 
         // --- PRICING LOGIC ---
         function getLevelPrice(level) {
             if (!level || level === 'Unranked') return 200; 
+            if (level === 'Tournament Puzzles') return 500; // Custom price for Tournament
             if (level.includes('Advance Pro')) return 500;
             if (level.includes('Advance Level')) return 400;
             if (level.includes('Intermediate')) return 300;
@@ -97,6 +99,10 @@
             }
             if (level.includes('Advance')) {
                 return { course: "https://drive.google.com/drive/folders/1tVXXHNm4zB2JEPEvz_FXG6enijdFIFLy?usp=sharing", notes: commonNotesLink };
+            }
+            if (level === 'Tournament Puzzles') {
+                 // Placeholder for Tournament Puzzles material if needed, or default to common
+                 return { course: commonNotesLink, notes: commonNotesLink };
             }
             return { course: commonNotesLink, notes: null };
         }
@@ -645,9 +651,9 @@
                                                                     ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : 
                                                                     u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
                                                                     u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
-                                                                    <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
-                                                                    <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
-                                                                    <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
+                                                                        <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
+                                                                        <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
+                                                                        <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
                                                                 </select>
                                                             </div>
                                                         </td>
@@ -666,8 +672,8 @@
                                                         <td class="px-6 py-4">
                                                             <div class="relative w-48">
                                                                 <select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="Unranked" class="w-full bg-white border-2 border-brand-100 text-brand-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all font-bold">
-                                                                    <option value="Unranked">Select Rank...</option>
-                                                                    ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('')}
+                                                                        <option value="Unranked">Select Rank...</option>
+                                                                        ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('')}
                                                                 </select>
                                                             </div>
                                                         </td>
@@ -772,8 +778,8 @@
                                                         <td class="px-6 py-4">
                                                              <div class="relative w-40">
                                                                 <select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all text-red-600 bg-red-50">
-                                                                    <option value="expired" selected>Plan Expired</option>
-                                                                    <option value="approved">Renew (Set Active)</option>
+                                                                        <option value="expired" selected>Plan Expired</option>
+                                                                        <option value="approved">Renew (Set Active)</option>
                                                                 </select>
                                                             </div>
                                                         </td>
@@ -1215,9 +1221,9 @@
                                                                     ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : 
                                                                     u.status === 'blocked' ? 'text-red-600 bg-red-50' : 
                                                                     u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}">
-                                                                    <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
-                                                                    <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
-                                                                    <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
+                                                                        <option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option>
+                                                                        <option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option>
+                                                                        <option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option>
                                                                 </select>
                                                             </div>
                                                         </td>
@@ -1236,8 +1242,8 @@
                                                         <td class="px-6 py-4">
                                                             <div class="relative w-48">
                                                                 <select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="${u.level || 'Unranked'}" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all">
-                                                                    <option value="Unranked">Select Rank...</option>
-                                                                    ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}" ${u.level === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+                                                                        <option value="Unranked">Select Rank...</option>
+                                                                        ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}" ${u.level === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                                                                 </select>
                                                             </div>
                                                         </td>
@@ -1676,8 +1682,9 @@
 
             console.log("Starting upload for:", file.name, "Size:", file.size);
 
-            if (file.size > 50 * 1024 * 1024) {
-                alert("FILE TOO BIG: " + (file.size / 1024 / 1024).toFixed(2) + "MB\n\nLimit is 50MB.");
+            // UPDATED: Limit increased to 70MB as requested
+            if (file.size > 70 * 1024 * 1024) {
+                alert("FILE TOO BIG: " + (file.size / 1024 / 1024).toFixed(2) + "MB\n\nLimit is 70MB.");
                 return;
             }
 
@@ -1912,5 +1919,3 @@
     </script>
 </body>
 </html>
-
-
