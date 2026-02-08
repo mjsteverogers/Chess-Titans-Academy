@@ -87,7 +87,6 @@
         function getMaterialLinks(level) {
             const commonNotesLink = "https://drive.google.com/drive/folders/1iDA0-CcGfVwJNyWDtUpc0Qon2c-oGghO?usp=sharing";
             
-            // UPDATED: Now returning commonNotesLink for Unranked users instead of null
             if (!level || level === 'Unranked') {
                 return { course: commonNotesLink, notes: commonNotesLink };
             }
@@ -101,7 +100,6 @@
                 return { course: "https://drive.google.com/drive/folders/1tVXXHNm4zB2JEPEvz_FXG6enijdFIFLy?usp=sharing", notes: commonNotesLink };
             }
             if (level === 'Tournament Puzzles') {
-                 // Placeholder for Tournament Puzzles material if needed, or default to common
                  return { course: commonNotesLink, notes: commonNotesLink };
             }
             return { course: commonNotesLink, notes: null };
@@ -368,6 +366,10 @@
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
                 
+                // Logic for Tournament Puzzles (Change 1 & 2)
+                const isTournamentLevel = user.level === 'Tournament Puzzles';
+                const taskLabel = isTournamentLevel ? 'Daily Tasks' : 'Weekly Tasks';
+
                 let tournamentLink, tournamentVideo;
 
                 if (isRestricted) {
@@ -409,25 +411,27 @@
                     <div class="flex-grow p-4 md:p-8 bg-orange-50/30 overflow-y-auto">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
                             
-                            ${!isRestricted 
-                                ? `
-                                <a href="${materials.course}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
-                                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center mb-4"><i class="fas fa-book-open text-lg md:text-xl"></i></div>
-                                    <h3 class="font-bold text-base md:text-lg text-slate-800">Course Materials</h3>
-                                    <p class="text-slate-500 text-xs md:text-sm mt-2">Study well for <strong>${user.level || 'Beginner'}</strong>.</p>
-                                </a>
-                                ` 
-                                : `
-                                <div class="block bg-slate-50 p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm opacity-90 relative overflow-hidden">
-                                    <div class="absolute -right-2 -top-0 bg-red-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">LOCKED</div>
-                                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center mb-4"><i class="fas fa-lock text-lg md:text-xl"></i></div>
-                                    <h3 class="font-bold text-base md:text-lg text-slate-400">Course Materials</h3>
-                                    <p class="text-brand-600 font-bold text-xs md:text-sm mt-2">
-                                        <i class="fas fa-info-circle"></i> ${isExpired ? `Pay Rs ${renewalPrice} to Renew` : `Pay Rs ${renewalPrice} to Access`}
-                                    </p>
-                                </div>
-                                `
-                            }
+                            ${!isTournamentLevel ? `
+                                ${!isRestricted 
+                                    ? `
+                                    <a href="${materials.course}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center mb-4"><i class="fas fa-book-open text-lg md:text-xl"></i></div>
+                                        <h3 class="font-bold text-base md:text-lg text-slate-800">Course Materials</h3>
+                                        <p class="text-slate-500 text-xs md:text-sm mt-2">Study well for <strong>${user.level || 'Beginner'}</strong>.</p>
+                                    </a>
+                                    ` 
+                                    : `
+                                    <div class="block bg-slate-50 p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm opacity-90 relative overflow-hidden">
+                                        <div class="absolute -right-2 -top-0 bg-red-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">LOCKED</div>
+                                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center mb-4"><i class="fas fa-lock text-lg md:text-xl"></i></div>
+                                        <h3 class="font-bold text-base md:text-lg text-slate-400">Course Materials</h3>
+                                        <p class="text-brand-600 font-bold text-xs md:text-sm mt-2">
+                                            <i class="fas fa-info-circle"></i> ${isExpired ? `Pay Rs ${renewalPrice} to Renew` : `Pay Rs ${renewalPrice} to Access`}
+                                        </p>
+                                    </div>
+                                    `
+                                }
+                            ` : ''}
 
                             ${materials.notes ? `
                             <a href="${materials.notes}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
@@ -437,6 +441,7 @@
                             </a>
                             ` : ''}
 
+                            ${!isTournamentLevel ? `
                             <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all relative group">
                                 <a href="${tournamentLink}" target="_blank" class="absolute inset-0 z-0"></a>
                                 <div class="relative z-10 pointer-events-none">
@@ -451,6 +456,7 @@
                                     </a>
                                 </div>` : ''}
                             </div>
+                            ` : ''}
 
                             <a href="https://chesstitansacademy.vercel.app/chessbot.html" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center mb-4"><i class="fas fa-chess-board text-lg md:text-xl"></i></div>
@@ -481,7 +487,7 @@
 
                         <div class="bg-white rounded-xl shadow-lg border border-brand-100 overflow-hidden mb-8">
                              <div class="bg-brand-500 p-4 flex justify-between items-center text-white">
-                                <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-tasks"></i> Weekly Tasks</h3>
+                                <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-tasks"></i> ${taskLabel}</h3>
                                 ${!isRestricted ? `<span class="text-xs bg-white/20 px-2 py-1 rounded">${myTasks.length} Assigned</span>` : ''}
                             </div>
                             <div class="p-0">
@@ -552,15 +558,16 @@
                         <div class="bg-gradient-to-r from-secondary-900 to-secondary-800 rounded-xl p-6 md:p-8 text-white relative overflow-hidden">
                              <div class="absolute top-0 right-0 p-4 opacity-10 text-8xl md:text-9xl"><i class="fas fa-chess-rook"></i></div>
                             <h4 class="font-bold text-lg md:text-xl mb-2 relative z-10">Academy Announcement</h4>
-                            <p class="text-slate-300 text-sm md:text-base max-w-2xl relative z-10">Welcome to Chess Titans Academy. Check your Weekly Tasks above regularly.</p>
+                            <p class="text-slate-300 text-sm md:text-base max-w-2xl relative z-10">Welcome to Chess Titans Academy. Check your ${taskLabel} above regularly.</p>
                         </div>
                     </div>
                 </div>
             `;
             },
             unrankedStudents: (data) => {
+                // (Existing Code for unrankedStudents - Unchanged structure, kept for completeness)
                 const users = data.users || [];
-                window.cachedData = data; // ENSURE GLOBAL DATA IS SET
+                window.cachedData = data; 
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
                 const unrankedList = allStudents.filter(u => !u.level || u.level === 'Unranked');
                 const expiredCount = users.filter(u => u.status === 'expired').length;
@@ -694,8 +701,9 @@
             },
             
             expiredStudents: (data) => {
+                // (Existing Code for expiredStudents - Unchanged structure)
                 const users = data.users || [];
-                window.cachedData = data; // ENSURE GLOBAL DATA IS SET
+                window.cachedData = data;
                 const expiredList = users.filter(u => u.status === 'expired' && u.role !== 'admin');
                 const expiredCount = expiredList.length;
                 const pendingCount = users.filter(u => u.status === 'pending').length; 
@@ -812,8 +820,9 @@
             },
             
             pendingStudents: (data) => {
+                // (Existing Code for pendingStudents - Unchanged structure)
                 const users = data.users || [];
-                window.cachedData = data; // ENSURE GLOBAL DATA IS SET
+                window.cachedData = data; 
                 const pendingList = users.filter(u => u.status === 'pending');
                 const pendingCount = pendingList.length;
                 const expiredCount = users.filter(u => u.status === 'expired').length;
@@ -901,7 +910,7 @@
                 `;
             },
 
-            // --- UPDATED ADMIN DASHBOARD: SHOWS FEE BOX FOR ALL STUDENTS ---
+            // --- UPDATED ADMIN DASHBOARD ---
             adminDashboard: (data) => {
                 const users = data.users || [];
                 const tasks = data.tasks || [];
@@ -922,6 +931,15 @@
                 const pendingBadge = pendingCount > 0 ? `<span class="ml-auto bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingCount}</span>` : '';
                 
                 window.cachedData = data; 
+
+                // SORT SUBMISSIONS (Change 3)
+                // Priority: Pending (1) > Incorrect (2) > Correct (3)
+                submissions.sort((a, b) => {
+                    const statusOrder = { 'pending': 1, 'incorrect': 2, 'correct': 3 };
+                    const orderA = statusOrder[a.status] || 99;
+                    const orderB = statusOrder[b.status] || 99;
+                    return orderA - orderB;
+                });
 
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
@@ -1014,11 +1032,19 @@
 
                                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 md:mb-8 overflow-hidden">
                                      <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-3 bg-brand-50">
-                                        <div class="flex items-center gap-4 w-full md:w-auto">
+                                        <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                                             <h3 class="font-bold text-brand-900 flex items-center gap-2 text-sm md:text-base whitespace-nowrap"><i class="fas fa-check-double"></i> Task Submissions</h3>
                                             <div class="relative flex-grow md:w-64">
                                                 <input type="text" id="submissionSearch" onkeyup="filterSubmissions()" placeholder="Search submission name..." class="w-full pl-8 pr-4 py-1.5 text-xs rounded-full border border-slate-300 focus:border-brand-500 outline-none bg-white/80 focus:bg-white transition-all">
                                                 <i class="fas fa-search absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                            </div>
+                                            <div class="w-full md:w-48">
+                                                <select id="submissionFilter" onchange="filterSubmissions()" class="w-full text-xs rounded-full border border-slate-300 focus:border-brand-500 outline-none py-1.5 px-3 bg-white">
+                                                    <option value="all">All Status</option>
+                                                    <option value="correct">Correction Completed</option>
+                                                    <option value="pending">Pending Correction</option>
+                                                    <option value="incorrect">Redo Requested</option>
+                                                </select>
                                             </div>
                                         </div>
                                         <button onclick="handleDeleteAllSubmissions()" class="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded font-bold transition-colors shadow-sm"><i class="fas fa-trash-alt mr-1"></i> Delete All</button>
@@ -1038,7 +1064,7 @@
                                                     const studentLevel = student ? (student.level || 'Unranked') : 'Unknown';
 
                                                     return `
-                                                    <tr class="hover:bg-slate-50 ${rowClass} transition-colors">
+                                                    <tr class="hover:bg-slate-50 ${rowClass} transition-colors" data-status="${s.status}">
                                                         <td class="px-6 py-4 font-bold text-slate-800 submission-name-cell">
                                                             <div>${s.username}</div>
                                                             <div class="inline-block bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 mt-1">${studentLevel}</div>
@@ -1069,7 +1095,7 @@
                                                                     </div>
                                                                 </div>
                                                                 `
-                                                                }
+                                                            }
                                                         </td>
                                                         <td class="px-6 py-4 text-right">
                                                             <button onclick="handleDeleteSubmission('${s.id}', this)" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
@@ -1178,11 +1204,21 @@
                                 </div>
 
                                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                        <h3 class="font-bold text-slate-700 text-sm md:text-base">Student Roster (All Active)</h3>
-                                        <div class="relative w-48 md:w-64">
-                                            <input type="text" id="rosterSearch" onkeyup="filterRoster()" placeholder="Search student name..." class="w-full pl-9 pr-4 py-1.5 text-xs rounded-full border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-2">
+                                        <h3 class="font-bold text-slate-700 text-sm md:text-base whitespace-nowrap">Student Roster (All Active)</h3>
+                                        
+                                        <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                                             <div class="w-full md:w-48">
+                                                <select id="rosterFilter" onchange="filterRoster()" class="w-full text-xs rounded-full border border-slate-200 focus:border-brand-500 outline-none py-1.5 px-3">
+                                                    <option value="all">All Levels</option>
+                                                    ${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('')}
+                                                    <option value="Unranked">Unranked</option>
+                                                </select>
+                                            </div>
+                                            <div class="relative w-full md:w-48">
+                                                <input type="text" id="rosterSearch" onkeyup="filterRoster()" placeholder="Search student name..." class="w-full pl-9 pr-4 py-1.5 text-xs rounded-full border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
@@ -1193,14 +1229,13 @@
                                             <tbody id="rosterTableBody" class="divide-y divide-slate-100">
                                                  ${allStudents.length === 0 ? `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400 italic">No students found.</td></tr>` : allStudents.map(u => {
                                                     
-                                                    // CHECK IF STUDENT SUBMITTED
                                                     const hasSubmission = submissions.some(s => s.username === u.username);
                                                     const statusDot = hasSubmission 
                                                         ? `<span class="w-3 h-3 rounded-full bg-green-500 inline-block ml-2 shadow-sm" title="Task Submitted"></span>` 
                                                         : `<span class="w-3 h-3 rounded-full bg-red-500 inline-block ml-2 shadow-sm" title="No Submission"></span>`;
 
                                                     return `
-                                                    <tr class="hover:bg-slate-50">
+                                                    <tr class="hover:bg-slate-50" data-level="${u.level || 'Unranked'}">
                                                         <td class="px-6 py-4 font-medium text-slate-800 student-name-cell">
                                                             <div class="flex items-center">
                                                                 ${u.username}
@@ -1282,12 +1317,11 @@
             }
         }
 
-        // NEW: Simple Navigation Helper to fix Sidebar Issues
         window.navigateTo = function(viewName) {
             if(window.cachedData) {
                 router(viewName, window.cachedData);
             } else {
-                refreshData(); // Fallback if cache is somehow missing
+                refreshData(); 
             }
         };
 
@@ -1484,7 +1518,6 @@
             }
         };
 
-        // --- NEW: Handle User Fee Update ---
         window.handleUserFeeUpdate = async function(username, feeAmount, inputElement) {
             if(!feeAmount) return;
             
@@ -1499,24 +1532,38 @@
 
             if (response.success) {
                 showToast(`Fee Updated: Rs ${feeAmount}`, 'success');
-                // No need to refresh the whole data usually, but allows immediate sync
-                // await refreshData(); 
             } else {
                 showToast('Failed to update fee', 'error');
             }
         };
 
-        // Filter Submissions Logic
+        // --- UPDATED FILTER LOGIC (SUBMISSIONS) ---
         window.filterSubmissions = function() {
             const input = document.getElementById("submissionSearch");
-            const filter = input.value.toUpperCase();
+            const filterText = input.value.toUpperCase();
+            
+            const dropdown = document.getElementById("submissionFilter");
+            const filterStatus = dropdown.value; // 'all', 'correct', 'pending', 'incorrect'
+
             const tableBody = document.getElementById("submissionTableBody");
             const tr = tableBody.getElementsByTagName("tr");
+
             for (let i = 0; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[0];
-                if (td) {
-                    const txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                const tdName = tr[i].getElementsByTagName("td")[0];
+                const rowStatus = tr[i].getAttribute("data-status");
+
+                if (tdName) {
+                    const txtValue = tdName.textContent || tdName.innerText;
+                    const matchesText = txtValue.toUpperCase().indexOf(filterText) > -1;
+                    
+                    let matchesStatus = true;
+                    if(filterStatus !== 'all') {
+                        if (filterStatus === 'pending' && rowStatus !== 'pending') matchesStatus = false;
+                        if (filterStatus === 'correct' && rowStatus !== 'correct') matchesStatus = false;
+                        if (filterStatus === 'incorrect' && rowStatus !== 'incorrect') matchesStatus = false;
+                    }
+
+                    if (matchesText && matchesStatus) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
@@ -1525,16 +1572,33 @@
             }
         };
 
+        // --- UPDATED FILTER LOGIC (ROSTER) ---
         window.filterRoster = function() {
             const input = document.getElementById("rosterSearch");
-            const filter = input.value.toUpperCase();
+            const filterText = input.value.toUpperCase();
+            
+            const dropdown = document.getElementById("rosterFilter");
+            const filterLevel = dropdown.value; // 'all', 'Beginner Level 1', etc. or 'Unranked'
+
             const tableBody = document.getElementById("rosterTableBody");
             const tr = tableBody.getElementsByTagName("tr");
+            
             for (let i = 0; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[0];
-                if (td) {
-                    const txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                const tdName = tr[i].getElementsByTagName("td")[0];
+                const tdLevelSelect = tr[i].getElementsByTagName("td")[4].getElementsByTagName("select")[0];
+                
+                if (tdName && tdLevelSelect) {
+                    const txtValue = tdName.textContent || tdName.innerText;
+                    const rowLevel = tdLevelSelect.value; // Get the actual selected value
+                    
+                    const matchesText = txtValue.toUpperCase().indexOf(filterText) > -1;
+                    
+                    let matchesLevel = true;
+                    if(filterLevel !== 'all') {
+                        if (rowLevel !== filterLevel) matchesLevel = false;
+                    }
+
+                    if (matchesText && matchesLevel) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
@@ -1682,7 +1746,6 @@
 
             console.log("Starting upload for:", file.name, "Size:", file.size);
 
-            // UPDATED: Limit increased to 70MB as requested
             if (file.size > 70 * 1024 * 1024) {
                 alert("FILE TOO BIG: " + (file.size / 1024 / 1024).toFixed(2) + "MB\n\nLimit is 70MB.");
                 return;
