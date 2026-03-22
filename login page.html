@@ -62,7 +62,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxlAf8my3EdFjfLR3810UzA7ML-V2MfHkcLS34jc_8d_75iXaJjoSa592Q8ObsLoFY9aQ/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyL_oiUnW4-i6ruStoTT0cJdU9MGZB2-erF-NL-Rnrx2xjhv0BPcWYhi6hTxRq6zgg-gA/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -104,6 +104,7 @@
         async function fetchExams() { try { return await (await fetch(`${API_URL}?action=getExams`)).json(); } catch (e) { return []; } }
         async function fetchSubmissions() { try { return await (await fetch(`${API_URL}?action=getSubmissions`)).json(); } catch (e) { return []; } }
         async function fetchSettings() { try { return await (await fetch(`${API_URL}?action=getSettings`)).json(); } catch (e) { return {}; } }
+        async function fetchLogs() { try { return await (await fetch(`${API_URL}?action=getLogs`)).json(); } catch (e) { return []; } } // NEW
 
         async function registerUserAPI(data) { return await sendPostRequest({ action: 'register', data: data }); }
         async function updateUserStatusAPI(username, status) { return await sendPostRequest({ action: 'updateStatus', username: username, status: status }); }
@@ -120,6 +121,7 @@
         async function updateSubmissionStatusAPI(id, status, remarks) { return await sendPostRequest({ action: 'gradeSubmission', id: id, status: status, remarks: remarks }); }
         async function deleteSubmissionAPI(id) { return await sendPostRequest({ action: 'deleteSubmission', id: id }); }
         async function deleteUserAPI(username) { return await sendPostRequest({ action: 'deleteUser', username: username }); }
+        async function logActivityAPI(username, action, details) { return await sendPostRequest({ action: 'logActivity', data: { username, action, details } }); } // NEW
 
         async function sendPostRequest(data) {
             try {
@@ -178,7 +180,6 @@
             expireTimerInterval = setInterval(update, 1000);
         }
 
-        // UPDATED: Added logic to display Grade Status & Remarks for students
         function initExamTimers() {
             if(examTimerInterval) clearInterval(examTimerInterval);
             const examRows = document.querySelectorAll('.exam-row-logic');
@@ -203,7 +204,6 @@
                     const start = new Date(startStr).getTime();
                     const end = new Date(endStr).getTime();
 
-                    // If student already submitted, show their result/status
                     if (hasSubmitted) {
                         if (status === 'pending') {
                             timeDisplay.innerHTML = `<span class="text-amber-600 font-bold"><i class="fas fa-clock"></i> Under Review by Admin</span>`;
@@ -231,8 +231,9 @@
                         const s = timeLeft % 60;
                         timeDisplay.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fas fa-hourglass-half fa-spin mr-1"></i> Time Left: ${h}h ${m}m ${s}s</span>`;
                         
+                        // Modified to include logUserAction for viewing the exam
                         actions.innerHTML = `
-                            <a href="${link}" target="_blank" class="bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-purple-700 shadow-md transition-all flex items-center gap-1"><i class="fas fa-eye"></i> View Exam</a>
+                            <a href="${link}" target="_blank" onclick="logUserAction(document.querySelector('h2').innerText.replace('Hello, ', ''), 'View Exam', 'Exam ID: ${id}')" class="bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-purple-700 shadow-md transition-all flex items-center gap-1"><i class="fas fa-eye"></i> View Exam</a>
                             <button onclick="document.getElementById('file-${id}').click()" class="bg-secondary-900 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-black shadow-md transition-all flex items-center gap-1"><i class="fas fa-upload"></i> Upload</button>
                         `;
                     } else {
@@ -343,7 +344,7 @@
 
                 const materials = getMaterialLinks(user.level);
 
-                // EXAM ONLY VIEW LOGIC (Triggers if assigned level is 'Exam' OR if exams exist for their level)
+                // EXAM ONLY VIEW LOGIC
                 const isExamMode = user.level === 'Exam' || myExams.length > 0;
 
                 if (isExamMode && !isRestricted) {
@@ -383,7 +384,7 @@
                                     const hasSubmitted = !!sub;
                                     const subStatus = sub ? sub.status : '';
                                     const subRemarks = sub ? (sub.remarks || '') : '';
-                                    const safeRemarks = subRemarks.replace(/"/g, '&quot;'); // Escape for data attribute
+                                    const safeRemarks = subRemarks.replace(/"/g, '&quot;');
 
                                     return `
                                     <div class="bg-white p-5 md:p-8 rounded-xl shadow-md border border-purple-200 flex flex-col exam-row-logic transition-all" data-start="${ex.startTime}" data-end="${ex.endTime}" data-id="${ex.id}" data-link="${ex.link}" data-submitted="${hasSubmitted}" data-status="${subStatus}" data-remarks="${safeRemarks}">
@@ -434,7 +435,7 @@
                             ${!isTournamentLevel ? `
                                 ${!isRestricted 
                                     ? `
-                                    <a href="${materials.course}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                                    <a href="${materials.course}" target="_blank" onclick="logUserAction('${user.username}', 'Click Course Materials', 'Accessed target level materials')" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                         <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center mb-4"><i class="fas fa-book-open text-lg md:text-xl"></i></div>
                                         <h3 class="font-bold text-base md:text-lg text-slate-800">Course Materials</h3>
                                         <p class="text-slate-500 text-xs md:text-sm mt-2">Study well for <strong>${user.level || 'Beginner'}</strong>.</p>
@@ -452,7 +453,7 @@
                             ` : ''}
 
                             ${materials.notes ? `
-                            <a href="${materials.notes}" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                            <a href="${materials.notes}" target="_blank" onclick="logUserAction('${user.username}', 'Click Notes', 'Accessed common notes')" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4"><i class="fas fa-sticky-note text-lg md:text-xl"></i></div>
                                 <h3 class="font-bold text-base md:text-lg text-slate-800">Common Notes</h3>
                                 <p class="text-slate-500 text-xs md:text-sm mt-2">Essential notes for all levels.</p>
@@ -461,7 +462,7 @@
 
                             ${!isTournamentLevel ? `
                             <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all relative group">
-                                <a href="${tournamentLink}" target="_blank" class="absolute inset-0 z-0"></a>
+                                <a href="${tournamentLink}" target="_blank" onclick="logUserAction('${user.username}', 'Click Tournament', 'Viewed tournament page')" class="absolute inset-0 z-0"></a>
                                 <div class="relative z-10 pointer-events-none">
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
                                     <h3 class="font-bold text-base md:text-lg text-slate-800">Tournament Status</h3>
@@ -469,19 +470,19 @@
                                 </div>
                                 ${tournamentVideo ? `
                                 <div class="mt-3 relative z-20">
-                                    <a href="${tournamentVideo}" target="_blank" class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm"><i class="fas fa-video"></i> Watch Video</a>
+                                    <a href="${tournamentVideo}" target="_blank" onclick="logUserAction('${user.username}', 'Click Tournament Video', 'Watched tournament recap')" class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm"><i class="fas fa-video"></i> Watch Video</a>
                                 </div>` : ''}
                             </div>
                             ` : ''}
 
-                            <a href="https://chesstitansacademy.vercel.app/chessbot.html" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                            <a href="https://chesstitansacademy.vercel.app/chessbot.html" target="_blank" onclick="logUserAction('${user.username}', 'Click Chess Bot', 'Opened practice board')" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center mb-4"><i class="fas fa-chess-board text-lg md:text-xl"></i></div>
                                 <h3 class="font-bold text-base md:text-lg text-slate-800">Practice Board</h3>
                                 <p class="text-slate-500 text-xs md:text-sm mt-2">Chess Bot.</p>
                             </a>
                             
                             ${!isRestricted ? `
-                                <a href="https://docs.google.com/document/d/1D9HAwAox_SFL9HE-Y8MVS1VmiBI6MCExy2cMOTQbfpk/edit?usp=sharing" target="_blank" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                                <a href="https://docs.google.com/document/d/1D9HAwAox_SFL9HE-Y8MVS1VmiBI6MCExy2cMOTQbfpk/edit?usp=sharing" target="_blank" onclick="logUserAction('${user.username}', 'Click Existing Tasks', 'Accessed Google Doc of past tasks')" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center mb-4"><i class="fas fa-clipboard-list text-lg md:text-xl"></i></div>
                                     <h3 class="font-bold text-base md:text-lg text-slate-800">Existing Weekly Task List</h3>
                                     <p class="text-slate-500 text-xs md:text-sm mt-2">Access previous tasks.</p>
@@ -540,17 +541,17 @@
                                                 if (isLocked) {
                                                     statusHtml = `<div class="flex items-center gap-2 mt-2 md:mt-0"><div class="bg-slate-100 text-slate-500 px-4 py-2 rounded-lg text-xs font-bold cursor-not-allowed flex items-center gap-2 border border-slate-200"><i class="fas fa-lock"></i> Unlocks: ${releaseDateString}</div></div>`;
                                                 } else {
-                                                    statusHtml = `<div class="flex items-center gap-2 mt-2 md:mt-0"><a href="${t.link}" target="_blank" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-1"><i class="fas fa-play-circle"></i> Watch Solution</a></div>`;
+                                                    statusHtml = `<div class="flex items-center gap-2 mt-2 md:mt-0"><a href="${t.link}" target="_blank" onclick="logUserAction('${user.username}', 'Watch Solution', 'Task ID: ${t.id}')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-1"><i class="fas fa-play-circle"></i> Watch Solution</a></div>`;
                                                 }
                                             } else {
                                                 if(!sub) {
-                                                    statusHtml = `<div class="flex items-center gap-2 mt-2 md:mt-0"><a href="${t.link}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-1"><i class="fas fa-eye"></i> View Task</a><input type="file" id="file-${t.id}" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}', 'Task')"><button onclick="document.getElementById('file-${t.id}').click()" class="bg-secondary-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all shadow-sm"><i class="fas fa-upload mr-1"></i> Upload Answer</button></div>`;
+                                                    statusHtml = `<div class="flex items-center gap-2 mt-2 md:mt-0"><a href="${t.link}" target="_blank" onclick="logUserAction('${user.username}', 'View Task', 'Task ID: ${t.id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-1"><i class="fas fa-eye"></i> View Task</a><input type="file" id="file-${t.id}" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}', 'Task')"><button onclick="document.getElementById('file-${t.id}').click()" class="bg-secondary-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all shadow-sm"><i class="fas fa-upload mr-1"></i> Upload Answer</button></div>`;
                                                 } else if (sub.status === 'pending') {
                                                     statusHtml = `<div class="flex flex-col items-end"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-clock mr-1"></i> Under Review</span></div>`;
                                                 } else if (sub.status === 'correct') {
                                                     statusHtml = `<div class="flex flex-col items-end"><span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-check-circle mr-1"></i> Completed</span>${remarksHtml}</div>`;
                                                 } else if (sub.status === 'incorrect') {
-                                                    statusHtml = `<div class="flex flex-col items-end gap-1"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-times-circle mr-1"></i> Correction Needed</span>${remarksHtml}<div class="flex gap-2"><a href="${t.link}" target="_blank" class="text-blue-600 underline text-xs font-bold">View Task Again</a><button onclick="document.getElementById('file-${t.id}').click()" class="text-xs text-brand-600 underline font-bold">Re-upload</button></div><input type="file" id="file-${t.id}" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}', 'Task')"></div>`;
+                                                    statusHtml = `<div class="flex flex-col items-end gap-1"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-times-circle mr-1"></i> Correction Needed</span>${remarksHtml}<div class="flex gap-2"><a href="${t.link}" target="_blank" onclick="logUserAction('${user.username}', 'View Task Again', 'Task ID: ${t.id}')" class="text-blue-600 underline text-xs font-bold">View Task Again</a><button onclick="document.getElementById('file-${t.id}').click()" class="text-xs text-brand-600 underline font-bold">Re-upload</button></div><input type="file" id="file-${t.id}" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden" onchange="handleFileSelect(event, '${t.id}', '${user.username}', 'Task')"></div>`;
                                                 }
                                             }
                                             return `<div class="p-4 flex flex-col md:flex-row md:items-center justify-between group transition-colors hover:bg-slate-50 gap-4"><div class="flex-grow"><div class="flex items-center gap-2">${isSolution ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase">Solution</span>' : '<span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded font-bold uppercase">Task</span>'}<div class="font-bold text-slate-800 text-sm md:text-base">${t.title}</div></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-2"><i class="far fa-calendar"></i> ${t.date}</div><div id="progress-container-${t.id}" class="hidden mt-3 w-full max-w-xs"><div class="flex justify-between text-xs text-slate-500 mb-1"><span id="upload-text-${t.id}">Uploading...</span><span id="upload-percent-${t.id}">0%</span></div><div class="w-full bg-slate-200 rounded-full h-2"><div id="progress-bar-${t.id}" class="bg-brand-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div></div></div></div><div class="flex items-center gap-3">${statusHtml}</div></div>`;
@@ -580,14 +581,18 @@
                     { id: 'unrankedStudents', icon: 'fa-user-tag', label: 'Unranked Students', badge: unrankedBadge },
                     { id: 'expiredStudents', icon: 'fa-clock', label: 'Plan Expired Students', badge: expiredBadge },
                     { id: 'pendingStudents', icon: 'fa-user-clock', label: 'Pending Students', badge: pendingBadge },
-                    { id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' } 
+                    { id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' },
+                    { id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' } 
                 ];
 
                 const navItems = tabs.map(t => {
                     const isActive = activeTab === t.id;
                     const baseClass = "w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors mt-1";
+                    
                     if (isActive && t.id === 'adminExams') return `<div class="${baseClass} bg-purple-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
+                    if (isActive && t.id === 'activityLogs') return `<div class="${baseClass} bg-slate-700 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive) return `<div class="${baseClass} bg-brand-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
+                    
                     return `<button onclick="navigateTo('${t.id}')" class="${baseClass} text-slate-400 hover:bg-white/5 hover:text-white"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</button>`;
                 }).join('');
 
@@ -610,6 +615,69 @@
                         </div>
                     </div>
                 `;
+            },
+
+            // --- ACTIVITY LOGS (NEW VIEW) ---
+            activityLogs: (data) => {
+                window.cachedLogs = data.logs || [];
+                const users = data.users || [];
+                const allStudents = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
+                const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
+                const expiredCount = users.filter(u => u.status === 'expired').length;
+                const pendingCount = users.filter(u => u.status === 'pending').length;
+
+                return `
+                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
+                    <div class="flex h-full relative">
+                        ${views._getAdminSidebar('activityLogs', unrankedCount, expiredCount, pendingCount)}
+                        <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
+                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
+                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
+                                    <div><h2 class="text-lg md:text-2xl font-bold text-slate-800">Student Activity Logs</h2></div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="refreshData()" class="text-slate-600 hover:bg-slate-100 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh Data</span></button>
+                                </div>
+                            </header>
+                            <div class="flex-grow p-4 md:p-8 overflow-y-auto">
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                                    <div class="p-4 bg-slate-400 text-white flex flex-col md:flex-row gap-4 items-center">
+                                        <div class="relative w-full md:w-64">
+                                            <input type="text" id="logSearch" onkeyup="renderLogsTable()" placeholder="Search Student or Action..." class="w-full pl-9 pr-4 py-2 text-xs rounded-full bg-slate-800 border-none text-white focus:ring-1 focus:ring-brand-500 outline-none">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        </div>
+                                        <div class="w-full md:w-auto flex items-center gap-2">
+                                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider hidden md:block">Date:</label>
+                                            <input type="date" id="logDateFilter" onchange="renderLogsTable()" class="bg-slate-800 border-none text-white text-xs rounded-full px-4 py-2 outline-none w-full md:w-auto cursor-pointer style-calendar">
+                                        </div>
+                                        <div class="w-full md:w-auto md:ml-auto">
+                                            <select id="logSort" onchange="renderLogsTable()" class="bg-slate-800 border-none text-white text-xs rounded-full px-4 py-2 outline-none w-full cursor-pointer">
+                                                <option value="newest">Newest First</option>
+                                                <option value="oldest">Oldest First</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="overflow-x-auto min-h-[400px]">
+                                        <table class="w-full text-left text-sm text-slate-600 min-w-[800px]">
+                                            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider sticky top-0 border-b border-slate-100">
+                                                <tr>
+                                                    <th class="px-6 py-4">Time & Date</th>
+                                                    <th class="px-6 py-4">Student</th>
+                                                    <th class="px-6 py-4">Action</th>
+                                                    <th class="px-6 py-4">Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="logTableBody" class="divide-y divide-slate-100">
+                                                </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
             },
 
             unrankedStudents: (data) => {
@@ -789,7 +857,6 @@
                 `;
             },
 
-            // --- ADMIN EXAMS (NEW VIEW) ---
             adminExams: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
@@ -1256,6 +1323,10 @@
                     }
                     initExamTimers();
                 }
+
+                if (route === 'activityLogs') {
+                    renderLogsTable();
+                }
             }
         }
 
@@ -1268,14 +1339,16 @@
         };
 
         async function refreshData() {
-            const [users, tasks, submissions, settings, exams] = await Promise.all([fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams()]);
-            window.cachedData = { users, tasks, submissions, settings, exams };
+            // NEW: Fetching logs along with other data
+            const [users, tasks, submissions, settings, exams, logs] = await Promise.all([fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs()]);
+            window.cachedData = { users, tasks, submissions, settings, exams, logs };
             
             if (CURRENT_VIEW === 'unrankedStudents') router('unrankedStudents', window.cachedData);
             else if (CURRENT_VIEW === 'adminDashboard') router('adminDashboard', window.cachedData);
             else if (CURRENT_VIEW === 'expiredStudents') router('expiredStudents', window.cachedData);
             else if (CURRENT_VIEW === 'pendingStudents') router('pendingStudents', window.cachedData);
             else if (CURRENT_VIEW === 'adminExams') router('adminExams', window.cachedData);
+            else if (CURRENT_VIEW === 'activityLogs') router('activityLogs', window.cachedData);
             else if (CURRENT_VIEW === 'userHome') {
                 const username = document.querySelector('h2').innerText.replace('Hello, ', '');
                 const currentUser = users.find(u => u.username === username);
@@ -1323,10 +1396,13 @@
                     
                     if (account.role === 'admin') { 
                         showToast('Welcome Admin', 'success'); 
-                        const [tasks, submissions, settings, exams] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams()]);
-                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams }); 
+                        const [tasks, submissions, settings, exams, logs] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs()]);
+                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs }); 
                         return; 
                     }
+
+                    // NEW: Log the student login
+                    logUserAction(account.username, 'Login', 'Student logged into portal successfully');
 
                     const now = new Date();
                     if(account.expireDate) {
@@ -1447,6 +1523,11 @@
         window.refreshData = refreshData;
         window.toggleSidebar = toggleSidebar;
         
+        // NEW: Activity Logging function attached to window
+        window.logUserAction = function(username, action, details) {
+            logActivityAPI(username, action, details).catch(console.error); // Send and forget
+        };
+
         window.handleLogout = function() { showToast('Logged out', 'info'); router('login'); };
 
         window.togglePassword = function(inputId, iconId) {
@@ -1466,6 +1547,46 @@
             inputElement.classList.remove('opacity-50', 'cursor-wait');
             if (response.success) showToast(`Fee Updated: Rs ${feeAmount}`, 'success');
             else showToast('Failed to update fee', 'error');
+        };
+
+        // NEW: Activity Log Filter and Render function
+        window.renderLogsTable = function() {
+            const tbody = document.getElementById('logTableBody');
+            if(!tbody) return;
+            const searchTxt = document.getElementById('logSearch').value.toLowerCase();
+            const dateFilter = document.getElementById('logDateFilter').value; 
+            const sortOrder = document.getElementById('logSort').value;
+
+            let filtered = (window.cachedLogs || []).filter(l => {
+                const matchesSearch = l.username.toLowerCase().includes(searchTxt) || l.action.toLowerCase().includes(searchTxt);
+                let matchesDate = true;
+                if (dateFilter) {
+                    const logDate = new Date(l.timestamp);
+                    const localDateStr = logDate.getFullYear() + '-' + String(logDate.getMonth()+1).padStart(2, '0') + '-' + String(logDate.getDate()).padStart(2, '0');
+                    matchesDate = (localDateStr === dateFilter);
+                }
+                return matchesSearch && matchesDate;
+            });
+
+            filtered.sort((a, b) => {
+                const timeA = new Date(a.timestamp).getTime();
+                const timeB = new Date(b.timestamp).getTime();
+                return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No activity logs found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(log => `
+                <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
+                    <td class="px-6 py-4 text-xs font-mono text-slate-400">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td class="px-6 py-4 font-bold text-brand-500">${log.username}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded bg-brand-500/20 text-brand-400 text-[10px] font-bold uppercase tracking-wider">${log.action}</span></td>
+                    <td class="px-6 py-4 text-slate-400 text-xs">${log.details || '-'}</td>
+                </tr>
+            `).join('');
         };
 
         window.filterSubmissions = function() {
@@ -1628,8 +1749,8 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            if (file.size > 70 * 1024 * 1024) {
-                alert("FILE TOO BIG: " + (file.size / 1024 / 1024).toFixed(2) + "MB\n\nLimit is 70MB.");
+            if (file.size > 15 * 1024 * 1024) {
+                alert("FILE TOO BIG: " + (file.size / 1024 / 1024).toFixed(2) + "MB\n\nLimit is 15MB.");
                 return;
             }
 
@@ -1654,16 +1775,16 @@
                     const mimeType = file.type;
                     const fileName = file.name;
 
-                    statusText.innerText = "Sending to Server...";
+                    statusText.innerText = "Sending to Chess Titans Academy Server...";
                     let progress = 0;
                     const interval = setInterval(() => {
                         if (progress >= 90) clearInterval(interval);
                         else {
-                            progress += 5;
+                            progress += 1;
                             progressBar.style.width = `${progress}%`;
                             percentText.innerText = `${progress}%`;
                         }
-                    }, 500);
+                    }, 1000);
 
                     const response = await uploadFileAPI({
                         action: 'uploadEvidence',
