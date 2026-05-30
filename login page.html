@@ -62,7 +62,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyL_oiUnW4-i6ruStoTT0cJdU9MGZB2-erF-NL-Rnrx2xjhv0BPcWYhi6hTxRq6zgg-gA/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx1ThmmTz9f5cDwmXg8bCCS1QI5oYzdIyOLA8hxpzoGTJi8JXRidclwOIRRimlIG7ALsg/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -71,6 +71,13 @@
             'Advance Pro',
             'Tournament Puzzles',
             'Exam'
+        ];
+        
+        const ACADEMY_BRANCHES = [
+            'Noombal Branch',
+            'Iyyappanthangal Branch',
+            'Mangadu Branch',
+            'Online Batch'
         ];
 
         function getLevelPrice(level) {
@@ -104,13 +111,14 @@
         async function fetchExams() { try { return await (await fetch(`${API_URL}?action=getExams`)).json(); } catch (e) { return []; } }
         async function fetchSubmissions() { try { return await (await fetch(`${API_URL}?action=getSubmissions`)).json(); } catch (e) { return []; } }
         async function fetchSettings() { try { return await (await fetch(`${API_URL}?action=getSettings`)).json(); } catch (e) { return {}; } }
-        async function fetchLogs() { try { return await (await fetch(`${API_URL}?action=getLogs`)).json(); } catch (e) { return []; } } // NEW
+        async function fetchLogs() { try { return await (await fetch(`${API_URL}?action=getLogs`)).json(); } catch (e) { return []; } } 
 
         async function registerUserAPI(data) { return await sendPostRequest({ action: 'register', data: data }); }
         async function updateUserStatusAPI(username, status) { return await sendPostRequest({ action: 'updateStatus', username: username, status: status }); }
         async function updateUserLevelAPI(username, level) { return await sendPostRequest({ action: 'updateLevel', username: username, level: level }); }
         async function updateUserDatesAPI(username, type, value) { return await sendPostRequest({ action: 'updateUserDates', username: username, type: type, value: value }); }
         async function updateUserFeeAPI(username, fee) { return await sendPostRequest({ action: 'updateUserFee', username: username, fee: fee }); }
+        async function updateBranchAPI(username, branch) { return await sendPostRequest({ action: 'updateBranch', username: username, branch: branch }); }
         async function updateSettingsAPI(tLink, tVideo) { return await sendPostRequest({ action: 'updateSettings', tournamentLink: tLink, tournamentVideo: tVideo }); }
         async function forceCheckExpirationsAPI() { return await sendPostRequest({ action: 'forceCheckExpirations' }); }
         async function addTaskAPI(data) { return await sendPostRequest({ action: 'addTask', data: data }); }
@@ -121,7 +129,7 @@
         async function updateSubmissionStatusAPI(id, status, remarks) { return await sendPostRequest({ action: 'gradeSubmission', id: id, status: status, remarks: remarks }); }
         async function deleteSubmissionAPI(id) { return await sendPostRequest({ action: 'deleteSubmission', id: id }); }
         async function deleteUserAPI(username) { return await sendPostRequest({ action: 'deleteUser', username: username }); }
-        async function logActivityAPI(username, action, details) { return await sendPostRequest({ action: 'logActivity', data: { username, action, details } }); } // NEW
+        async function logActivityAPI(username, action, details) { return await sendPostRequest({ action: 'logActivity', data: { username, action, details } }); }
 
         async function sendPostRequest(data) {
             try {
@@ -231,7 +239,6 @@
                         const s = timeLeft % 60;
                         timeDisplay.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fas fa-hourglass-half fa-spin mr-1"></i> Time Left: ${h}h ${m}m ${s}s</span>`;
                         
-                        // Modified to include logUserAction for viewing the exam
                         actions.innerHTML = `
                             <a href="${link}" target="_blank" onclick="logUserAction(document.querySelector('h2').innerText.replace('Hello, ', ''), 'View Exam', 'Exam ID: ${id}')" class="bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-purple-700 shadow-md transition-all flex items-center gap-1"><i class="fas fa-eye"></i> View Exam</a>
                             <button onclick="document.getElementById('file-${id}').click()" class="bg-secondary-900 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-black shadow-md transition-all flex items-center gap-1"><i class="fas fa-upload"></i> Upload</button>
@@ -362,6 +369,7 @@
                                             <i class="fas fa-stopwatch mr-1"></i> Active Exam Mode
                                         </span>
                                     </div>
+                                    ${user.branch ? `<div class="text-xs text-purple-300 mt-1"><i class="fas fa-map-marker-alt"></i> ${user.branch}</div>` : ''}
                                 </div>
                             </div>
                             <button onclick="handleLogout()" class="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-black/20 text-purple-200 hover:text-white transition-all">
@@ -425,6 +433,7 @@
                                     ${!isExpired && user.expireDate ? `<span id="expire-timer" class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] md:text-xs font-bold border border-blue-100 flex items-center gap-1 font-mono min-w-[80px] justify-center shadow-sm"><i class="fas fa-hourglass-half fa-spin"></i> Loading...</span>` : ''}
                                     ${isExpired ? '<span class="px-2 py-0.5 rounded bg-red-100 text-red-600 text-[10px] md:text-xs font-bold uppercase border border-red-200">Plan Expired</span>' : ''}
                                 </div>
+                                ${user.branch ? `<div class="text-xs text-slate-500 mt-1"><i class="fas fa-map-marker-alt"></i> ${user.branch}</div>` : ''}
                             </div>
                         </div>
                         <button onclick="handleLogout()" class="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all"><span class="text-sm font-medium hidden md:block">Logout</span> <i class="fas fa-sign-out-alt text-lg group-hover:translate-x-1"></i></button>
@@ -714,12 +723,20 @@
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[1000px]">
+                                        <table class="w-full text-left text-sm text-slate-600 min-w-[1200px]">
                                             <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
-                                                <tr><th class="px-6 py-3">Student Name</th><th class="px-6 py-3">Fee (Rs)</th><th class="px-6 py-3">Account Status</th><th class="px-6 py-3">Plan Duration</th><th class="px-6 py-3">Assign Level/Rank</th><th class="px-6 py-3 text-right">Delete</th></tr>
+                                                <tr>
+                                                    <th class="px-6 py-3">Student Name</th>
+                                                    <th class="px-6 py-3">Fee (Rs)</th>
+                                                    <th class="px-6 py-3">Account Status</th>
+                                                    <th class="px-6 py-3">Plan Duration</th>
+                                                    <th class="px-6 py-3">Assign Level/Rank</th>
+                                                    <th class="px-6 py-3">Branch</th>
+                                                    <th class="px-6 py-3 text-right">Delete</th>
+                                                </tr>
                                             </thead>
                                             <tbody id="unrankedTableBody" class="divide-y divide-slate-100">
-                                                 ${unrankedList.length === 0 ? `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400 italic">No unranked students found.</td></tr>` : unrankedList.map(u => {
+                                                 ${unrankedList.length === 0 ? `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400 italic">No unranked students found.</td></tr>` : unrankedList.map(u => {
                                                     return `
                                                     <tr class="hover:bg-orange-50/30">
                                                         <td class="px-6 py-4 font-medium text-slate-800 student-name-cell"><div class="flex items-center">${u.username}<span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-[10px] text-slate-500 border border-slate-200">New</span></div><div class="font-mono text-xs text-slate-400">${u.phone}</div></td>
@@ -727,6 +744,7 @@
                                                         <td class="px-6 py-4"><div class="relative w-40"><select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : u.status === 'blocked' ? 'text-red-600 bg-red-50' : u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}"><option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option><option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option><option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option></select></div></td>
                                                         <td class="px-6 py-4"><div class="flex flex-col gap-2 w-40"><div><div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Paid Date</div><input type="datetime-local" value="${formatDateForInput(u.paidDate)}" onchange="handleDateUpdate('${u.username}', 'PaidDate', this.value, this)" class="w-full border border-slate-200 rounded px-2 py-1 text-xs"></div><div><div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Expire Date</div><input type="datetime-local" value="${formatDateForInput(u.expireDate)}" onchange="handleDateUpdate('${u.username}', 'ExpireDate', this.value, this)" class="w-full border border-slate-200 rounded px-2 py-1 text-xs"></div></div></td>
                                                         <td class="px-6 py-4"><div class="relative w-48"><select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="Unranked" class="w-full bg-white border-2 border-brand-100 text-brand-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all font-bold"><option value="Unranked">Select Rank...</option>${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('')}</select></div></td>
+                                                        <td class="px-6 py-4"><div class="relative w-40"><select onchange="handleBranchUpdate('${u.username}', this.value, this)" data-prev="${u.branch || ''}" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all"><option value="">Select Branch...</option>${ACADEMY_BRANCHES.map(br => `<option value="${br}" ${u.branch === br ? 'selected' : ''}>${br}</option>`).join('')}</select></div></td>
                                                         <td class="px-6 py-4 text-right"><button onclick="handleDeleteUser('${u.username}', this)" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button></td>
                                                     </tr>`;
                                                  }).join('')}
@@ -1274,12 +1292,20 @@
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
-                                        <table class="w-full text-left text-sm text-slate-600 min-w-[1000px]">
+                                        <table class="w-full text-left text-sm text-slate-600 min-w-[1200px]">
                                             <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
-                                                <tr><th class="px-6 py-3">Student Name</th><th class="px-6 py-3">Fee (Rs)</th><th class="px-6 py-3">Account Status</th><th class="px-6 py-3">Plan Duration</th><th class="px-6 py-3">Assign Level/Rank</th><th class="px-6 py-3 text-right">Delete</th></tr>
+                                                <tr>
+                                                    <th class="px-6 py-3">Student Name</th>
+                                                    <th class="px-6 py-3">Fee (Rs)</th>
+                                                    <th class="px-6 py-3">Account Status</th>
+                                                    <th class="px-6 py-3">Plan Duration</th>
+                                                    <th class="px-6 py-3">Assign Level/Rank</th>
+                                                    <th class="px-6 py-3">Branch</th>
+                                                    <th class="px-6 py-3 text-right">Delete</th>
+                                                </tr>
                                             </thead>
                                             <tbody id="rosterTableBody" class="divide-y divide-slate-100">
-                                                 ${allStudents.length === 0 ? `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400 italic">No students found.</td></tr>` : allStudents.map(u => {
+                                                 ${allStudents.length === 0 ? `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400 italic">No students found.</td></tr>` : allStudents.map(u => {
                                                     const hasSubmission = submissions.some(s => s.username === u.username);
                                                     const statusDot = hasSubmission ? `<span class="w-3 h-3 rounded-full bg-green-500 inline-block ml-2 shadow-sm" title="Task/Exam Submitted"></span>` : `<span class="w-3 h-3 rounded-full bg-red-500 inline-block ml-2 shadow-sm" title="No Submission"></span>`;
                                                     return `
@@ -1289,6 +1315,7 @@
                                                         <td class="px-6 py-4"><div class="relative w-40"><select onchange="handleStatusUpdate('${u.username}', this.value, this)" data-prev="${u.status}" class="w-full font-bold text-xs rounded-lg border border-slate-200 block p-2 transition-all ${u.status === 'approved' ? 'text-emerald-600 bg-emerald-50' : u.status === 'blocked' ? 'text-red-600 bg-red-50' : u.status === 'expired' ? 'text-amber-600 bg-amber-50' : 'text-slate-600'}"><option value="approved" ${u.status === 'approved' ? 'selected' : ''}>Active</option><option value="blocked" ${u.status === 'blocked' ? 'selected' : ''}>Task Incomplete</option><option value="expired" ${u.status === 'expired' ? 'selected' : ''}>Plan Expired</option></select></div></td>
                                                         <td class="px-6 py-4"><div class="flex flex-col gap-2 w-40"><div><div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Paid Date</div><input type="datetime-local" value="${formatDateForInput(u.paidDate)}" onchange="handleDateUpdate('${u.username}', 'PaidDate', this.value, this)" class="w-full border border-slate-200 rounded px-2 py-1 text-xs"></div><div><div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Expire Date</div><input type="datetime-local" value="${formatDateForInput(u.expireDate)}" onchange="handleDateUpdate('${u.username}', 'ExpireDate', this.value, this)" class="w-full border border-slate-200 rounded px-2 py-1 text-xs"></div></div></td>
                                                         <td class="px-6 py-4"><div class="relative w-48"><select onchange="handleLevelUpdate('${u.username}', this.value, this)" data-prev="${u.level || 'Unranked'}" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all"><option value="Unranked">Select Rank...</option>${ACADEMY_LEVELS.map(lvl => `<option value="${lvl}" ${u.level === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}</select></div></td>
+                                                        <td class="px-6 py-4"><div class="relative w-40"><select onchange="handleBranchUpdate('${u.username}', this.value, this)" data-prev="${u.branch || ''}" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 transition-all"><option value="">Select Branch...</option>${ACADEMY_BRANCHES.map(br => `<option value="${br}" ${u.branch === br ? 'selected' : ''}>${br}</option>`).join('')}</select></div></td>
                                                         <td class="px-6 py-4 text-right"><button onclick="handleDeleteUser('${u.username}', this)" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button></td>
                                                     </tr>`;
                                                  }).join('')}
@@ -1339,7 +1366,6 @@
         };
 
         async function refreshData() {
-            // NEW: Fetching logs along with other data
             const [users, tasks, submissions, settings, exams, logs] = await Promise.all([fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs()]);
             window.cachedData = { users, tasks, submissions, settings, exams, logs };
             
@@ -1401,7 +1427,6 @@
                         return; 
                     }
 
-                    // NEW: Log the student login
                     logUserAction(account.username, 'Login', 'Student logged into portal successfully');
 
                     const now = new Date();
@@ -1523,7 +1548,6 @@
         window.refreshData = refreshData;
         window.toggleSidebar = toggleSidebar;
         
-        // NEW: Activity Logging function attached to window
         window.logUserAction = function(username, action, details) {
             logActivityAPI(username, action, details).catch(console.error); // Send and forget
         };
@@ -1549,7 +1573,19 @@
             else showToast('Failed to update fee', 'error');
         };
 
-        // NEW: Activity Log Filter and Render function
+        // NEW: Branch Update Handler
+        window.handleBranchUpdate = async function(username, newBranch, selectElement) {
+            const originalValue = selectElement.getAttribute('data-prev') || '';
+            selectElement.disabled = true;
+            selectElement.classList.add('opacity-50', 'cursor-wait');
+            showToast(`Assigning branch to ${newBranch || 'None'}...`, 'info');
+            const response = await updateBranchAPI(username, newBranch);
+            selectElement.disabled = false;
+            selectElement.classList.remove('opacity-50', 'cursor-wait');
+            if (response.success) { showToast(`Branch updated`, 'success'); selectElement.setAttribute('data-prev', newBranch); await refreshData(); } 
+            else { showToast('Failed to save branch', 'error'); selectElement.value = originalValue; }
+        };
+
         window.renderLogsTable = function() {
             const tbody = document.getElementById('logTableBody');
             if(!tbody) return;
