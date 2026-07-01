@@ -47,11 +47,18 @@
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .snap-x-mandatory { scroll-snap-type: x mandatory; }
         .snap-center { scroll-snap-align: center; }
+
+        /* Custom Calendar Grid for Student View */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #f1f5f9; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;}
+        .calendar-day.attended { background-color: #ecfdf5; border-color: #10b981; color: #065f46; }
+        .calendar-day.admin-interactive:hover { border-color: #10b981; background-color: #f0fdf4; }
+        .calendar-mark { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; margin: 1px; }
     </style>
 </head>
 <body class="antialiased text-slate-800 flex flex-col overflow-hidden">
 
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none w-full max-w-xs px-4 md:px-0 ml-auto"></div>
+    <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none w-full max-w-xs px-4 md:px-0 ml-auto"></div>
 
     <div id="app" class="flex-grow flex items-center justify-center p-4 w-full h-full relative">
         <div class="text-brand-600 font-bold flex flex-col items-center">
@@ -60,9 +67,11 @@
         </div>
     </div>
 
+    <div id="global-modals"></div>
+
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx1ThmmTz9f5cDwmXg8bCCS1QI5oYzdIyOLA8hxpzoGTJi8JXRidclwOIRRimlIG7ALsg/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbz-A5AZqToLzgnXCkU9-p7EowuQGvD_vuHsq-aXb_Z-ZbJnqs6MIcsh2RoNvdDTQY7fQg/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -104,6 +113,7 @@
         let CURRENT_VIEW = 'login'; 
         let expireTimerInterval = null; 
         let examTimerInterval = null;
+        window.currentUser = null; // Global reference for the logged-in user
 
         // --- DATA MANAGEMENT ---
         async function fetchUsers() { try { return await (await fetch(`${API_URL}?action=getUsers`)).json(); } catch (e) { return []; } }
@@ -112,6 +122,7 @@
         async function fetchSubmissions() { try { return await (await fetch(`${API_URL}?action=getSubmissions`)).json(); } catch (e) { return []; } }
         async function fetchSettings() { try { return await (await fetch(`${API_URL}?action=getSettings`)).json(); } catch (e) { return {}; } }
         async function fetchLogs() { try { return await (await fetch(`${API_URL}?action=getLogs`)).json(); } catch (e) { return []; } } 
+        async function fetchAttendance() { try { return await (await fetch(`${API_URL}?action=getAttendance`)).json(); } catch (e) { return []; } }
 
         async function registerUserAPI(data) { return await sendPostRequest({ action: 'register', data: data }); }
         async function updateUserStatusAPI(username, status) { return await sendPostRequest({ action: 'updateStatus', username: username, status: status }); }
@@ -130,6 +141,8 @@
         async function deleteSubmissionAPI(id) { return await sendPostRequest({ action: 'deleteSubmission', id: id }); }
         async function deleteUserAPI(username) { return await sendPostRequest({ action: 'deleteUser', username: username }); }
         async function logActivityAPI(username, action, details) { return await sendPostRequest({ action: 'logActivity', data: { username, action, details } }); }
+        async function saveAttendanceAPI(records) { return await sendPostRequest({ action: 'saveAttendance', data: records }); }
+        async function deleteAttendanceAPI(date, username) { return await sendPostRequest({ action: 'deleteAttendance', data: { date, username } }); }
 
         async function sendPostRequest(data) {
             try {
@@ -252,6 +265,9 @@
             updateExams();
             examTimerInterval = setInterval(updateExams, 1000);
         }
+        
+        window.tempAttendanceList = [];
+
         // --- VIEWS ---
         const views = {
             login: () => `
@@ -338,6 +354,91 @@
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
                 
+                // Attendance logic for student
+                const attendanceData = data.attendance || [];
+                const myAttendance = attendanceData.filter(a => a.username === user.username);
+                
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                
+                // Filter attendance specifically for the current month
+                const thisMonthAttendance = myAttendance.filter(a => {
+                    const d = new Date(a.date);
+                    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                });
+
+                // Filter attendance for the previous month
+                const prevMonthAttendance = myAttendance.filter(a => {
+                    const d = new Date(a.date);
+                    return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
+                });
+                
+                const attendedClassesCount = thisMonthAttendance.length;
+                const prevAttendedClassesCount = prevMonthAttendance.length;
+
+                // Calendar Builder Function
+                const buildCalendar = () => {
+                    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    
+                    // Group attendance by day to show multiple marks
+                    const attendanceByDay = {};
+                    thisMonthAttendance.forEach(a => {
+                        const day = new Date(a.date).getDate();
+                        attendanceByDay[day] = (attendanceByDay[day] || 0) + 1;
+                    });
+
+                    let gridHtml = '';
+                    const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                    dayNames.forEach(d => gridHtml += `<div class="text-center text-[10px] font-bold text-slate-400 pb-1">${d}</div>`);
+                    
+                    for (let i = 0; i < firstDay; i++) gridHtml += `<div></div>`;
+                    
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const marksCount = attendanceByDay[day] || 0;
+                        let marksHtml = '';
+                        for(let m=0; m<marksCount; m++) marksHtml += `<span class="calendar-mark"></span>`;
+                        
+                        const isAttended = marksCount > 0 ? 'attended shadow-sm' : 'bg-slate-50 text-slate-400';
+                        gridHtml += `
+                            <div class="calendar-day ${isAttended} relative">
+                                <span>${day}</span>
+                                ${marksCount > 0 ? `<div class="flex flex-wrap justify-center mt-1 w-full px-1">${marksHtml}</div>` : ''}
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div id="attendanceCalendarModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
+                            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+                                <div class="bg-emerald-500 p-4 flex justify-between items-center text-white">
+                                    <h3 class="font-bold text-lg"><i class="fas fa-calendar-check mr-2"></i> Attendance</h3>
+                                    <button onclick="document.getElementById('attendanceCalendarModal').classList.add('hidden')" class="text-emerald-100 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                                </div>
+                                <div class="p-6">
+                                    <div class="text-center font-bold text-slate-700 mb-4 text-lg">${monthName}</div>
+                                    <div class="calendar-grid">
+                                        ${gridHtml}
+                                    </div>
+                                    <div class="mt-6 flex flex-col gap-2">
+                                        <div class="text-center text-sm text-slate-500 bg-slate-50 py-2 rounded-lg border border-slate-100">
+                                            Classes Attended This Month: <b class="text-emerald-600">${attendedClassesCount}</b>
+                                        </div>
+                                        <div class="text-center text-xs text-slate-400 bg-slate-50 py-1.5 rounded-lg border border-slate-100">
+                                            Classes Attended Last Month: <b class="text-slate-600">${prevAttendedClassesCount}</b>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+
                 const isTournamentLevel = user.level === 'Tournament Puzzles';
                 const taskLabel = isTournamentLevel ? 'Daily Tasks' : 'Weekly Tasks';
 
@@ -421,6 +522,7 @@
 
                 // NORMAL DASHBOARD VIEW
                 return `
+                ${buildCalendar()}
                 <div class="glass-panel w-full max-w-5xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[85vh] border-0">
                     <div class="bg-white border-b border-orange-100 p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
                         <div class="flex items-center gap-3 md:gap-5">
@@ -571,6 +673,22 @@
                                 }
                             </div>
                         </div>
+
+                        ${!isRestricted ? `
+                        <div class="bg-white rounded-xl shadow-lg border border-brand-100 overflow-hidden mb-8 p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-l-emerald-500">
+                            <div>
+                                <h3 class="font-bold text-lg flex items-center gap-2 text-slate-800 mb-1"><i class="fas fa-calendar-check text-emerald-500"></i> Monthly Attendance</h3>
+                                <div class="flex flex-col gap-1 mt-2">
+                                    <p class="text-sm text-slate-500">Classes This Month: <span class="font-bold text-emerald-600 text-lg mx-1">${attendedClassesCount}</span> / 8</p>
+                                    <p class="text-sm text-slate-500">Classes Last Month: <span class="font-bold text-slate-600 text-md mx-1">${prevAttendedClassesCount}</span></p>
+                                </div>
+                            </div>
+                            <button onclick="document.getElementById('attendanceCalendarModal').classList.remove('hidden')" class="bg-emerald-50 text-emerald-600 font-bold py-2 px-5 rounded-lg text-sm hover:bg-emerald-100 transition-colors border border-emerald-200 shadow-sm flex items-center gap-2">
+                                <i class="fas fa-calendar-alt"></i> View Calendar
+                            </button>
+                        </div>
+                        ` : ''}
+
                         <div class="bg-gradient-to-r from-secondary-900 to-secondary-800 rounded-xl p-6 md:p-8 text-white relative overflow-hidden">
                              <div class="absolute top-0 right-0 p-4 opacity-10 text-8xl md:text-9xl"><i class="fas fa-chess-rook"></i></div>
                             <h4 class="font-bold text-lg md:text-xl mb-2 relative z-10">Academy Announcement</h4>
@@ -579,22 +697,30 @@
                     </div>
                 </div>
                 `;
-            },
-            
-            // ADMIN SIDEBAR TEMPLATE GENERATOR
+            },// ADMIN SIDEBAR TEMPLATE GENERATOR
             _getAdminSidebar: (activeTab, unrankedCount, expiredCount, pendingCount) => {
                 const expiredBadge = expiredCount > 0 ? `<span class="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${expiredCount}</span>` : '';
                 const pendingBadge = pendingCount > 0 ? `<span class="ml-auto bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingCount}</span>` : '';
                 const unrankedBadge = unrankedCount > 0 ? `<span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${unrankedCount}</span>` : '';
 
-                const tabs = [
+                let tabs = [
                     { id: 'adminDashboard', icon: 'fa-users-cog', label: 'Dashboard', badge: '' },
                     { id: 'unrankedStudents', icon: 'fa-user-tag', label: 'Unranked Students', badge: unrankedBadge },
                     { id: 'expiredStudents', icon: 'fa-clock', label: 'Plan Expired Students', badge: expiredBadge },
                     { id: 'pendingStudents', icon: 'fa-user-clock', label: 'Pending Students', badge: pendingBadge },
+                    { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' },
                     { id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' },
                     { id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' } 
                 ];
+
+                const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
+                
+                // Restrict Sidebar for Keerthana
+                if (isKeerthana) {
+                    tabs = [
+                        { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' }
+                    ];
+                }
 
                 const navItems = tabs.map(t => {
                     const isActive = activeTab === t.id;
@@ -602,6 +728,7 @@
                     
                     if (isActive && t.id === 'adminExams') return `<div class="${baseClass} bg-purple-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive && t.id === 'activityLogs') return `<div class="${baseClass} bg-slate-700 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
+                    if (isActive && t.id === 'adminAttendance') return `<div class="${baseClass} bg-emerald-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive) return `<div class="${baseClass} bg-brand-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     
                     return `<button onclick="navigateTo('${t.id}')" class="${baseClass} text-slate-400 hover:bg-white/5 hover:text-white"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</button>`;
@@ -628,7 +755,7 @@
                 `;
             },
 
-            // --- ACTIVITY LOGS (NEW VIEW) ---
+            // --- ACTIVITY LOGS ---
             activityLogs: (data) => {
                 window.cachedLogs = data.logs || [];
                 const users = data.users || [];
@@ -691,6 +818,7 @@
                 </div>`;
             },
 
+            // --- UNRANKED STUDENTS ---
             unrankedStudents: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
@@ -761,6 +889,7 @@
                 `;
             },
             
+            // --- EXPIRED STUDENTS ---
             expiredStudents: (data) => {
                 window.cachedData = data;
                 const users = data.users || [];
@@ -817,6 +946,7 @@
                 `;
             },
             
+            // --- PENDING STUDENTS ---
             pendingStudents: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
@@ -876,6 +1006,99 @@
                 </div>
                 `;
             },
+            
+            // --- ADMIN ATTENDANCE WIDGET ---
+            adminAttendance: (data) => {
+                window.cachedData = data; 
+                const users = data.users || [];
+                const allStudents = users.filter(u => ['approved', 'blocked', 'expired'].includes(u.status) && u.role !== 'admin');
+                const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
+                const expiredCount = users.filter(u => u.status === 'expired').length;
+                const pendingCount = users.filter(u => u.status === 'pending').length;
+                
+                const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
+
+                return `
+                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
+                    <div class="flex h-full relative">
+                        ${views._getAdminSidebar('adminAttendance', unrankedCount, expiredCount, pendingCount)}
+                        <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
+                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
+                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-emerald-600 p-2"><i class="fas fa-bars text-xl"></i></button>
+                                    <div><h2 class="text-lg md:text-2xl font-bold text-emerald-800">Student Attendance Tracker</h2></div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="refreshData()" class="text-emerald-600 hover:bg-emerald-50 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh</span></button>
+                                </div>
+                            </header>
+                            
+                            <div class="flex-grow p-4 md:p-8 overflow-y-auto flex flex-col md:flex-row gap-6 items-start">
+                                
+                                <div class="w-full md:w-1/2 flex flex-col gap-4">
+                                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                                        <div class="mb-4">
+                                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="fas fa-calendar-alt text-emerald-500 mr-1"></i> Select Class Date</label>
+                                            <input type="date" id="attendanceDate" class="w-full border border-slate-200 focus:border-emerald-500 rounded-lg p-2 text-sm outline-none transition-colors shadow-inner">
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="fas fa-map-marker-alt text-emerald-500 mr-1"></i> Select Branch</label>
+                                            <select id="attendanceBranch" onchange="renderAttendanceStudents()" class="w-full border border-slate-200 focus:border-emerald-500 rounded-lg p-2 text-sm outline-none transition-colors shadow-inner" ${isKeerthana ? 'disabled' : ''}>
+                                                ${isKeerthana ? '<option value="Mangadu Branch" selected>Mangadu Branch</option>' : '<option value="">Choose Branch to load students...</option>' + ACADEMY_BRANCHES.map(b => `<option value="${b}">${b}</option>`).join('')}
+                                            </select>
+                                        </div>
+
+                                        <div class="relative w-full">
+                                            <input type="text" id="attendanceSearch" onkeyup="renderAttendanceStudents()" placeholder="Search student name..." class="w-full pl-9 pr-4 py-2 text-sm rounded-full border border-slate-200 focus:border-emerald-500 outline-none transition-colors shadow-sm">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex-grow flex flex-col max-h-[400px]">
+                                        <h3 class="font-bold text-slate-700 text-sm mb-2 border-b border-slate-100 pb-2">Select to Add <span class="text-xs text-slate-400 font-normal ml-1">(Can select same student 2x if 2 hours)</span></h3>
+                                        <div id="attendanceStudentList" class="flex flex-col gap-1 overflow-y-auto flex-grow pr-1">
+                                            <div class="text-xs text-slate-400 italic text-center py-4">Select a branch above to view students.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="w-full md:w-1/2 flex flex-col gap-4 sticky top-0">
+                                    <div class="bg-white p-5 rounded-xl shadow-md border-2 border-emerald-100 flex flex-col h-[500px]">
+                                        <div class="flex justify-between items-center border-b-2 border-emerald-50 pb-3 mb-4">
+                                            <h3 class="font-bold text-emerald-800"><i class="fas fa-clipboard-check text-emerald-500 mr-1"></i> Pending Upload List</h3>
+                                            <span id="attendanceCount" class="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">0</span>
+                                        </div>
+                                        
+                                        <div id="pendingAttendanceList" class="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4">
+                                            <div class="text-xs text-slate-400 italic text-center py-8">
+                                                <i class="fas fa-arrow-left text-2xl text-slate-200 mb-2 block"></i>
+                                                Click students on the left to add them to this attendance batch.
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex flex-col gap-2 mt-auto">
+                                            <button onclick="submitAttendance()" id="btnSubmitAttendance" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-md flex justify-center items-center gap-2">
+                                                <i class="fas fa-cloud-upload-alt"></i> Save Attendance Batch
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 border-t border-slate-200 pt-4">
+                                        <button onclick="openAdminSavedCalendar()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all shadow-sm flex justify-center items-center gap-2 border border-slate-300">
+                                            <i class="fas fa-calendar-alt"></i> View Saved Attendance
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // --- ADMIN EXAMS ---
             adminExams: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
@@ -1104,7 +1327,7 @@
                                                 <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Pending Tasks</div>
                                                 <div class="text-3xl md:text-4xl font-bold text-brand-500 mt-2">${pendingTaskSubmissions.length}</div>
                                             </div>
-                                            <div class="bg-brand-5 p-2 rounded-lg text-brand-500"><i class="fas fa-video text-xl"></i></div>
+                                            <div class="bg-brand-50 p-2 rounded-lg text-brand-500"><i class="fas fa-video text-xl"></i></div>
                                         </div>
                                     </div>
                                     <div class="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
@@ -1332,6 +1555,300 @@
             },
         };
 
+        // --- NEW: ATTENDANCE JS FUNCTIONS ---
+
+        window.renderAttendanceStudents = function() {
+            const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
+            let branch = document.getElementById('attendanceBranch').value;
+            
+            if (isKeerthana) branch = 'Mangadu Branch';
+
+            const search = document.getElementById('attendanceSearch').value.toLowerCase();
+            const listEl = document.getElementById('attendanceStudentList');
+            if(!listEl) return;
+
+            if(!branch) {
+                listEl.innerHTML = '<div class="text-xs text-slate-400 italic text-center py-4">Select a branch above to view students.</div>';
+                return;
+            }
+
+            const users = window.cachedData.users || [];
+            // Filter to only non-admin students in the chosen branch
+            const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired'].includes(u.status) && u.branch === branch);
+            const filtered = students.filter(u => u.username.toLowerCase().includes(search));
+
+            if(filtered.length === 0) {
+                listEl.innerHTML = '<div class="text-xs text-slate-400 italic text-center py-4">No students found matching your criteria.</div>';
+                return;
+            }
+
+            listEl.innerHTML = filtered.map(u => `
+                <div class="flex justify-between items-center p-3 hover:bg-emerald-50 rounded-lg border border-transparent hover:border-emerald-200 transition-colors cursor-pointer group shadow-sm bg-slate-50 mb-1" onclick="addStudentToAttendance('${u.username}')">
+                    <span class="text-sm font-bold text-slate-700 group-hover:text-emerald-700">${u.username}</span>
+                    <button class="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-plus-circle text-lg"></i></button>
+                </div>
+            `).join('');
+        };
+
+        window.addStudentToAttendance = function(username) {
+            window.tempAttendanceList.push(username);
+            renderPendingAttendance();
+        };
+
+        window.removeStudentFromAttendance = function(index) {
+            window.tempAttendanceList.splice(index, 1);
+            renderPendingAttendance();
+        };
+
+        window.renderPendingAttendance = function() {
+            const listEl = document.getElementById('pendingAttendanceList');
+            const countEl = document.getElementById('attendanceCount');
+            if(!listEl || !countEl) return;
+
+            countEl.innerText = window.tempAttendanceList.length;
+
+            if(window.tempAttendanceList.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-xs text-slate-400 italic text-center py-8">
+                        <i class="fas fa-arrow-left text-2xl text-slate-200 mb-2 block"></i>
+                        Click students on the left to add them to this attendance batch.
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = window.tempAttendanceList.map((username, index) => `
+                <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-emerald-200 shadow-sm fade-in mb-1">
+                    <span class="text-sm font-bold text-emerald-800">${username}</span>
+                    <button onclick="removeStudentFromAttendance(${index})" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-times-circle text-lg"></i></button>
+                </div>
+            `).join('');
+        };
+
+        window.submitAttendance = async function() {
+            const dateInput = document.getElementById('attendanceDate').value;
+            if(!dateInput) { showToast('Please select a date first', 'error'); return; }
+            if(window.tempAttendanceList.length === 0) { showToast('To-Do List is empty', 'error'); return; }
+
+            const btn = document.getElementById('btnSubmitAttendance');
+            const originalText = btn.innerHTML;
+            setButtonLoading(btn, true);
+
+            // Create payload matching what the backend expects
+            const isoDate = new Date(dateInput).toISOString();
+            const records = window.tempAttendanceList.map(u => ({ username: u, date: isoDate }));
+
+            const response = await saveAttendanceAPI(records);
+            setButtonLoading(btn, false, originalText);
+
+            if(response.success) {
+                showToast('Attendance saved successfully!', 'success');
+                window.tempAttendanceList = []; // Clear array
+                document.getElementById('attendanceSearch').value = ''; // clear search
+                renderPendingAttendance();
+                renderAttendanceStudents();
+                await refreshData();
+            } else {
+                showToast(response.message || 'Failed to save attendance', 'error');
+            }
+        };
+
+        // --- NEW: Interactive Admin Saved Attendance Calendar ---
+
+        window.currentAdminCalendarDate = new Date();
+
+        window.openAdminSavedCalendar = function() {
+            renderAdminSavedCalendar(window.currentAdminCalendarDate);
+            document.getElementById('adminSavedCalendarModal').classList.remove('hidden');
+        };
+
+        window.closeAdminSavedCalendar = function() {
+            document.getElementById('adminSavedCalendarModal').classList.add('hidden');
+        };
+
+        window.renderAdminSavedCalendar = function(dateObj) {
+            const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
+            const users = window.cachedData.users || [];
+            
+            // Map users by branch
+            const branchMap = {};
+            users.forEach(u => branchMap[u.username] = u.branch);
+
+            const attendanceData = window.cachedData.attendance || [];
+            
+            // Filter attendance based on branch if Keerthana
+            let filteredAttendance = attendanceData;
+            if (isKeerthana) {
+                filteredAttendance = attendanceData.filter(a => branchMap[a.username] === 'Mangadu Branch');
+            }
+
+            const currentMonth = dateObj.getMonth();
+            const currentYear = dateObj.getFullYear();
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const monthName = dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            const thisMonthAttendance = filteredAttendance.filter(a => {
+                const d = new Date(a.date);
+                return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            });
+
+            const attendanceByDay = {};
+            thisMonthAttendance.forEach(a => {
+                const day = new Date(a.date).getDate();
+                attendanceByDay[day] = (attendanceByDay[day] || 0) + 1;
+            });
+
+            let gridHtml = '';
+            const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            dayNames.forEach(d => gridHtml += `<div class="text-center text-[10px] font-bold text-slate-400 pb-1">${d}</div>`);
+            
+            for (let i = 0; i < firstDay; i++) gridHtml += `<div></div>`;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const marksCount = attendanceByDay[day] || 0;
+                let marksHtml = '';
+                // Cap marks visually to not overflow box
+                for(let m=0; m<Math.min(marksCount, 3); m++) marksHtml += `<span class="calendar-mark"></span>`;
+                if(marksCount > 3) marksHtml += `<span class="text-[8px] font-bold text-emerald-600 ml-0.5">+${marksCount-3}</span>`;
+                
+                const isAttended = marksCount > 0 ? 'attended shadow-sm admin-interactive' : 'bg-slate-50 text-slate-400';
+                const dateStr = new Date(currentYear, currentMonth, day).toISOString();
+                
+                gridHtml += `
+                    <div class="calendar-day ${isAttended} relative" ${marksCount > 0 ? `onclick="openAdminDayView('${dateStr}')"` : ''}>
+                        <span>${day}</span>
+                        ${marksCount > 0 ? `<div class="flex flex-wrap justify-center mt-1 w-full px-1 items-center">${marksHtml}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            const modalHtml = `
+                <div id="adminSavedCalendarModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
+                        <div class="bg-emerald-500 p-4 flex justify-between items-center text-white">
+                            <h3 class="font-bold text-lg"><i class="fas fa-calendar-check mr-2"></i> Saved Attendance</h3>
+                            <button onclick="closeAdminSavedCalendar()" class="text-emerald-100 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <button onclick="changeAdminCalendarMonth(-1)" class="text-slate-400 hover:text-emerald-600 p-2"><i class="fas fa-chevron-left"></i></button>
+                                <div class="text-center font-bold text-slate-700 text-lg">${monthName}</div>
+                                <button onclick="changeAdminCalendarMonth(1)" class="text-slate-400 hover:text-emerald-600 p-2"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-grid">
+                                ${gridHtml}
+                            </div>
+                            <div class="mt-4 text-center text-xs text-slate-400 italic">
+                                Click on a highlighted date to view and manage students.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById('global-modals');
+            // Check if day view is open so we don't overwrite it while interacting
+            const dayView = document.getElementById('adminDayViewModal');
+            if (dayView) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = modalHtml;
+                const existingCal = document.getElementById('adminSavedCalendarModal');
+                if(existingCal) existingCal.remove();
+                container.appendChild(tempDiv.firstElementChild);
+            } else {
+                container.innerHTML = modalHtml;
+            }
+        };
+
+        window.changeAdminCalendarMonth = function(dir) {
+            window.currentAdminCalendarDate.setMonth(window.currentAdminCalendarDate.getMonth() + dir);
+            renderAdminSavedCalendar(window.currentAdminCalendarDate);
+            document.getElementById('adminSavedCalendarModal').classList.remove('hidden');
+        };
+
+        window.openAdminDayView = function(isoDateStr) {
+            const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
+            const users = window.cachedData.users || [];
+            const branchMap = {};
+            users.forEach(u => branchMap[u.username] = u.branch);
+
+            const attendanceData = window.cachedData.attendance || [];
+            const targetDate = new Date(isoDateStr);
+            
+            const dayAttendance = attendanceData.filter(a => {
+                const d = new Date(a.date);
+                let match = d.getFullYear() === targetDate.getFullYear() && d.getMonth() === targetDate.getMonth() && d.getDate() === targetDate.getDate();
+                if (isKeerthana && match) {
+                    match = branchMap[a.username] === 'Mangadu Branch';
+                }
+                return match;
+            });
+
+            const displayDate = targetDate.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const listHtml = dayAttendance.map(a => {
+                const branch = branchMap[a.username] || 'Unknown Branch';
+                return `
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100 mb-2 hover:border-emerald-200 transition-colors">
+                    <div>
+                        <div class="font-bold text-slate-700">${a.username}</div>
+                        <div class="text-[10px] text-slate-500"><i class="fas fa-map-marker-alt text-emerald-500 mr-1"></i> ${branch}</div>
+                    </div>
+                    ${!isKeerthana ? `
+                    <button onclick="deleteSavedAttendance('${a.date}', '${a.username}', this)" class="text-slate-300 hover:text-red-500 transition-colors p-2" title="Remove Attendance">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    ` : ''}
+                </div>
+            `}).join('');
+
+            const modalHtml = `
+                <div id="adminDayViewModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col h-[70vh]">
+                        <div class="bg-emerald-600 p-4 flex justify-between items-center text-white">
+                            <h3 class="font-bold text-md truncate pr-2"><i class="fas fa-list-ul mr-2"></i> ${displayDate}</h3>
+                            <button onclick="closeAdminDayView()" class="text-emerald-100 hover:text-white flex-shrink-0"><i class="fas fa-times text-xl"></i></button>
+                        </div>
+                        <div class="p-4 flex-grow overflow-y-auto">
+                            ${dayAttendance.length === 0 ? '<div class="text-center text-slate-400 italic mt-10">No records found.</div>' : listHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = modalHtml;
+            document.getElementById('global-modals').appendChild(tempDiv.firstElementChild);
+        };
+
+        window.closeAdminDayView = function() {
+            const el = document.getElementById('adminDayViewModal');
+            if(el) el.remove();
+        };
+
+        window.deleteSavedAttendance = async function(dateStr, username, btn) {
+            if(!confirm(`Delete attendance record for ${username}?`)) return;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            const response = await deleteAttendanceAPI(dateStr, username);
+            if(response.success) {
+                showToast('Attendance removed', 'success');
+                await refreshData();
+                closeAdminDayView();
+                // re-open to fresh data
+                openAdminDayView(dateStr);
+                // update calendar background immediately
+                renderAdminSavedCalendar(window.currentAdminCalendarDate); 
+            } else {
+                showToast('Failed to delete', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
         // --- CONTROLLER ---
 
         function router(route, data = null) {
@@ -1355,6 +1872,11 @@
                 if (route === 'activityLogs') {
                     renderLogsTable();
                 }
+
+                if (route === 'adminAttendance') {
+                    renderAttendanceStudents(); 
+                    renderPendingAttendance();
+                }
             }
         }
 
@@ -1367,8 +1889,10 @@
         };
 
         async function refreshData() {
-            const [users, tasks, submissions, settings, exams, logs] = await Promise.all([fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs()]);
-            window.cachedData = { users, tasks, submissions, settings, exams, logs };
+            const [users, tasks, submissions, settings, exams, logs, attendance] = await Promise.all([
+                fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()
+            ]);
+            window.cachedData = { users, tasks, submissions, settings, exams, logs, attendance };
             
             if (CURRENT_VIEW === 'unrankedStudents') router('unrankedStudents', window.cachedData);
             else if (CURRENT_VIEW === 'adminDashboard') router('adminDashboard', window.cachedData);
@@ -1376,10 +1900,11 @@
             else if (CURRENT_VIEW === 'pendingStudents') router('pendingStudents', window.cachedData);
             else if (CURRENT_VIEW === 'adminExams') router('adminExams', window.cachedData);
             else if (CURRENT_VIEW === 'activityLogs') router('activityLogs', window.cachedData);
+            else if (CURRENT_VIEW === 'adminAttendance') router('adminAttendance', window.cachedData);
             else if (CURRENT_VIEW === 'userHome') {
                 const username = document.querySelector('h2').innerText.replace('Hello, ', '');
                 const currentUser = users.find(u => u.username === username);
-                router('userHome', { user: currentUser, tasks, submissions, settings, exams });
+                router('userHome', { user: currentUser, tasks, submissions, settings, exams, attendance });
             }
             showToast("Data Refreshed", "info");
         }
@@ -1421,10 +1946,21 @@
 
                     if (!account) { showToast('Invalid Credentials', 'error'); return; }
                     
+                    window.currentUser = account;
+
+                    // INTERCEPT FOR KEERTHANA S
+                    if (account.username === 'Keerthana S' && account.password === 'keerthichess31') {
+                        showToast('Welcome Keerthana', 'success');
+                        const [tasks, submissions, settings, exams, logs, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
+                        // Route Keerthana specifically to the attendance tracker only
+                        router('adminAttendance', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance });
+                        return;
+                    }
+                    
                     if (account.role === 'admin') { 
                         showToast('Welcome Admin', 'success'); 
-                        const [tasks, submissions, settings, exams, logs] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs()]);
-                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs }); 
+                        const [tasks, submissions, settings, exams, logs, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
+                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance }); 
                         return; 
                     }
 
@@ -1446,8 +1982,8 @@
                     if (account.status === 'rejected') { showToast('Admission Denied', 'error'); return; }
 
                     showToast('Welcome Student', 'success');
-                    const [tasks, submissions, settings, exams] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams()]);
-                    router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams });
+                    const [tasks, submissions, settings, exams, _, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
+                    router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams, attendance: attendance });
                 });
             } else if (route === 'register') {
                 document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -1550,10 +2086,14 @@
         window.toggleSidebar = toggleSidebar;
         
         window.logUserAction = function(username, action, details) {
-            logActivityAPI(username, action, details).catch(console.error); // Send and forget
+            logActivityAPI(username, action, details).catch(console.error);
         };
 
-        window.handleLogout = function() { showToast('Logged out', 'info'); router('login'); };
+        window.handleLogout = function() { 
+            window.currentUser = null;
+            showToast('Logged out', 'info'); 
+            router('login'); 
+        };
 
         window.togglePassword = function(inputId, iconId) {
             const input = document.getElementById(inputId);
@@ -1574,7 +2114,6 @@
             else showToast('Failed to update fee', 'error');
         };
 
-        // NEW: Branch Update Handler
         window.handleBranchUpdate = async function(username, newBranch, selectElement) {
             const originalValue = selectElement.getAttribute('data-prev') || '';
             selectElement.disabled = true;
@@ -1786,7 +2325,6 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // Updated back to 20MB as requested in the context history
             if (file.size > 20 * 1024 * 1024) {
                 alert("FILE TOO BIG: " + (file.size / 1024 / 1024).toFixed(2) + "MB\n\nLimit is 20MB.");
                 return;
@@ -1843,11 +2381,11 @@
                         showToast(`${uploadType} Uploaded Successfully!`, "success");
                         
                         setTimeout(async () => {
-                             const currentUser = document.querySelector('h2').innerText.replace('Hello, ', '');
+                             const currentUserStr = document.querySelector('h2').innerText.replace('Hello, ', '');
                              const users = await fetchUsers();
-                             const account = users.find(u => u.username === currentUser);
-                             const [tasks, submissions, settings, exams] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams()]);
-                             router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams });
+                             const account = users.find(u => u.username === currentUserStr);
+                             const [tasks, submissions, settings, exams, _, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
+                             router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams, attendance: attendance });
                         }, 1000);
 
                     } else {
