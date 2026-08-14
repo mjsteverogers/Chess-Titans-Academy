@@ -52,8 +52,10 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #f1f5f9; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;}
         .calendar-day.attended { background-color: #ecfdf5; border-color: #10b981; color: #065f46; }
+        .calendar-day.pending { background-color: #fffbeb; border-color: #f59e0b; color: #b45309; }
         .calendar-day.admin-interactive:hover { border-color: #10b981; background-color: #f0fdf4; }
         .calendar-mark { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; margin: 1px; }
+        .calendar-mark-pending { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; margin: 1px; }
     </style>
 </head>
 <body class="antialiased text-slate-800 flex flex-col overflow-hidden">
@@ -71,7 +73,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzNnaWrGrykpOFJtq6rW-G2ffuGoRT6Gl3_WCc971bzH2qHpP5ihyTBrti3L_nWml2GXw/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbywXVf-gLoMy5Ic3_MjS-RySc2FeaJcjRf-1c_hN1LkjvySQpIgQYdLDNT6FnYYzksMPw/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -143,6 +145,7 @@
         async function logActivityAPI(username, action, details) { return await sendPostRequest({ action: 'logActivity', data: { username, action, details } }); }
         async function saveAttendanceAPI(records) { return await sendPostRequest({ action: 'saveAttendance', data: records }); }
         async function deleteAttendanceAPI(date, username) { return await sendPostRequest({ action: 'deleteAttendance', data: { date, username } }); }
+        async function updateAttendanceStatusAPI(date, username, status) { return await sendPostRequest({ action: 'updateAttendanceStatus', data: { date, username, status } }); }
 
         async function sendPostRequest(data) {
             try {
@@ -305,6 +308,9 @@
                         </div>
                     </div>
                 </div>
+                <!-- <div class="mt-6 text-center text-xs text-slate-500 pb-4 fade-in">
+                    This website is developed by <a href="https://mjsteveportfolio.vercel.app/" target="_blank" class="text-brand-600 hover:text-brand-700 font-bold transition-colors">Steve Rogers</a><br>and maintained by Chess Titans Academy
+                </div> -->
             `,
             register: () => `
                 <div class="glass-panel w-full max-w-md rounded-xl p-0 fade-in relative overflow-hidden shadow-2xl mx-auto">
@@ -342,6 +348,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="mt-6 text-center text-xs text-slate-500 pb-4 fade-in">
+                    This website is developed by <a href="https://mjsteveportfolio.vercel.app/" target="_blank" class="text-brand-600 hover:text-brand-700 font-bold transition-colors">Steve Rogers</a><br>and maintained by Chess Titans Academy
+                </div>
             `,
             userHome: (data) => {
                 const user = data.user;
@@ -356,7 +365,8 @@
                 
                 // Attendance logic for student
                 const attendanceData = data.attendance || [];
-                const myAttendance = attendanceData.filter(a => a.username === user.username);
+                // Only consider approved attendance for students
+                const myAttendance = attendanceData.filter(a => a.username === user.username && a.status !== 'pending');
                 
                 const now = new Date();
                 const currentMonth = now.getMonth();
@@ -699,27 +709,31 @@
                     </div>
                 </div>
                 `;
-            },// ADMIN SIDEBAR TEMPLATE GENERATOR
-            _getAdminSidebar: (activeTab, unrankedCount, expiredCount, pendingCount) => {
+            },
+            
+            // ADMIN SIDEBAR TEMPLATE GENERATOR
+            _getAdminSidebar: (activeTab, unrankedCount, expiredCount, pendingCount, pendingAttCount = 0) => {
                 const expiredBadge = expiredCount > 0 ? `<span class="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${expiredCount}</span>` : '';
                 const pendingBadge = pendingCount > 0 ? `<span class="ml-auto bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingCount}</span>` : '';
                 const unrankedBadge = unrankedCount > 0 ? `<span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${unrankedCount}</span>` : '';
+                const attBadge = pendingAttCount > 0 ? `<span class="ml-auto bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingAttCount}</span>` : '';
 
                 let tabs = [
                     { id: 'adminDashboard', icon: 'fa-users-cog', label: 'Dashboard', badge: '' },
                     { id: 'unrankedStudents', icon: 'fa-user-tag', label: 'Unranked Students', badge: unrankedBadge },
                     { id: 'expiredStudents', icon: 'fa-clock', label: 'Plan Expired Students', badge: expiredBadge },
                     { id: 'pendingStudents', icon: 'fa-user-clock', label: 'Pending Students', badge: pendingBadge },
-                    { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' },
-                    { id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' },
-                    { id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' } 
+                    { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' }
                 ];
 
-                const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
                 const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
                 
-                // Restrict Sidebar for Keerthana and Academy Tie Up Roles
-                if (isKeerthana || isTieUp) {
+                if (!isTieUp) {
+                    tabs.push({ id: 'attendanceApproval', icon: 'fa-check-double', label: 'Attendance Approval', badge: attBadge });
+                    tabs.push({ id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' });
+                    tabs.push({ id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' });
+                } else {
+                    // Restrict Sidebar for Academy Tie Up Roles
                     tabs = [
                         { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' }
                     ];
@@ -732,6 +746,7 @@
                     if (isActive && t.id === 'adminExams') return `<div class="${baseClass} bg-purple-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive && t.id === 'activityLogs') return `<div class="${baseClass} bg-slate-700 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive && t.id === 'adminAttendance') return `<div class="${baseClass} bg-emerald-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
+                    if (isActive && t.id === 'attendanceApproval') return `<div class="${baseClass} bg-blue-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive) return `<div class="${baseClass} bg-brand-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     
                     return `<button onclick="navigateTo('${t.id}')" class="${baseClass} text-slate-400 hover:bg-white/5 hover:text-white"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</button>`;
@@ -762,15 +777,17 @@
             activityLogs: (data) => {
                 window.cachedLogs = data.logs || [];
                 const users = data.users || [];
+                const attendanceData = data.attendance || [];
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
                 const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
                 const expiredCount = users.filter(u => u.status === 'expired').length;
                 const pendingCount = users.filter(u => u.status === 'pending').length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
 
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('activityLogs', unrankedCount, expiredCount, pendingCount)}
+                        ${views._getAdminSidebar('activityLogs', unrankedCount, expiredCount, pendingCount, pendingAttCount)}
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
                         <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
                             <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
@@ -811,7 +828,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="logTableBody" class="divide-y divide-slate-100">
-                                                </tbody>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -819,21 +836,21 @@
                         </div>
                     </div>
                 </div>`;
-            },
-
-            // --- UNRANKED STUDENTS ---
+            },// --- UNRANKED STUDENTS ---
             unrankedStudents: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
+                const attendanceData = data.attendance || [];
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
                 const unrankedList = allStudents.filter(u => !u.level || u.level === 'Unranked');
                 const expiredCount = users.filter(u => u.status === 'expired').length;
                 const pendingCount = users.filter(u => u.status === 'pending').length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
 
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('unrankedStudents', unrankedList.length, expiredCount, pendingCount)}
+                        ${views._getAdminSidebar('unrankedStudents', unrankedList.length, expiredCount, pendingCount, pendingAttCount)}
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
                         <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
                             <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
@@ -896,15 +913,17 @@
             expiredStudents: (data) => {
                 window.cachedData = data;
                 const users = data.users || [];
+                const attendanceData = data.attendance || [];
                 const expiredList = users.filter(u => u.status === 'expired' && u.role !== 'admin');
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
                 const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
                 const pendingCount = users.filter(u => u.status === 'pending').length; 
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
 
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('expiredStudents', unrankedCount, expiredList.length, pendingCount)}
+                        ${views._getAdminSidebar('expiredStudents', unrankedCount, expiredList.length, pendingCount, pendingAttCount)}
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
                         <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
                             <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
@@ -953,15 +972,17 @@
             pendingStudents: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
+                const attendanceData = data.attendance || [];
                 const pendingList = users.filter(u => u.status === 'pending');
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
                 const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
                 const expiredCount = users.filter(u => u.status === 'expired').length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
 
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('pendingStudents', unrankedCount, expiredCount, pendingList.length)}
+                        ${views._getAdminSidebar('pendingStudents', unrankedCount, expiredCount, pendingList.length, pendingAttCount)}
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
                         <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
                             <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
@@ -1010,16 +1031,88 @@
                 `;
             },
             
-            // --- ADMIN ATTENDANCE WIDGET ---
-            adminAttendance: (data) => {
+            // --- ATTENDANCE APPROVAL ---
+            attendanceApproval: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
+                const attendanceData = data.attendance || [];
+                const pendingAttList = attendanceData.filter(a => a.status === 'pending');
+                
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
                 const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
                 const expiredCount = users.filter(u => u.status === 'expired').length;
                 const pendingCount = users.filter(u => u.status === 'pending').length;
+
+                return `
+                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
+                    <div class="flex h-full relative">
+                        ${views._getAdminSidebar('attendanceApproval', unrankedCount, expiredCount, pendingCount, pendingAttList.length)}
+                        <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
+                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
+                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
+                                    <div><h2 class="text-lg md:text-2xl font-bold text-slate-800">Attendance Approval</h2></div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="refreshData()" class="text-brand-600 hover:bg-brand-50 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh Data</span></button>
+                                </div>
+                            </header>
+                            
+                            <div class="flex-grow p-4 md:p-8 overflow-y-auto">
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                                    <div class="p-4 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
+                                        <h3 class="font-bold text-blue-900 text-sm md:text-base"><i class="fas fa-check-double mr-2"></i>Pending Tie-Up Attendance</h3>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-sm text-slate-600 min-w-[800px]">
+                                            <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
+                                                <tr>
+                                                    <th class="px-6 py-3">Date Submitted</th>
+                                                    <th class="px-6 py-3">Student</th>
+                                                    <th class="px-6 py-3">Class Date</th>
+                                                    <th class="px-6 py-3 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100">
+                                                 ${pendingAttList.length === 0 ? `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No pending attendance to approve.</td></tr>` : pendingAttList.map(a => {
+                                                    const subDate = new Date(a.timestamp).toLocaleString();
+                                                    const classDate = new Date(a.date).toLocaleDateString();
+                                                    return `
+                                                    <tr class="hover:bg-blue-50/30">
+                                                        <td class="px-6 py-4 font-mono text-xs text-slate-500">${subDate}</td>
+                                                        <td class="px-6 py-4 font-bold text-slate-800">${a.username}</td>
+                                                        <td class="px-6 py-4 font-medium text-blue-600">${classDate}</td>
+                                                        <td class="px-6 py-4 text-right">
+                                                            <div class="flex items-center justify-end gap-2">
+                                                                <button onclick="handleAttendanceApproval('${a.date}', '${a.username}', 'approved', this)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm"><i class="fas fa-check mr-1"></i> Approve</button>
+                                                                <button onclick="deleteSavedAttendance('${a.date}', '${a.username}', this, true)" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"><i class="fas fa-times mr-1"></i> Reject</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>`;
+                                                 }).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            // --- ADMIN ATTENDANCE WIDGET ---
+            adminAttendance: (data) => {
+                window.cachedData = data; 
+                const users = data.users || [];
+                const attendanceData = data.attendance || [];
+                const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
+                const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
+                const expiredCount = users.filter(u => u.status === 'expired').length;
+                const pendingCount = users.filter(u => u.status === 'pending').length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
                 
-                const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
                 const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
                 let tieUpBranch = '';
                 if(isTieUp) tieUpBranch = window.currentUser.branch;
@@ -1027,7 +1120,7 @@
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('adminAttendance', unrankedCount, expiredCount, pendingCount)}
+                        ${views._getAdminSidebar('adminAttendance', unrankedCount, expiredCount, pendingCount, pendingAttCount)}
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
                         <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
                             <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
@@ -1051,8 +1144,8 @@
                                         
                                         <div class="mb-4">
                                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="fas fa-map-marker-alt text-emerald-500 mr-1"></i> Select Branch</label>
-                                            <select id="attendanceBranch" onchange="renderAttendanceStudents()" class="w-full border border-slate-200 focus:border-emerald-500 rounded-lg p-2 text-sm outline-none transition-colors shadow-inner" ${isKeerthana || isTieUp ? 'disabled' : ''}>
-                                                ${isKeerthana ? '<option value="Mangadu Branch" selected>Mangadu Branch</option>' : isTieUp ? `<option value="${tieUpBranch}" selected>${tieUpBranch}</option>` : '<option value="">Choose Branch to load students...</option>' + ACADEMY_BRANCHES.map(b => `<option value="${b}">${b}</option>`).join('')}
+                                            <select id="attendanceBranch" onchange="renderAttendanceStudents()" class="w-full border border-slate-200 focus:border-emerald-500 rounded-lg p-2 text-sm outline-none transition-colors shadow-inner" ${isTieUp ? 'disabled' : ''}>
+                                                ${isTieUp ? `<option value="${tieUpBranch}" selected>${tieUpBranch}</option>` : '<option value="">Choose Branch to load students...</option>' + ACADEMY_BRANCHES.map(b => `<option value="${b}">${b}</option>`).join('')}
                                             </select>
                                         </div>
 
@@ -1067,13 +1160,17 @@
                                         <div id="attendanceStudentList" class="flex flex-col gap-1 overflow-y-auto flex-grow pr-1">
                                             <div class="text-xs text-slate-400 italic text-center py-4">Select a branch above to view students.</div>
                                         </div>
+                                        
+                                        <button onclick="toggleAttendanceReport()" id="btnToggleAttReport" class="mt-4 w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-slate-900 transition-colors shadow-sm flex items-center justify-center gap-2">
+                                            <i class="fas fa-chart-pie"></i> Show Attendance Report
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div class="w-full md:w-1/2 flex flex-col gap-4 sticky top-0">
                                     <div class="bg-white p-5 rounded-xl shadow-md border-2 border-emerald-100 flex flex-col h-[500px]">
                                         <div class="flex justify-between items-center border-b-2 border-emerald-50 pb-3 mb-4">
-                                            <h3 class="font-bold text-emerald-800"><i class="fas fa-clipboard-check text-emerald-500 mr-1"></i> Pending Upload List</h3>
+                                            <h3 id="rightPanelTitle" class="font-bold text-emerald-800"><i class="fas fa-clipboard-check text-emerald-500 mr-1"></i> Pending Upload List</h3>
                                             <span id="attendanceCount" class="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">0</span>
                                         </div>
                                         
@@ -1082,6 +1179,9 @@
                                                 <i class="fas fa-arrow-left text-2xl text-slate-200 mb-2 block"></i>
                                                 Click students on the left to add them to this attendance batch.
                                             </div>
+                                        </div>
+                                        
+                                        <div id="attendanceReportList" class="flex-grow overflow-y-auto hidden flex-col gap-2 pr-1 pb-4">
                                         </div>
                                         
                                         <div class="flex flex-col gap-2 mt-auto">
@@ -1110,12 +1210,14 @@
                 const users = data.users || [];
                 const exams = data.exams || [];
                 const submissions = data.submissions || [];
+                const attendanceData = data.attendance || [];
                 const examSubmissions = submissions.filter(s => s.uploadType === 'Exam');
                 
                 const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
                 const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
                 const expiredCount = users.filter(u => u.status === 'expired').length;
                 const pendingCount = users.filter(u => u.status === 'pending').length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
 
                 examSubmissions.sort((a, b) => {
                     const statusOrder = { 'pending': 1, 'incorrect': 2, 'correct': 3 };
@@ -1125,7 +1227,7 @@
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('adminExams', unrankedCount, expiredCount, pendingCount)}
+                        ${views._getAdminSidebar('adminExams', unrankedCount, expiredCount, pendingCount, pendingAttCount)}
                         
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
 
@@ -1289,6 +1391,7 @@
                 const tasks = data.tasks || [];
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
+                const attendanceData = data.attendance || [];
                 
                 const taskSubmissions = submissions.filter(s => s.uploadType !== 'Exam');
                 const pendingTaskSubmissions = taskSubmissions.filter(s => s.status === 'pending');
@@ -1298,6 +1401,7 @@
                 const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
                 const expiredCount = users.filter(u => u.status === 'expired').length;
                 const pendingCount = pendingUsers.length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
                 
                 window.cachedData = data; 
 
@@ -1306,10 +1410,24 @@
                     return (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
                 });
 
+                const branchCards = ACADEMY_BRANCHES.map(b => {
+                    const count = allStudents.filter(u => u.branch === b).length;
+                    return `
+                    <div class="min-w-[200px] md:min-w-[240px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">${b}</div>
+                                <div class="text-2xl md:text-3xl font-bold text-indigo-500 mt-2">${count}</div>
+                            </div>
+                            <div class="bg-indigo-50 p-2 rounded-lg text-indigo-500"><i class="fas fa-map-marker-alt text-xl"></i></div>
+                        </div>
+                    </div>`;
+                }).join('');
+
                 return `
                 <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
                     <div class="flex h-full relative">
-                        ${views._getAdminSidebar('adminDashboard', unrankedCount, expiredCount, pendingCount)}
+                        ${views._getAdminSidebar('adminDashboard', unrankedCount, expiredCount, pendingCount, pendingAttCount)}
 
                         <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
 
@@ -1326,7 +1444,7 @@
                             
                             <div class="flex-grow p-4 md:p-8 overflow-y-auto">
                                 
-                                <div class="flex flex-nowrap overflow-x-auto gap-4 md:gap-6 mb-6 md:mb-8 pb-4 snap-x-mandatory">
+                                <div class="flex flex-nowrap overflow-x-auto gap-4 md:gap-6 mb-6 pb-4 snap-x-mandatory">
                                     <div class="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
                                         <div class="flex justify-between items-start">
                                             <div>
@@ -1363,6 +1481,7 @@
                                             <div class="bg-blue-50 p-2 rounded-lg text-blue-600"><i class="fas fa-tasks text-xl"></i></div>
                                         </div>
                                     </div>
+                                    ${branchCards}
                                 </div>
 
                                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 md:mb-8 overflow-hidden">
@@ -1564,15 +1683,11 @@
             },
         };
 
-        // --- NEW: ATTENDANCE JS FUNCTIONS ---
+        // --- ATTENDANCE JS FUNCTIONS ---
 
         window.renderAttendanceStudents = function() {
-            const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
             const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
-            
             let branch = document.getElementById('attendanceBranch').value;
-            
-            if (isKeerthana) branch = 'Mangadu Branch';
             if (isTieUp) branch = window.currentUser.branch;
 
             const search = document.getElementById('attendanceSearch').value.toLowerCase();
@@ -1585,7 +1700,6 @@
             }
 
             const users = window.cachedData.users || [];
-            // Filter to only non-admin students in the chosen branch
             const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired','tieup'].includes(u.status) && u.branch === branch);
             const filtered = students.filter(u => u.username.toLowerCase().includes(search));
 
@@ -1602,6 +1716,72 @@
             `).join('');
         };
 
+        window.toggleAttendanceReport = function() {
+            const pendingList = document.getElementById('pendingAttendanceList');
+            const reportList = document.getElementById('attendanceReportList');
+            const submitBtn = document.getElementById('btnSubmitAttendance');
+            const countEl = document.getElementById('attendanceCount');
+            const rightTitle = document.getElementById('rightPanelTitle');
+            const toggleBtn = document.getElementById('btnToggleAttReport');
+            
+            const isShowingReport = !reportList.classList.contains('hidden');
+            
+            if (isShowingReport) {
+                reportList.classList.add('hidden');
+                pendingList.classList.remove('hidden');
+                submitBtn.classList.remove('hidden');
+                rightTitle.innerHTML = '<i class="fas fa-clipboard-check text-emerald-500 mr-1"></i> Pending Upload List';
+                toggleBtn.innerHTML = '<i class="fas fa-chart-pie"></i> Show Attendance Report';
+                renderPendingAttendance();
+            } else {
+                pendingList.classList.add('hidden');
+                submitBtn.classList.add('hidden');
+                reportList.classList.remove('hidden');
+                rightTitle.innerHTML = '<i class="fas fa-chart-pie text-emerald-500 mr-1"></i> Monthly Report (Max 8)';
+                toggleBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Upload List';
+                
+                let branch = document.getElementById('attendanceBranch').value;
+                const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
+                if (isTieUp) branch = window.currentUser.branch;
+                
+                if(!branch) {
+                    reportList.innerHTML = '<div class="text-xs text-slate-400 italic text-center py-8">Select a branch to view report.</div>';
+                    countEl.innerText = "0";
+                    return;
+                }
+
+                const users = window.cachedData.users || [];
+                const attendanceData = window.cachedData.attendance || [];
+                const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired','tieup'].includes(u.status) && u.branch === branch);
+                
+                countEl.innerText = students.length;
+
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                const reportHtml = students.map(u => {
+                    const studentAtt = attendanceData.filter(a => a.username === u.username && a.status !== 'pending');
+                    const thisMonthAtt = studentAtt.filter(a => {
+                        const d = new Date(a.date);
+                        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                    });
+                    const count = thisMonthAtt.length;
+                    
+                    return `
+                    <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-200 shadow-sm mb-1 hover:border-emerald-300 transition-colors">
+                        <span class="text-sm font-bold text-slate-700 cursor-pointer hover:text-emerald-600 underline" onclick="openStudentCalendar('${u.username}')">${u.username}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold ${count >= 8 ? 'text-emerald-600' : 'text-slate-500'} bg-slate-100 px-2 py-1 rounded">${count} / 8 Classes</span>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                
+                reportList.innerHTML = students.length ? reportHtml : '<div class="text-xs text-slate-400 italic text-center py-8">No students found.</div>';
+            }
+        };
+
         window.addStudentToAttendance = function(username) {
             window.tempAttendanceList.push(username);
             renderPendingAttendance();
@@ -1615,7 +1795,10 @@
         window.renderPendingAttendance = function() {
             const listEl = document.getElementById('pendingAttendanceList');
             const countEl = document.getElementById('attendanceCount');
+            const reportList = document.getElementById('attendanceReportList');
+            
             if(!listEl || !countEl) return;
+            if(reportList && !reportList.classList.contains('hidden')) return;
 
             countEl.innerText = window.tempAttendanceList.length;
 
@@ -1645,17 +1828,20 @@
             const originalText = btn.innerHTML;
             setButtonLoading(btn, true);
 
-            // Create payload matching what the backend expects
+            const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
+            const attStatus = isTieUp ? 'pending' : 'approved';
             const isoDate = new Date(dateInput).toISOString();
-            const records = window.tempAttendanceList.map(u => ({ username: u, date: isoDate }));
+            
+            // Note: Update backend saveAttendance to handle/store 'status' field!
+            const records = window.tempAttendanceList.map(u => ({ username: u, date: isoDate, status: attStatus }));
 
             const response = await saveAttendanceAPI(records);
             setButtonLoading(btn, false, originalText);
 
             if(response.success) {
-                showToast('Attendance saved successfully!', 'success');
-                window.tempAttendanceList = []; // Clear array
-                document.getElementById('attendanceSearch').value = ''; // clear search
+                showToast(isTieUp ? 'Attendance sent for Admin Approval!' : 'Attendance saved successfully!', 'success');
+                window.tempAttendanceList = []; 
+                document.getElementById('attendanceSearch').value = ''; 
                 renderPendingAttendance();
                 renderAttendanceStudents();
                 await refreshData();
@@ -1664,7 +1850,20 @@
             }
         };
 
-        // --- NEW: Interactive Admin Saved Attendance Calendar ---
+        window.handleAttendanceApproval = async function(dateStr, username, newStatus, btnElement) {
+            const originalContent = btnElement.innerHTML;
+            btnElement.disabled = true;
+            btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const response = await updateAttendanceStatusAPI(dateStr, username, newStatus);
+            if (response.success) { 
+                showToast(`Attendance Approved`, 'success'); 
+                await refreshData(); 
+            } else { 
+                showToast('Action failed', 'error'); 
+                btnElement.disabled = false; 
+                btnElement.innerHTML = originalContent; 
+            }
+        };
 
         window.currentAdminCalendarDate = new Date();
 
@@ -1678,22 +1877,15 @@
         };
 
         window.renderAdminSavedCalendar = function(dateObj) {
-            const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
             const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
 
             const users = window.cachedData.users || [];
-            
-            // Map users by branch
             const branchMap = {};
             users.forEach(u => branchMap[u.username] = u.branch);
 
             const attendanceData = window.cachedData.attendance || [];
-            
-            // Filter attendance based on branch if Keerthana or Tie Up Partner
             let filteredAttendance = attendanceData;
-            if (isKeerthana) {
-                filteredAttendance = attendanceData.filter(a => branchMap[a.username] === 'Mangadu Branch');
-            } else if (isTieUp) {
+            if (isTieUp) {
                 filteredAttendance = attendanceData.filter(a => branchMap[a.username] === window.currentUser.branch);
             }
 
@@ -1712,7 +1904,9 @@
             const attendanceByDay = {};
             thisMonthAttendance.forEach(a => {
                 const day = new Date(a.date).getDate();
-                attendanceByDay[day] = (attendanceByDay[day] || 0) + 1;
+                if(!attendanceByDay[day]) attendanceByDay[day] = { count: 0, hasPending: false };
+                attendanceByDay[day].count++;
+                if(a.status === 'pending') attendanceByDay[day].hasPending = true;
             });
 
             let gridHtml = '';
@@ -1722,13 +1916,16 @@
             for (let i = 0; i < firstDay; i++) gridHtml += `<div></div>`;
             
             for (let day = 1; day <= daysInMonth; day++) {
-                const marksCount = attendanceByDay[day] || 0;
+                const dayData = attendanceByDay[day] || { count: 0, hasPending: false };
+                const marksCount = dayData.count;
                 let marksHtml = '';
-                // Cap marks visually to not overflow box
-                for(let m=0; m<Math.min(marksCount, 3); m++) marksHtml += `<span class="calendar-mark"></span>`;
-                if(marksCount > 3) marksHtml += `<span class="text-[8px] font-bold text-emerald-600 ml-0.5">+${marksCount-3}</span>`;
                 
-                const isAttended = marksCount > 0 ? 'attended shadow-sm admin-interactive' : 'bg-slate-50 text-slate-400';
+                for(let m=0; m<Math.min(marksCount, 3); m++) {
+                    marksHtml += `<span class="${dayData.hasPending ? 'calendar-mark-pending' : 'calendar-mark'}"></span>`;
+                }
+                if(marksCount > 3) marksHtml += `<span class="text-[8px] font-bold ${dayData.hasPending ? 'text-amber-600' : 'text-emerald-600'} ml-0.5">+${marksCount-3}</span>`;
+                
+                const isAttended = marksCount > 0 ? (dayData.hasPending ? 'pending shadow-sm admin-interactive' : 'attended shadow-sm admin-interactive') : 'bg-slate-50 text-slate-400';
                 const dateStr = new Date(currentYear, currentMonth, day).toISOString();
                 
                 gridHtml += `
@@ -1764,7 +1961,6 @@
             `;
             
             const container = document.getElementById('global-modals');
-            // Check if day view is open so we don't overwrite it while interacting
             const dayView = document.getElementById('adminDayViewModal');
             if (dayView) {
                 const tempDiv = document.createElement('div');
@@ -1784,7 +1980,6 @@
         };
 
         window.openAdminDayView = function(isoDateStr) {
-            const isKeerthana = window.currentUser && window.currentUser.username === 'Keerthana S';
             const isTieUp = window.currentUser && window.currentUser.status === 'tieup';
             
             const users = window.cachedData.users || [];
@@ -1797,9 +1992,7 @@
             const dayAttendance = attendanceData.filter(a => {
                 const d = new Date(a.date);
                 let match = d.getFullYear() === targetDate.getFullYear() && d.getMonth() === targetDate.getMonth() && d.getDate() === targetDate.getDate();
-                if (isKeerthana && match) {
-                    match = branchMap[a.username] === 'Mangadu Branch';
-                } else if (isTieUp && match) {
+                if (isTieUp && match) {
                     match = branchMap[a.username] === window.currentUser.branch;
                 }
                 return match;
@@ -1809,13 +2002,14 @@
 
             const listHtml = dayAttendance.map(a => {
                 const branch = branchMap[a.username] || 'Unknown Branch';
+                const statusBadge = a.status === 'pending' ? `<span class="bg-orange-100 text-orange-600 px-1.5 py-0.5 text-[10px] rounded uppercase font-bold ml-2">Pending</span>` : ``;
                 return `
-                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100 mb-2 hover:border-emerald-200 transition-colors">
+                <div class="day-view-item flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100 mb-2 hover:border-emerald-200 transition-colors" data-name="${a.username}">
                     <div>
-                        <div class="font-bold text-slate-700 cursor-pointer hover:text-brand-600 underline" onclick="openStudentCalendar('${a.username}')">${a.username}</div>
+                        <div class="font-bold text-slate-700 cursor-pointer hover:text-brand-600 underline" onclick="openStudentCalendar('${a.username}')">${a.username}${statusBadge}</div>
                         <div class="text-[10px] text-slate-500"><i class="fas fa-map-marker-alt text-emerald-500 mr-1"></i> ${branch}</div>
                     </div>
-                    ${!isKeerthana && !isTieUp ? `
+                    ${!isTieUp ? `
                     <button onclick="deleteSavedAttendance('${a.date}', '${a.username}', this)" class="text-slate-300 hover:text-red-500 transition-colors p-2" title="Remove Attendance">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -1830,7 +2024,13 @@
                             <h3 class="font-bold text-md truncate pr-2"><i class="fas fa-list-ul mr-2"></i> ${displayDate}</h3>
                             <button onclick="closeAdminDayView()" class="text-emerald-100 hover:text-white flex-shrink-0"><i class="fas fa-times text-xl"></i></button>
                         </div>
-                        <div class="p-4 flex-grow overflow-y-auto">
+                        <div class="p-3 bg-slate-50 border-b border-slate-200">
+                            <div class="relative w-full">
+                                <input type="text" id="dayViewSearchInput" onkeyup="filterDayViewStudents()" placeholder="Search student name..." class="w-full pl-9 pr-4 py-2 text-sm rounded-full border border-slate-200 focus:border-emerald-500 outline-none transition-colors shadow-sm">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow overflow-y-auto" id="dayViewStudentList">
                             ${dayAttendance.length === 0 ? '<div class="text-center text-slate-400 italic mt-10">No records found.</div>' : listHtml}
                         </div>
                     </div>
@@ -1842,15 +2042,24 @@
             document.getElementById('global-modals').appendChild(tempDiv.firstElementChild);
         };
 
+        window.filterDayViewStudents = function() {
+            const search = document.getElementById('dayViewSearchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.day-view-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                if(name.includes(search)) item.style.display = 'flex';
+                else item.style.display = 'none';
+            });
+        };
+
         window.closeAdminDayView = function() {
             const el = document.getElementById('adminDayViewModal');
             if(el) el.remove();
         };
 
-        // --- NEW: Individual Student Calendar (Called from Admin view) ---
         window.openStudentCalendar = function(studentUsername) {
             const attendanceData = window.cachedData.attendance || [];
-            const studentAttendance = attendanceData.filter(a => a.username === studentUsername);
+            const studentAttendance = attendanceData.filter(a => a.username === studentUsername && a.status !== 'pending');
             
             const now = new Date();
             const currentMonth = now.getMonth();
@@ -1918,8 +2127,7 @@
             document.getElementById('global-modals').appendChild(tempDiv.firstElementChild);
         };
 
-
-        window.deleteSavedAttendance = async function(dateStr, username, btn) {
+        window.deleteSavedAttendance = async function(dateStr, username, btn, isFromApproval = false) {
             if(!confirm(`Delete attendance record for ${username}?`)) return;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1929,11 +2137,11 @@
             if(response.success) {
                 showToast('Attendance removed', 'success');
                 await refreshData();
-                closeAdminDayView();
-                // re-open to fresh data
-                openAdminDayView(dateStr);
-                // update calendar background immediately
-                renderAdminSavedCalendar(window.currentAdminCalendarDate); 
+                if(!isFromApproval) {
+                    closeAdminDayView();
+                    openAdminDayView(dateStr);
+                    renderAdminSavedCalendar(window.currentAdminCalendarDate); 
+                }
             } else {
                 showToast('Failed to delete', 'error');
                 btn.innerHTML = originalText;
@@ -1942,7 +2150,6 @@
         };
 
         // --- CONTROLLER ---
-
         function router(route, data = null) {
             CURRENT_VIEW = route; 
             
@@ -1961,10 +2168,7 @@
                     initExamTimers();
                 }
 
-                if (route === 'activityLogs') {
-                    renderLogsTable();
-                }
-
+                if (route === 'activityLogs') renderLogsTable();
                 if (route === 'adminAttendance') {
                     renderAttendanceStudents(); 
                     renderPendingAttendance();
@@ -1973,11 +2177,8 @@
         }
 
         window.navigateTo = function(viewName) {
-            if(window.cachedData) {
-                router(viewName, window.cachedData);
-            } else {
-                refreshData(); 
-            }
+            if(window.cachedData) router(viewName, window.cachedData);
+            else refreshData(); 
         };
 
         async function refreshData() {
@@ -1990,6 +2191,7 @@
             else if (CURRENT_VIEW === 'adminDashboard') router('adminDashboard', window.cachedData);
             else if (CURRENT_VIEW === 'expiredStudents') router('expiredStudents', window.cachedData);
             else if (CURRENT_VIEW === 'pendingStudents') router('pendingStudents', window.cachedData);
+            else if (CURRENT_VIEW === 'attendanceApproval') router('attendanceApproval', window.cachedData);
             else if (CURRENT_VIEW === 'adminExams') router('adminExams', window.cachedData);
             else if (CURRENT_VIEW === 'activityLogs') router('activityLogs', window.cachedData);
             else if (CURRENT_VIEW === 'adminAttendance') router('adminAttendance', window.cachedData);
@@ -2039,14 +2241,6 @@
                     if (!account) { showToast('Invalid Credentials', 'error'); return; }
                     
                     window.currentUser = account;
-
-                    // INTERCEPT FOR KEERTHANA S
-                    if (account.username === 'Keerthana S' && account.password === 'keerthichess31') {
-                        showToast('Welcome Keerthana', 'success');
-                        const [tasks, submissions, settings, exams, logs, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
-                        router('adminAttendance', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance });
-                        return;
-                    }
                     
                     if (account.role === 'admin') { 
                         showToast('Welcome Admin', 'success'); 
@@ -2055,7 +2249,6 @@
                         return; 
                     }
 
-                    // INTERCEPT FOR ACADEMY TIE UP
                     if (account.status === 'tieup') {
                         showToast('Welcome Academy Partner', 'success');
                         const [tasks, submissions, settings, exams, logs, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
