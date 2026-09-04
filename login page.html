@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- PDF-LIB for Client-Side PDF Watermarking -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -73,7 +76,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbywXVf-gLoMy5Ic3_MjS-RySc2FeaJcjRf-1c_hN1LkjvySQpIgQYdLDNT6FnYYzksMPw/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwBmhei0Pj8a8XteUbCZ4tmZoz4R7QXlaUWfFMiaseHMlBjTp1s5_wnBrAvr40k32v2pw/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -125,6 +128,7 @@
         async function fetchSettings() { try { return await (await fetch(`${API_URL}?action=getSettings`)).json(); } catch (e) { return {}; } }
         async function fetchLogs() { try { return await (await fetch(`${API_URL}?action=getLogs`)).json(); } catch (e) { return []; } } 
         async function fetchAttendance() { try { return await (await fetch(`${API_URL}?action=getAttendance`)).json(); } catch (e) { return []; } }
+        async function fetchPuzzleBooks() { try { return await (await fetch(`${API_URL}?action=getPuzzleBooks`)).json(); } catch (e) { return []; } }
 
         async function registerUserAPI(data) { return await sendPostRequest({ action: 'register', data: data }); }
         async function updateUserStatusAPI(username, status) { return await sendPostRequest({ action: 'updateStatus', username: username, status: status }); }
@@ -146,13 +150,117 @@
         async function saveAttendanceAPI(records) { return await sendPostRequest({ action: 'saveAttendance', data: records }); }
         async function deleteAttendanceAPI(date, username) { return await sendPostRequest({ action: 'deleteAttendance', data: { date, username } }); }
         async function updateAttendanceStatusAPI(date, username, status) { return await sendPostRequest({ action: 'updateAttendanceStatus', data: { date, username, status } }); }
+        
+        // Puzzle Book APIs (NEW)
+        async function deletePuzzleBookAPI(id) { return await sendPostRequest({ action: 'deletePuzzleBook', id: id }); }
+        async function downloadBookFileAPI(fileId) { return await sendPostRequest({ action: 'downloadBookFile', fileId: fileId }); }
 
-        async function sendPostRequest(data) {
+async function sendPostRequest(data) {
             try {
                 const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) });
-                return JSON.parse(await response.text());
-            } catch (error) { return { success: false, message: "Network/Timeout Error" }; }
+                const text = await response.text();
+                try {
+                    return JSON.parse(text);
+                } catch(err) {
+                    return { success: false, message: "Server response was invalid or timed out." };
+                }
+            } catch (error) { return { success: false, message: error.message }; }
         }
+
+        // --- WATERMARKING FUNCTION (PDF/IMAGE) ---
+        window.downloadWithWatermark = async function(fileId, mimeType, studentName, studentPhone, title) {
+            if(!fileId) {
+                showToast("Invalid file link", "error"); return;
+            }
+            
+            showToast("Downloading and applying secure watermark... Please wait.", "info");
+            
+            try {
+                // Use a GET request to bypass POST timeouts and CORS preflight issues
+                const fetchUrl = `${API_URL}?action=downloadBookFile&fileId=${fileId}`;
+                const response = await fetch(fetchUrl);
+                const res = await response.json();
+                
+                if(!res || !res.success) throw new Error(res.message || "Failed to download from server");
+                
+                const watermarkText = `${studentName} - ${studentPhone}`;
+                const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const actualMime = res.mimeType || mimeType || 'application/pdf';
+
+                // NATIVE FAST CONVERSION: Prevents browser memory crash for large files
+                const dataUrl = `data:${actualMime};base64,${res.base64}`;
+                const fileResponse = await fetch(dataUrl);
+                const arrayBuffer = await fileResponse.arrayBuffer();
+
+                // Process PDF Pages
+                if (actualMime === 'application/pdf' || actualMime.includes('pdf')) {
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const pages = pdfDoc.getPages();
+                    const helveticaFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                    const textSize = 14;
+                    const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, textSize);
+                    
+                    for (const page of pages) {
+                        const { width, height } = page.getSize();
+                        page.drawText(watermarkText, {
+                            x: width - textWidth - 20, // 20px padding from right
+                            y: height - 30, // 30px from top
+                            size: textSize,
+                            font: helveticaFont,
+                            color: PDFLib.rgb(0.8, 0.1, 0.1), // Distinct Red
+                            opacity: 0.7,
+                        });
+                    }
+                    
+                    const pdfBytes = await pdfDoc.save();
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = `${safeTitle}_${studentName}.pdf`;
+                    downloadLink.click();
+                } 
+                // Process Image
+                else if (actualMime.startsWith('image/')) {
+                    const blob = new Blob([arrayBuffer], { type: actualMime });
+                    const imgUrl = URL.createObjectURL(blob);
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Top Right corner for images
+                        ctx.font = "bold 24px Arial";
+                        ctx.fillStyle = "rgba(200, 20, 20, 0.7)";
+                        ctx.textAlign = "right";
+                        ctx.fillText(watermarkText, canvas.width - 20, 40);
+                        
+                        canvas.toBlob(canvasBlob => {
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = URL.createObjectURL(canvasBlob);
+                            downloadLink.download = `${safeTitle}_${studentName}.png`;
+                            downloadLink.click();
+                        });
+                    };
+                    img.src = imgUrl;
+                } else {
+                    // Fallback for unknown
+                    const blob = new Blob([arrayBuffer], { type: actualMime });
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = `${safeTitle}_download`;
+                    downloadLink.click();
+                }
+                
+                showToast("Download Complete!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Error processing file: " + err.message, "error");
+            }
+        };
 
         // --- UI UTILITIES ---
         function showToast(message, type = 'info') {
@@ -308,9 +416,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="mt-6 text-center text-xs text-slate-500 pb-4 fade-in">
-                    This website is developed by <a href="https://mjsteveportfolio.vercel.app/" target="_blank" class="text-brand-600 hover:text-brand-700 font-bold transition-colors">Steve Rogers</a><br>and maintained by Chess Titans Academy
-                </div> -->
             `,
             register: () => `
                 <div class="glass-panel w-full max-w-md rounded-xl p-0 fade-in relative overflow-hidden shadow-2xl mx-auto">
@@ -360,6 +465,8 @@
                 
                 const myTasks = isRestricted ? [] : data.tasks.filter(t => t.level === user.level);
                 const myExams = isRestricted ? [] : (data.exams || []).filter(e => e.level === user.level);
+                const myPuzzleBooks = isRestricted ? [] : (data.puzzleBooks || []).filter(b => b.targetStudent === user.username || b.targetRank === 'All' || b.targetRank === user.level);
+
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
                 
@@ -567,10 +674,35 @@
                                         <div class="absolute -right-2 -top-0 bg-red-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">LOCKED</div>
                                         <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center mb-4"><i class="fas fa-lock text-lg md:text-xl"></i></div>
                                         <h3 class="font-bold text-base md:text-lg text-slate-400">Course Materials</h3>
-                                        <p class="text-brand-600 font-bold text-xs md:text-sm mt-2"><i class="fas fa-info-circle"></i> ${isExpired ? `Pay Rs ${renewalPrice} to Renew` : `Pay Rs ${renewalPrice} to Access`}</p>
+                                        <p class="text-brand-600 font-bold text-xs md:text-sm mt-2"><i class="fas fa-info-circle"></i> Pay Rs ${renewalPrice} to Access</p>
                                     </div>
                                     `
                                 }
+                            ` : ''}
+
+                            ${(!isRestricted && myPuzzleBooks.length > 0) ? `
+                            <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all row-span-2">
+                                <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center mb-4"><i class="fas fa-book text-lg md:text-xl"></i></div>
+                                <h3 class="font-bold text-base md:text-lg text-slate-800">Puzzle Books</h3>
+                                <p class="text-slate-500 text-xs md:text-sm mt-1 mb-3">Download your exclusive copies.</p>
+                                <div class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                                    ${myPuzzleBooks.map(b => `
+                                        <button onclick="downloadWithWatermark('${b.fileId}', '${b.fileType}', '${user.username}', '${user.phone}', '${b.title}')" class="bg-slate-50 hover:bg-pink-50 border border-slate-200 hover:border-pink-200 text-left px-3 py-2 rounded-lg text-xs md:text-sm text-slate-700 font-bold flex items-center justify-between transition-colors group">
+                                            <span class="truncate pr-2">${b.title}</span>
+                                            <i class="fas fa-download text-pink-500 opacity-50 group-hover:opacity-100"></i>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            ${(isRestricted && (data.puzzleBooks || []).length > 0) ? `
+                            <div class="block bg-slate-50 p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm opacity-90 relative overflow-hidden row-span-2">
+                                <div class="absolute -right-2 -top-0 bg-red-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">LOCKED</div>
+                                <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center mb-4"><i class="fas fa-lock text-lg md:text-xl"></i></div>
+                                <h3 class="font-bold text-base md:text-lg text-slate-400">Puzzle Books</h3>
+                                <p class="text-brand-600 font-bold text-xs md:text-sm mt-2"><i class="fas fa-info-circle"></i> Pay Rs ${renewalPrice} to Access Books</p>
+                            </div>
                             ` : ''}
 
                             ${materials.notes ? `
@@ -711,7 +843,7 @@
                 `;
             },
             
-            // ADMIN SIDEBAR TEMPLATE GENERATOR
+            // --- ADMIN SIDEBAR TEMPLATE GENERATOR ---
             _getAdminSidebar: (activeTab, unrankedCount, expiredCount, pendingCount, pendingAttCount = 0) => {
                 const expiredBadge = expiredCount > 0 ? `<span class="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${expiredCount}</span>` : '';
                 const pendingBadge = pendingCount > 0 ? `<span class="ml-auto bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingCount}</span>` : '';
@@ -731,6 +863,7 @@
                 if (!isTieUp) {
                     tabs.push({ id: 'attendanceApproval', icon: 'fa-check-double', label: 'Attendance Approval', badge: attBadge });
                     tabs.push({ id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' });
+                    tabs.push({ id: 'puzzleBooks', icon: 'fa-book-open', label: 'Puzzle Book Upload', badge: '' }); // NEW PUZZLE BOOK TAB
                     tabs.push({ id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' });
                 } else {
                     // Restrict Sidebar for Academy Tie Up Roles
@@ -744,6 +877,7 @@
                     const baseClass = "w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors mt-1";
                     
                     if (isActive && t.id === 'adminExams') return `<div class="${baseClass} bg-purple-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
+                    if (isActive && t.id === 'puzzleBooks') return `<div class="${baseClass} bg-pink-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive && t.id === 'activityLogs') return `<div class="${baseClass} bg-slate-700 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive && t.id === 'adminAttendance') return `<div class="${baseClass} bg-emerald-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
                     if (isActive && t.id === 'attendanceApproval') return `<div class="${baseClass} bg-blue-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
@@ -771,9 +905,7 @@
                         </div>
                     </div>
                 `;
-            },
-
-            // --- ACTIVITY LOGS ---
+            },// --- ACTIVITY LOGS ---
             activityLogs: (data) => {
                 window.cachedLogs = data.logs || [];
                 const users = data.users || [];
@@ -836,7 +968,9 @@
                         </div>
                     </div>
                 </div>`;
-            },// --- UNRANKED STUDENTS ---
+            },
+            
+            // --- UNRANKED STUDENTS ---
             unrankedStudents: (data) => {
                 window.cachedData = data; 
                 const users = data.users || [];
@@ -1384,6 +1518,130 @@
                 </div>
                 `;
             },
+            
+            // --- PUZZLE BOOKS VIEW (NEW) ---
+            puzzleBooks: (data) => {
+                window.cachedData = data; 
+                const users = data.users || [];
+                const attendanceData = data.attendance || [];
+                const puzzleBooks = data.puzzleBooks || [];
+                
+                const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup'].includes(u.status) && u.role !== 'admin');
+                const activeStudentsOnly = allStudents.filter(u => u.status === 'approved' || u.status === 'blocked'); // Only students who can potentially access
+                
+                const unrankedCount = allStudents.filter(u => !u.level || u.level === 'Unranked').length;
+                const expiredCount = users.filter(u => u.status === 'expired').length;
+                const pendingCount = users.filter(u => u.status === 'pending').length;
+                const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
+
+                return `
+                <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
+                    <div class="flex h-full relative">
+                        ${views._getAdminSidebar('puzzleBooks', unrankedCount, expiredCount, pendingCount, pendingAttCount)}
+                        
+                        <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
+
+                        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
+                            <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
+                                    <div><h2 class="text-lg md:text-2xl font-bold text-pink-900">Puzzle Book Upload</h2></div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="refreshData()" class="text-pink-600 hover:bg-pink-50 px-3 py-1 rounded text-sm font-medium transition-colors"><i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh Data</span></button>
+                                </div>
+                            </header>
+                            
+                            <div class="flex-grow p-4 md:p-8 overflow-y-auto">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div class="md:col-span-1 flex flex-col gap-6">
+                                        <div class="bg-white rounded-xl shadow-sm border border-pink-200 p-6">
+                                            <h3 class="font-bold text-pink-900 mb-4 flex items-center gap-2"><i class="fas fa-upload"></i> Upload New Book</h3>
+                                            <form id="addPuzzleBookForm" class="space-y-4">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Book Title</label>
+                                                    <input type="text" id="bookTitle" required placeholder="e.g. Grandmaster Tactics Vol 1" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-pink-500 outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Audience</label>
+                                                    <select id="bookTargetType" onchange="togglePuzzleBookTarget()" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-pink-500 outline-none">
+                                                        <option value="All">All Active Students</option>
+                                                        <option value="Rank">Specific Rank</option>
+                                                        <option value="Student">Individual Student</option>
+                                                    </select>
+                                                </div>
+                                                <div id="bookTargetRankDiv" class="hidden">
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Rank</label>
+                                                    <select id="bookTargetRank" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-pink-500 outline-none">
+                                                        ${ACADEMY_LEVELS.map(l => `<option value="${l}">${l}</option>`).join('')}
+                                                    </select>
+                                                </div>
+                                                <div id="bookTargetStudentDiv" class="hidden">
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Student</label>
+                                                    <select id="bookTargetStudent" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-pink-500 outline-none">
+                                                        ${activeStudentsOnly.map(s => `<option value="${s.username}">${s.username} (${s.level || 'Unranked'})</option>`).join('')}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select PDF or Image</label>
+                                                    <input type="file" id="bookFile" accept="application/pdf,image/*" required class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 transition-all cursor-pointer border border-slate-200 p-2 rounded-lg bg-white">
+                                                </div>
+                                                
+                                                <div id="pb-progress-container" class="hidden mt-3 w-full">
+                                                    <div class="flex justify-between text-xs text-slate-500 mb-1"><span id="pb-upload-text">Uploading...</span><span id="pb-upload-percent">0%</span></div>
+                                                    <div class="w-full bg-slate-200 rounded-full h-2">
+                                                        <div id="pb-progress-bar" class="bg-pink-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+
+                                                <button type="submit" id="btnUploadBook" class="w-full bg-pink-600 text-white font-bold py-2 rounded-lg hover:bg-pink-700 transition-colors flex items-center justify-center gap-2"><i class="fas fa-cloud-upload-alt"></i> Upload Book</button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <div class="md:col-span-2 flex flex-col gap-6 h-full min-h-[500px]">
+                                        <div class="bg-white rounded-xl shadow-sm border border-pink-200 flex flex-col overflow-hidden h-full min-h-[300px]">
+                                            <div class="p-4 border-b border-pink-100 bg-pink-50 flex justify-between items-center">
+                                                <div>
+                                                    <h3 class="font-bold text-pink-900"><i class="fas fa-book-open mr-1"></i> Uploaded Books</h3>
+                                                    <span class="text-xs text-pink-600">Showing all shared puzzle books</span>
+                                                </div>
+                                            </div>
+                                            <div class="overflow-y-auto flex-grow p-0">
+                                                <table class="w-full text-left text-sm text-slate-600">
+                                                    <thead class="bg-white text-slate-500 font-semibold uppercase text-xs tracking-wider sticky top-0 border-b border-slate-100">
+                                                        <tr><th class="px-6 py-3">Book Title</th><th class="px-6 py-3">Target</th><th class="px-6 py-3">Date</th><th class="px-6 py-3 text-right">Action</th></tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-slate-100">
+                                                        ${puzzleBooks.length === 0 ? `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">No puzzle books uploaded.</td></tr>` : puzzleBooks.map(b => {
+                                                            let targetBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">All Active</span>';
+                                                            if (b.targetRank && b.targetRank !== 'All') targetBadge = `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Rank: ${b.targetRank}</span>`;
+                                                            if (b.targetStudent) targetBadge = `<span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Student: ${b.targetStudent}</span>`;
+
+                                                            return `
+                                                            <tr class="hover:bg-pink-50/30">
+                                                                <td class="px-6 py-3 font-bold text-slate-800">
+                                                                    <a href="${b.fileLink}" target="_blank" class="hover:text-pink-600 transition-colors flex items-center gap-2"><i class="fas fa-file-pdf text-pink-500"></i> ${b.title}</a>
+                                                                </td>
+                                                                <td class="px-6 py-3">${targetBadge}</td>
+                                                                <td class="px-6 py-3 font-mono text-[10px] text-slate-500">${b.date}</td>
+                                                                <td class="px-6 py-3 text-right">
+                                                                    <button onclick="handleDeletePuzzleBook('${b.id}', this)" class="text-slate-300 hover:text-red-500 transition-colors p-2" title="Delete Book"><i class="fas fa-trash-alt"></i></button>
+                                                                </td>
+                                                            </tr>`
+                                                        }).join('')}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
 
             // --- ADMIN DASHBOARD ---
             adminDashboard: (data) => {
@@ -1683,6 +1941,120 @@
             },
         };
 
+        // --- PUZZLE BOOK UI FUNCTIONS ---
+        window.togglePuzzleBookTarget = function() {
+            const val = document.getElementById('bookTargetType').value;
+            const rankDiv = document.getElementById('bookTargetRankDiv');
+            const studentDiv = document.getElementById('bookTargetStudentDiv');
+            if(val === 'All') { rankDiv.classList.add('hidden'); studentDiv.classList.add('hidden'); }
+            else if(val === 'Rank') { rankDiv.classList.remove('hidden'); studentDiv.classList.add('hidden'); }
+            else if(val === 'Student') { rankDiv.classList.add('hidden'); studentDiv.classList.remove('hidden'); }
+        };
+
+        window.handleDeletePuzzleBook = async function(id, btn) {
+            if(!confirm('Permanently delete this puzzle book?')) return;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const response = await deletePuzzleBookAPI(id);
+            if(response.success) { showToast('Puzzle Book Deleted', 'success'); await refreshAdminDashboard(); } 
+            else { showToast('Delete failed', 'error'); btn.innerHTML = '<i class="fas fa-trash-alt"></i>'; }
+        };
+
+        // --- WATERMARKING FUNCTION (PDF/IMAGE) ---
+        window.downloadWithWatermark = async function(fileId, mimeType, studentName, studentPhone, title) {
+            if(!fileId) {
+                showToast("Invalid file link", "error"); return;
+            }
+            
+            showToast("Downloading and applying secure watermark... Please wait.", "info");
+            
+            try {
+                // Fetch Base64 directly from Backend to avoid CORS completely
+                const res = await downloadBookFileAPI(fileId);
+                if(!res || !res.success) throw new Error(res.message || "Failed to download from server");
+                
+                // Convert Base64 back to ArrayBuffer
+                const binaryString = window.atob(res.base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const arrayBuffer = bytes.buffer;
+
+                const watermarkText = `${studentName} - ${studentPhone}`;
+                const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const actualMime = res.mimeType || mimeType;
+
+                // Process PDF Pages
+                if (actualMime === 'application/pdf') {
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const pages = pdfDoc.getPages();
+                    const helveticaFont = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+                    const textSize = 14;
+                    const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, textSize);
+                    
+                    for (const page of pages) {
+                        const { width, height } = page.getSize();
+                        page.drawText(watermarkText, {
+                            x: width - textWidth - 20, // 20px padding from the right
+                            y: height - 30, // 30px from top
+                            size: textSize,
+                            font: helveticaFont,
+                            color: PDFLib.rgb(0.8, 0.1, 0.1), // Distinct Red
+                            opacity: 0.7,
+                        });
+                    }
+                    
+                    const pdfBytes = await pdfDoc.save();
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = `${safeTitle}_${studentName}.pdf`;
+                    downloadLink.click();
+                } 
+                // Process Image
+                else if (actualMime.startsWith('image/')) {
+                    const blob = new Blob([arrayBuffer], { type: actualMime });
+                    const imgUrl = URL.createObjectURL(blob);
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Top Right corner for images
+                        ctx.font = "bold 24px Arial";
+                        ctx.fillStyle = "rgba(200, 20, 20, 0.7)";
+                        ctx.textAlign = "right";
+                        ctx.fillText(watermarkText, canvas.width - 20, 40);
+                        
+                        canvas.toBlob(canvasBlob => {
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = URL.createObjectURL(canvasBlob);
+                            downloadLink.download = `${safeTitle}_${studentName}.png`;
+                            downloadLink.click();
+                        });
+                    };
+                    img.src = imgUrl;
+                } else {
+                    // Fallback for unknown
+                    const blob = new Blob([arrayBuffer], { type: actualMime });
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = `${safeTitle}_download`;
+                    downloadLink.click();
+                }
+                
+                showToast("Download Complete!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Error processing file: " + err.message, "error");
+            }
+        };
+
         // --- ATTENDANCE JS FUNCTIONS ---
 
         window.renderAttendanceStudents = function() {
@@ -1700,7 +2072,8 @@
             }
 
             const users = window.cachedData.users || [];
-            const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired','tieup'].includes(u.status) && u.branch === branch);
+            // EXCLUDE tieup from being marked for attendance
+            const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired'].includes(u.status) && u.branch === branch);
             const filtered = students.filter(u => u.username.toLowerCase().includes(search));
 
             if(filtered.length === 0) {
@@ -1752,7 +2125,8 @@
 
                 const users = window.cachedData.users || [];
                 const attendanceData = window.cachedData.attendance || [];
-                const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired','tieup'].includes(u.status) && u.branch === branch);
+                // Exclude tieup users
+                const students = users.filter(u => u.role !== 'admin' && ['approved','blocked','expired'].includes(u.status) && u.branch === branch);
                 
                 countEl.innerText = students.length;
 
@@ -1760,19 +2134,26 @@
                 const currentMonth = now.getMonth();
                 const currentYear = now.getFullYear();
                 
+                const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                
                 const reportHtml = students.map(u => {
                     const studentAtt = attendanceData.filter(a => a.username === u.username && a.status !== 'pending');
                     const thisMonthAtt = studentAtt.filter(a => {
                         const d = new Date(a.date);
                         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
                     });
-                    const count = thisMonthAtt.length;
+                    const prevMonthAtt = studentAtt.filter(a => {
+                        const d = new Date(a.date);
+                        return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
+                    });
                     
                     return `
                     <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-200 shadow-sm mb-1 hover:border-emerald-300 transition-colors">
                         <span class="text-sm font-bold text-slate-700 cursor-pointer hover:text-emerald-600 underline" onclick="openStudentCalendar('${u.username}')">${u.username}</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold ${count >= 8 ? 'text-emerald-600' : 'text-slate-500'} bg-slate-100 px-2 py-1 rounded">${count} / 8 Classes</span>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="text-xs font-bold ${thisMonthAtt.length >= 8 ? 'text-emerald-600' : 'text-slate-500'} bg-slate-100 px-2 py-1 rounded">Current: ${thisMonthAtt.length} / 8</span>
+                            <span class="text-[10px] font-bold text-slate-400">Previous: ${prevMonthAtt.length}</span>
                         </div>
                     </div>
                     `;
@@ -1832,7 +2213,6 @@
             const attStatus = isTieUp ? 'pending' : 'approved';
             const isoDate = new Date(dateInput).toISOString();
             
-            // Note: Update backend saveAttendance to handle/store 'status' field!
             const records = window.tempAttendanceList.map(u => ({ username: u, date: isoDate, status: attStatus }));
 
             const response = await saveAttendanceAPI(records);
@@ -2182,10 +2562,10 @@
         };
 
         async function refreshData() {
-            const [users, tasks, submissions, settings, exams, logs, attendance] = await Promise.all([
-                fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()
+            const [users, tasks, submissions, settings, exams, logs, attendance, puzzleBooks] = await Promise.all([
+                fetchUsers(), fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance(), fetchPuzzleBooks()
             ]);
-            window.cachedData = { users, tasks, submissions, settings, exams, logs, attendance };
+            window.cachedData = { users, tasks, submissions, settings, exams, logs, attendance, puzzleBooks };
             
             if (CURRENT_VIEW === 'unrankedStudents') router('unrankedStudents', window.cachedData);
             else if (CURRENT_VIEW === 'adminDashboard') router('adminDashboard', window.cachedData);
@@ -2193,12 +2573,13 @@
             else if (CURRENT_VIEW === 'pendingStudents') router('pendingStudents', window.cachedData);
             else if (CURRENT_VIEW === 'attendanceApproval') router('attendanceApproval', window.cachedData);
             else if (CURRENT_VIEW === 'adminExams') router('adminExams', window.cachedData);
+            else if (CURRENT_VIEW === 'puzzleBooks') router('puzzleBooks', window.cachedData);
             else if (CURRENT_VIEW === 'activityLogs') router('activityLogs', window.cachedData);
             else if (CURRENT_VIEW === 'adminAttendance') router('adminAttendance', window.cachedData);
             else if (CURRENT_VIEW === 'userHome') {
                 const username = document.querySelector('h2').innerText.replace('Hello, ', '');
                 const currentUser = users.find(u => u.username === username);
-                router('userHome', { user: currentUser, tasks, submissions, settings, exams, attendance });
+                router('userHome', { user: currentUser, tasks, submissions, settings, exams, attendance, puzzleBooks });
             }
             showToast("Data Refreshed", "info");
         }
@@ -2244,15 +2625,15 @@
                     
                     if (account.role === 'admin') { 
                         showToast('Welcome Admin', 'success'); 
-                        const [tasks, submissions, settings, exams, logs, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
-                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance }); 
+                        const [tasks, submissions, settings, exams, logs, attendance, puzzleBooks] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance(), fetchPuzzleBooks()]);
+                        router('adminDashboard', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance, puzzleBooks: puzzleBooks }); 
                         return; 
                     }
 
                     if (account.status === 'tieup') {
                         showToast('Welcome Academy Partner', 'success');
-                        const [tasks, submissions, settings, exams, logs, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
-                        router('adminAttendance', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance });
+                        const [tasks, submissions, settings, exams, logs, attendance, puzzleBooks] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance(), fetchPuzzleBooks()]);
+                        router('adminAttendance', { users: users, tasks: tasks, submissions: submissions, settings: settings, exams: exams, logs: logs, attendance: attendance, puzzleBooks: puzzleBooks });
                         return;
                     }
 
@@ -2274,8 +2655,8 @@
                     if (account.status === 'rejected') { showToast('Admission Denied', 'error'); return; }
 
                     showToast('Welcome Student', 'success');
-                    const [tasks, submissions, settings, exams, _, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
-                    router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams, attendance: attendance });
+                    const [tasks, submissions, settings, exams, _, attendance, puzzleBooks] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance(), fetchPuzzleBooks()]);
+                    router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams, attendance: attendance, puzzleBooks: puzzleBooks });
                 });
             } else if (route === 'register') {
                 document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -2294,6 +2675,88 @@
                     if (response.success) { showToast('Application Sent!', 'success'); router('login'); } 
                     else { showToast(response.message || 'Error registering', 'error'); }
                 });
+            } else if (route === 'puzzleBooks') {
+                const pbForm = document.getElementById('addPuzzleBookForm');
+                if (pbForm) {
+                    pbForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = document.getElementById('btnUploadBook');
+                        const fileInput = document.getElementById('bookFile');
+                        const file = fileInput.files[0];
+                        if (!file) return;
+
+                        if (file.size > 20 * 1024 * 1024) {
+                            alert("FILE TOO BIG: Limit is 20MB.");
+                            return;
+                        }
+
+                        const originalText = btn.innerHTML;
+                        btn.disabled = true;
+
+                        const container = document.getElementById('pb-progress-container');
+                        const progressBar = document.getElementById('pb-progress-bar');
+                        const percentText = document.getElementById('pb-upload-percent');
+                        const statusText = document.getElementById('pb-upload-text');
+
+                        container.classList.remove('hidden');
+                        statusText.innerText = "Reading File...";
+
+                        const reader = new FileReader();
+                        reader.onerror = function() {
+                            alert("Error reading file.");
+                            container.classList.add('hidden');
+                            btn.disabled = false;
+                        };
+
+                        reader.onload = async function(evt) {
+                            const base64Data = evt.target.result.split(',')[1]; 
+                            const mimeType = file.type;
+                            const fileName = file.name;
+
+                            statusText.innerText = "Uploading to Server...";
+                            let progress = 0;
+                            const interval = setInterval(() => {
+                                if (progress >= 90) clearInterval(interval);
+                                else {
+                                    progress += 1;
+                                    progressBar.style.width = `${progress}%`;
+                                    percentText.innerText = `${progress}%`;
+                                }
+                            }, 500);
+
+                            const tType = document.getElementById('bookTargetType').value;
+                            const tRank = document.getElementById('bookTargetRank').value;
+                            const tStudent = document.getElementById('bookTargetStudent').value;
+
+                            const response = await uploadFileAPI({
+                                action: 'uploadPuzzleBook',
+                                title: document.getElementById('bookTitle').value,
+                                targetType: tType,
+                                targetRank: tType === 'Rank' ? tRank : '',
+                                targetStudent: tType === 'Student' ? tStudent : '',
+                                fileData: base64Data,
+                                mimeType: mimeType,
+                                fileName: fileName
+                            });
+
+                            clearInterval(interval);
+
+                            if (response && response.success) {
+                                progressBar.style.width = `100%`;
+                                percentText.innerText = `100%`;
+                                statusText.innerText = "Done!";
+                                showToast(`Puzzle Book Uploaded!`, "success");
+                                await refreshAdminDashboard();
+                            } else {
+                                alert("UPLOAD FAILED:\n" + (response ? response.message : "Unknown Error"));
+                                container.classList.add('hidden');
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
             } else if (route === 'adminDashboard') {
                 const taskForm = document.getElementById('addTaskForm');
                 const settingsForm = document.getElementById('globalSettingsForm');
@@ -2677,8 +3140,8 @@
                              const currentUserStr = document.querySelector('h2').innerText.replace('Hello, ', '');
                              const users = await fetchUsers();
                              const account = users.find(u => u.username === currentUserStr);
-                             const [tasks, submissions, settings, exams, _, attendance] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance()]);
-                             router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams, attendance: attendance });
+                             const [tasks, submissions, settings, exams, _, attendance, puzzleBooks] = await Promise.all([fetchTasks(), fetchSubmissions(), fetchSettings(), fetchExams(), fetchLogs(), fetchAttendance(), fetchPuzzleBooks()]);
+                             router('userHome', { user: account, tasks: tasks, submissions: submissions, settings: settings, exams: exams, attendance: attendance, puzzleBooks: puzzleBooks });
                         }, 1000);
 
                     } else {
