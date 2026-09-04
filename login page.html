@@ -560,7 +560,7 @@ async function sendPostRequest(data) {
                 const isTournamentLevel = user.level === 'Tournament Puzzles';
                 const taskLabel = isTournamentLevel ? 'Daily Tasks' : 'Weekly Tasks';
 
-                let tournamentLink = isRestricted ? "https://chesstitansacademy.vercel.app/Tournament.html" : (settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html");
+                let tournamentLink = isRestricted ? "" : (settings.TournamentLink || "");
                 let tournamentVideo = isRestricted ? "" : (settings.TournamentVideo || "");
                 
                 const adminSetFee = user.fee ? parseInt(user.fee) : 0;
