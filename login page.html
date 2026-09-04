@@ -453,9 +453,9 @@ async function sendPostRequest(data) {
                         </div>
                     </div>
                 </div>
-                <div class="mt-6 text-center text-xs text-slate-500 pb-4 fade-in">
+                <!-- <div class="mt-6 text-center text-xs text-slate-500 pb-4 fade-in">
                     This website is developed by <a href="https://mjsteveportfolio.vercel.app/" target="_blank" class="text-brand-600 hover:text-brand-700 font-bold transition-colors">Steve Rogers</a><br>and maintained by Chess Titans Academy
-                </div>
+                </div> -->
             `,
             userHome: (data) => {
                 const user = data.user;
@@ -560,7 +560,7 @@ async function sendPostRequest(data) {
                 const isTournamentLevel = user.level === 'Tournament Puzzles';
                 const taskLabel = isTournamentLevel ? 'Daily Tasks' : 'Weekly Tasks';
 
-                let tournamentLink = isRestricted ? "" : (settings.TournamentLink || "");
+                let tournamentLink = isRestricted ? "https://chesstitansacademy.vercel.app/Tournament.html" : (settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html");
                 let tournamentVideo = isRestricted ? "" : (settings.TournamentVideo || "");
                 
                 const adminSetFee = user.fee ? parseInt(user.fee) : 0;
