@@ -76,7 +76,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwBmhei0Pj8a8XteUbCZ4tmZoz4R7QXlaUWfFMiaseHMlBjTp1s5_wnBrAvr40k32v2pw/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxXoDOpUIFsP7DMq8Ep5BAlPBzPYIIy0MhN-C87OQ9K8Any65gDqVrwWN8s-spob0cjRA/exec'; 
 
         const ACADEMY_LEVELS = [
             'Beginner Level 1', 'Beginner Level 2',
@@ -453,9 +453,6 @@ async function sendPostRequest(data) {
                         </div>
                     </div>
                 </div>
-                <!-- <div class="mt-6 text-center text-xs text-slate-500 pb-4 fade-in">
-                    This website is developed by <a href="https://mjsteveportfolio.vercel.app/" target="_blank" class="text-brand-600 hover:text-brand-700 font-bold transition-colors">Steve Rogers</a><br>and maintained by Chess Titans Academy
-                </div> -->
             `,
             userHome: (data) => {
                 const user = data.user;
@@ -465,7 +462,9 @@ async function sendPostRequest(data) {
                 
                 const myTasks = isRestricted ? [] : data.tasks.filter(t => t.level === user.level);
                 const myExams = isRestricted ? [] : (data.exams || []).filter(e => e.level === user.level);
-                const myPuzzleBooks = isRestricted ? [] : (data.puzzleBooks || []).filter(b => b.targetStudent === user.username || b.targetRank === 'All' || b.targetRank === user.level);
+                
+                // FIXED PUZZLE BOOK FILTERING LOGIC
+                const myPuzzleBooks = isRestricted ? [] : (data.puzzleBooks || []).filter(b => b.targetType === 'All' || b.targetStudent === user.username || b.targetRank === user.level);
 
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
@@ -713,7 +712,8 @@ async function sendPostRequest(data) {
                             </a>
                             ` : ''}
 
-                            ${!isTournamentLevel && !isUnranked ? `
+                            <!-- FIXED TOURNAMENT LOGIC -->
+                            ${!isTournamentLevel && !isRestricted ? `
                             <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all relative group">
                                 <div class="relative z-10">
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
