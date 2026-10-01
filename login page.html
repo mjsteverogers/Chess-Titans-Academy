@@ -559,7 +559,7 @@ async function sendPostRequest(data) {
                 const isTournamentLevel = user.level === 'Tournament Puzzles';
                 const taskLabel = isTournamentLevel ? 'Daily Tasks' : 'Weekly Tasks';
 
-                let tournamentLink = isRestricted ? "https://forms.gle/ejqJ3Hxvb9qMsrmw7" : (settings.TournamentLink || "https://forms.gle/ejqJ3Hxvb9qMsrmw7");
+                let tournamentLink = isRestricted ? "https://chesstitansacademy.vercel.app/Tournament.html" : (settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html");
                 let tournamentVideo = isRestricted ? "" : (settings.TournamentVideo || "");
                 
                 const adminSetFee = user.fee ? parseInt(user.fee) : 0;
@@ -713,7 +713,7 @@ async function sendPostRequest(data) {
                             ` : ''}
 
                             <!-- FIXED TOURNAMENT LOGIC -->
-                            ${!isTournamentLevel ? `
+                            ${!isTournamentLevel && !isRestricted ? `
                             <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all relative group">
                                 <div class="relative z-10">
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
