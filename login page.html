@@ -44,6 +44,19 @@
             width: 20px; height: 20px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom Animation for Dancing Robot */
+        @keyframes dance {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-4px) rotate(-15deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-4px) rotate(15deg); }
+        }
+        .animate-dance {
+            animation: dance 1s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -151,11 +164,11 @@
         async function deleteAttendanceAPI(date, username) { return await sendPostRequest({ action: 'deleteAttendance', data: { date, username } }); }
         async function updateAttendanceStatusAPI(date, username, status) { return await sendPostRequest({ action: 'updateAttendanceStatus', data: { date, username, status } }); }
         
-        // Puzzle Book APIs (NEW)
+        // Puzzle Book APIs
         async function deletePuzzleBookAPI(id) { return await sendPostRequest({ action: 'deletePuzzleBook', id: id }); }
         async function downloadBookFileAPI(fileId) { return await sendPostRequest({ action: 'downloadBookFile', fileId: fileId }); }
 
-async function sendPostRequest(data) {
+        async function sendPostRequest(data) {
             try {
                 const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) });
                 const text = await response.text();
@@ -203,11 +216,11 @@ async function sendPostRequest(data) {
                     for (const page of pages) {
                         const { width, height } = page.getSize();
                         page.drawText(watermarkText, {
-                            x: width - textWidth - 20, // 20px padding from right
-                            y: height - 30, // 30px from top
+                            x: width - textWidth - 20,
+                            y: height - 30,
                             size: textSize,
                             font: helveticaFont,
-                            color: PDFLib.rgb(0.8, 0.1, 0.1), // Distinct Red
+                            color: PDFLib.rgb(0.8, 0.1, 0.1),
                             opacity: 0.7,
                         });
                     }
@@ -232,7 +245,6 @@ async function sendPostRequest(data) {
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0);
                         
-                        // Top Right corner for images
                         ctx.font = "bold 24px Arial";
                         ctx.fillStyle = "rgba(200, 20, 20, 0.7)";
                         ctx.textAlign = "right";
@@ -247,7 +259,6 @@ async function sendPostRequest(data) {
                     };
                     img.src = imgUrl;
                 } else {
-                    // Fallback for unknown
                     const blob = new Blob([arrayBuffer], { type: actualMime });
                     const downloadLink = document.createElement('a');
                     downloadLink.href = URL.createObjectURL(blob);
@@ -463,15 +474,12 @@ async function sendPostRequest(data) {
                 const myTasks = isRestricted ? [] : data.tasks.filter(t => t.level === user.level);
                 const myExams = isRestricted ? [] : (data.exams || []).filter(e => e.level === user.level);
                 
-                // FIXED PUZZLE BOOK FILTERING LOGIC
                 const myPuzzleBooks = isRestricted ? [] : (data.puzzleBooks || []).filter(b => b.targetType === 'All' || b.targetStudent === user.username || b.targetRank === user.level);
 
                 const submissions = data.submissions || [];
                 const settings = data.settings || {};
                 
-                // Attendance logic for student
                 const attendanceData = data.attendance || [];
-                // Only consider approved attendance for students
                 const myAttendance = attendanceData.filter(a => a.username === user.username && a.status !== 'pending');
                 
                 const now = new Date();
@@ -481,13 +489,11 @@ async function sendPostRequest(data) {
                 const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
                 const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
                 
-                // Filter attendance specifically for the current month
                 const thisMonthAttendance = myAttendance.filter(a => {
                     const d = new Date(a.date);
                     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
                 });
 
-                // Filter attendance for the previous month
                 const prevMonthAttendance = myAttendance.filter(a => {
                     const d = new Date(a.date);
                     return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
@@ -496,13 +502,11 @@ async function sendPostRequest(data) {
                 const attendedClassesCount = thisMonthAttendance.length;
                 const prevAttendedClassesCount = prevMonthAttendance.length;
 
-                // Calendar Builder Function
                 const buildCalendar = () => {
                     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
                     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
                     const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
                     
-                    // Group attendance by day to show multiple marks
                     const attendanceByDay = {};
                     thisMonthAttendance.forEach(a => {
                         const day = new Date(a.date).getDate();
@@ -559,7 +563,7 @@ async function sendPostRequest(data) {
                 const isTournamentLevel = user.level === 'Tournament Puzzles';
                 const taskLabel = isTournamentLevel ? 'Daily Tasks' : 'Weekly Tasks';
 
-                let tournamentLink = isRestricted ? "https://chesstitansacademy.vercel.app/Tournament.html" : (settings.TournamentLink || "https://chesstitansacademy.vercel.app/Tournament.html");
+                let tournamentLink = isRestricted ? "https://forms.gle/ejqJ3Hxvb9qMsrmw7" : (settings.TournamentLink || "https://forms.gle/ejqJ3Hxvb9qMsrmw7");
                 let tournamentVideo = isRestricted ? "" : (settings.TournamentVideo || "");
                 
                 const adminSetFee = user.fee ? parseInt(user.fee) : 0;
@@ -568,7 +572,6 @@ async function sendPostRequest(data) {
 
                 const materials = getMaterialLinks(user.level);
 
-                // EXAM ONLY VIEW LOGIC
                 const isExamMode = user.level === 'Exam' || myExams.length > 0;
 
                 if (isExamMode && !isRestricted) {
@@ -637,7 +640,6 @@ async function sendPostRequest(data) {
                     </div>`;
                 }
 
-                // NORMAL DASHBOARD VIEW
                 return `
                 ${buildCalendar()}
                 <div class="glass-panel w-full max-w-5xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[85vh] border-0">
@@ -712,8 +714,7 @@ async function sendPostRequest(data) {
                             </a>
                             ` : ''}
 
-                            <!-- FIXED TOURNAMENT LOGIC -->
-                            ${!isTournamentLevel && !isRestricted ? `
+                            ${!isTournamentLevel ? `
                             <div class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg transition-all relative group">
                                 <div class="relative z-10">
                                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center mb-4"><i class="fas fa-trophy text-lg md:text-xl"></i></div>
@@ -734,6 +735,15 @@ async function sendPostRequest(data) {
                                 <h3 class="font-bold text-base md:text-lg text-slate-800">Practice Board</h3>
                                 <p class="text-slate-500 text-xs md:text-sm mt-2">Chess Bot.</p>
                             </a>
+
+                            <button onclick="openBlindfoldBot('${user.username}')" class="block text-left bg-gradient-to-br from-slate-900 to-slate-800 p-5 md:p-6 rounded-xl border border-slate-700 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all relative overflow-hidden group">
+                                <div class="absolute -right-2 -top-2 text-white/5 text-7xl rotate-12 pointer-events-none transition-transform group-hover:scale-110 group-hover:rotate-45 duration-500"><i class="fas fa-brain"></i></div>
+                                <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/30">
+                                    <i class="fas fa-robot text-lg md:text-xl animate-dance"></i>
+                                </div>
+                                <h3 class="font-bold text-base md:text-lg text-white flex items-center gap-2">Blindfold AI Bot <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider">Pro</span></h3>
+                                <p class="text-slate-400 text-xs md:text-sm mt-2">Train your mind without seeing the pieces.</p>
+                            </button>
                             
                             ${!isRestricted ? `
                                 <a href="https://docs.google.com/document/d/1D9HAwAox_SFL9HE-Y8MVS1VmiBI6MCExy2cMOTQbfpk/edit?usp=sharing" target="_blank" onclick="logUserAction('${user.username}', 'Click Existing Tasks', 'Accessed Google Doc of past tasks')" class="block bg-white p-5 md:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
@@ -863,10 +873,9 @@ async function sendPostRequest(data) {
                 if (!isTieUp) {
                     tabs.push({ id: 'attendanceApproval', icon: 'fa-check-double', label: 'Attendance Approval', badge: attBadge });
                     tabs.push({ id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' });
-                    tabs.push({ id: 'puzzleBooks', icon: 'fa-book-open', label: 'Puzzle Book Upload', badge: '' }); // NEW PUZZLE BOOK TAB
+                    tabs.push({ id: 'puzzleBooks', icon: 'fa-book-open', label: 'Puzzle Book Upload', badge: '' });
                     tabs.push({ id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' });
                 } else {
-                    // Restrict Sidebar for Academy Tie Up Roles
                     tabs = [
                         { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' }
                     ];
@@ -905,7 +914,9 @@ async function sendPostRequest(data) {
                         </div>
                     </div>
                 `;
-            },// --- ACTIVITY LOGS ---
+            },
+
+            // --- ACTIVITY LOGS ---
             activityLogs: (data) => {
                 window.cachedLogs = data.logs || [];
                 const users = data.users || [];
@@ -1041,9 +1052,7 @@ async function sendPostRequest(data) {
                     </div>
                 </div>
                 `;
-            },
-            
-            // --- EXPIRED STUDENTS ---
+            },// --- EXPIRED STUDENTS ---
             expiredStudents: (data) => {
                 window.cachedData = data;
                 const users = data.users || [];
@@ -2528,6 +2537,28 @@ async function sendPostRequest(data) {
                 btn.disabled = false;
             }
         };
+
+        // --- BLINDFOLD AI BOT TAB CONTROLLER ---
+        window.blindfoldBotTab = null;
+
+        window.openBlindfoldBot = function(username) {
+            logUserAction(username, 'Click Blindfold AI', 'Opened blindfold AI bot');
+            
+            // If it's already open, just bring it to the front
+            if (window.blindfoldBotTab && !window.blindfoldBotTab.closed) {
+                window.blindfoldBotTab.focus();
+            } else {
+                // Open new tab and store the reference
+                window.blindfoldBotTab = window.open('https://chesstitansacademy.vercel.app/chessbotai.html', '_blank');
+            }
+        };
+
+        // If the student closes or refreshes the main portal, close the AI bot tab automatically
+        window.addEventListener('beforeunload', function () {
+            if (window.blindfoldBotTab && !window.blindfoldBotTab.closed) {
+                window.blindfoldBotTab.close();
+            }
+        });
 
         // --- CONTROLLER ---
         function router(route, data = null) {
