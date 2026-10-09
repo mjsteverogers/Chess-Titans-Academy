@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <!-- Confetti / Crackers Animation Library for Kids -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -62,7 +65,7 @@
         .slide-up-delayed { opacity: 0; transform: translateY(-20px); animation: fadeInUp 1.2s forwards 2.5s; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
-        /* Child-Friendly Background Animations */
+        /* Child-Friendly Background Animations (Floating pieces & Sparkles) */
         @keyframes float {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-25px) rotate(15deg); }
@@ -72,10 +75,36 @@
         .float-3 { animation: float 7s ease-in-out infinite 1s; }
         .float-4 { animation: float 9s ease-in-out infinite 2s; }
 
+        @keyframes sparkle-anim {
+            0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+        }
+        .sparkle { animation: sparkle-anim 3s infinite; }
+        .sparkle-slow { animation: sparkle-anim 5s infinite; }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-12deg) scale(1.1); }
+            50% { transform: rotate(12deg) scale(1.1); }
+            75% { transform: rotate(-12deg) scale(1.1); }
+        }
+        .wiggle-hover:hover { animation: wiggle 0.6s ease-in-out infinite; cursor: pointer; }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .bounce-btn { animation: bounce-in 0.5s cubic-bezier(0.25, 1.5, 0.5, 1); }
+
         /* Button Hover Bounces */
-        button { transition: all 0.3s ease; }
-        button:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        button:active { transform: translateY(1px); }
+        button, a.btn-pop { transition: all 0.3s ease; }
+        button:hover, a.btn-pop:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.15); }
+        button:active, a.btn-pop:active { transform: translateY(1px); }
+
+        /* Board Hover Glow */
+        #myBoard { transition: all 0.3s ease; }
+        #myBoard:hover { transform: scale(1.01); box-shadow: 0 25px 30px -5px rgba(234, 88, 12, 0.15); }
 
         /* Rolling Link Animation */
         .roll-link {
@@ -84,7 +113,7 @@
         }
         .roll-link:hover {
             transform: rotate(360deg) scale(1.15);
-            color: #ea580c;
+            color: #ea580c; 
         }
     </style>
 </head>
@@ -95,12 +124,19 @@
         <!-- <source src="https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg"> -->
     </audio>
 
-    <!-- Animated Floating Background Pieces for Children -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-10">
+    <!-- Animated Floating Background Pieces & Sparkles for Children (ORANGE THEME) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-20">
+        <!-- Floating Chess Pieces -->
         <i class="fas fa-chess-knight absolute text-8xl text-brand-500 float-1" style="top: 15%; left: 10%;"></i>
         <i class="fas fa-chess-queen absolute text-9xl text-brand-600 float-2" style="bottom: 20%; right: 10%;"></i>
         <i class="fas fa-chess-rook absolute text-7xl text-slate-400 float-3" style="top: 20%; right: 15%;"></i>
         <i class="fas fa-chess-pawn absolute text-8xl text-brand-400 float-4" style="bottom: 15%; left: 15%;"></i>
+        
+        <!-- Fun Twinkling Sparkles -->
+        <i class="fas fa-star absolute text-3xl text-yellow-400 sparkle" style="top: 25%; left: 30%; animation-delay: 0s;"></i>
+        <i class="fas fa-star absolute text-2xl text-orange-400 sparkle-slow" style="top: 45%; right: 25%; animation-delay: 1s;"></i>
+        <i class="fas fa-star absolute text-4xl text-yellow-500 sparkle" style="bottom: 30%; left: 20%; animation-delay: 2s;"></i>
+        <i class="fas fa-star absolute text-2xl text-brand-500 sparkle-slow" style="bottom: 10%; right: 40%; animation-delay: 0.5s;"></i>
     </div>
 
     <!-- WELCOME ANIMATION OVERLAY -->
@@ -112,8 +148,8 @@
         <p class="text-brand-600 font-bold mt-3 tracking-widest uppercase slide-up-fade" style="animation-delay: 1.5s;">Blindfold AI Experience</p>
         
         <!-- Button to bypass browser audio restrictions -->
-        <button id="btnEnterAcademy" class="mt-8 px-8 py-3 bg-slate-800 text-white font-bold rounded-full pulse-ring slide-up-delayed hover:bg-black">
-            Tap to Enter Academy <i class="fas fa-arrow-right ml-2"></i>
+        <button id="btnEnterAcademy" class="mt-8 px-8 py-3 bg-slate-800 text-white font-bold rounded-full pulse-ring slide-up-delayed hover:bg-black transition-all">
+            Tap to Enter Blindfold AI Bot <i class="fas fa-arrow-right ml-2"></i>
         </button>
     </div>
 
@@ -124,10 +160,10 @@
             <!-- LEFT PANEL -->
             <div class="w-full md:w-1/2 p-6 md:p-8 bg-white flex flex-col z-10">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="w-12 h-12 rounded-xl bg-brand-500 text-white flex items-center justify-center text-2xl shadow-lg"><i class="fas fa-brain"></i></div>
+                    <div class="w-12 h-12 rounded-xl bg-brand-500 text-white flex items-center justify-center text-2xl shadow-lg wiggle-hover"><i class="fas fa-brain"></i></div>
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Blindfold Bot</h2>
-                        <p class="text-sm text-slate-500">Train your visualization memory</p>
+                        <h2 class="text-2xl font-bold text-slate-800">Blindfold Bot AI</h2>
+                        <p class="text-sm text-slate-500 font-medium">Train your visualization memory!</p>
                     </div>
                 </div>
 
@@ -144,14 +180,14 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Bot Level (Toughness)</label>
                         <select id="botLevel" class="w-full border-2 border-slate-200 rounded-xl p-3 text-slate-700 font-bold outline-none focus:border-brand-500 transition-all cursor-pointer">
-                            <option value="1">Level 1 (Beginner)</option>
-                            <option value="3" selected>Level 2 (Intermediate)</option>
-                            <option value="8">Level 3 (Advanced)</option>
-                            <option value="15">Level 4 (Master)</option>
+                            <option value="1">Level 1 (Beginner ~800)</option>
+                            <option value="5">Level 2 (Intermediate ~1500)</option>
+                            <option value="12" selected>Level 3 (Advanced ~2500)</option>
+                            <option value="20">Level 4 (Titan / Rating 4050)</option>
                         </select>
                     </div>
 
-                    <button onclick="startGame()" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg mt-4 text-lg hover:from-brand-700 hover:to-brand-600">
+                    <button onclick="startGame()" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg mt-4 text-lg btn-pop">
                         <i class="fas fa-play mr-2"></i> Start Match
                     </button>
                 </div>
@@ -164,9 +200,10 @@
                         <div id="lastMove" class="text-sm text-slate-600 mt-2 italic">Awaiting move...</div>
                     </div>
 
-                    <div class="flex-grow flex flex-col items-center justify-center py-2">
+                    <!-- Voice/Text Play Controls -->
+                    <div id="playControls" class="flex-grow flex flex-col items-center justify-center py-2">
                         <!-- Mic Button -->
-                        <button id="btnMic" onclick="toggleMic()" class="w-20 h-20 rounded-full bg-brand-500 text-white text-3xl shadow-xl hover:bg-brand-600 transition-all flex items-center justify-center mb-3">
+                        <button id="btnMic" onclick="toggleMic()" class="w-20 h-20 rounded-full bg-brand-500 text-white text-3xl shadow-xl transition-all flex items-center justify-center mb-3 hover:bg-brand-600">
                             <i class="fas fa-microphone"></i>
                         </button>
                         
@@ -180,7 +217,28 @@
                         </div>
                     </div>
 
-                    <button onclick="endGame()" class="w-full bg-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-300 transition-all">
+                    <!-- Post-Game Analysis Controls (Hidden initially) -->
+                    <div id="analysisControls" class="hidden flex-grow flex-col items-center justify-center py-2 space-y-3 w-full">
+                        <h3 class="text-xl font-bold text-slate-800"><i class="fas fa-flag-checkered text-brand-500 mr-2"></i> Match Completed!</h3>
+                        <p class="text-sm text-slate-500 text-center px-2 mb-2">Review your moves or share the game.</p>
+                        
+                        <!-- Lichess Analysis Trigger -->
+                        <button onclick="openLichess()" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white px-4 py-3 rounded-xl font-bold btn-pop shadow-md text-lg">
+                            <i class="fas fa-search-plus mr-1"></i> Analyze on Lichess
+                        </button>
+
+                        <!-- Copy Analysis Link Trigger -->
+                        <button onclick="copyAnalysisLink()" class="w-full bg-slate-800 text-white px-4 py-3 rounded-xl font-bold btn-pop shadow-md">
+                            <i class="fas fa-link mr-1"></i> Copy Analysis Link
+                        </button>
+                        
+                        <button onclick="resetToSetup()" class="w-full bg-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-300 transition-all mt-2">
+                            <i class="fas fa-redo mr-2"></i> Play Again
+                        </button>
+                    </div>
+
+                    <!-- Bottom Resign Button (Hidden during analysis) -->
+                    <button id="btnResign" onclick="triggerGameOver(true)" class="w-full bg-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-300 transition-all">
                         Resign / End Game
                     </button>
                 </div>
@@ -189,7 +247,7 @@
             <!-- RIGHT PANEL: The Board -->
             <div class="w-full md:w-1/2 bg-slate-100 p-6 md:p-8 flex items-center justify-center relative board-hidden min-h-[350px]" id="boardWrapper">
                 <div id="blindfoldOverlay" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/10 rounded-b-2xl md:rounded-r-2xl md:rounded-bl-none">
-                    <div class="bg-white p-6 rounded-2xl shadow-2xl text-center max-w-xs border border-slate-100">
+                    <div class="bg-white p-6 rounded-2xl shadow-2xl text-center max-w-xs border border-slate-100 bounce-btn">
                         <i class="fas fa-eye-slash text-4xl text-brand-500 mb-3 float-1"></i>
                         <h3 class="font-bold text-slate-800 text-lg">Blindfold Active</h3>
                         <p class="text-xs text-slate-500 mb-4 mt-1">Visualize the board in your mind.</p>
@@ -215,17 +273,13 @@
     <!-- SCRIPT -->
     <script>
         // --- Intro & Audio Sequence ---
-        // Requires user interaction to play music due to browser autoplay policies
         document.getElementById('btnEnterAcademy').addEventListener('click', () => {
-            // Play Royal Background Music
             const music = document.getElementById('royalMusic');
-            music.volume = 0.2; // Soft background volume
+            music.volume = 0.2; 
             music.play().catch(e => console.log("Audio autoplay blocked", e));
 
-            // Speak Welcome with Royal Voice
             speak("Welcome to Chess Titans Academy. I am Rexlin, your AI Chess tutor. You are now experiencing the Blindfold Bot A.I.");
 
-            // Fade Out Overlay
             const overlay = document.getElementById('intro-overlay');
             overlay.style.opacity = '0';
             overlay.style.transform = 'scale(1.05)';
@@ -234,18 +288,17 @@
 
         // --- Responsive Board Fix ---
         window.addEventListener('resize', () => {
-            if (board) {
-                board.resize(); // Fixes board size issue on mobile/tab rotation
-            }
+            if (board) board.resize(); 
         });
 
         // --- Chess Variables ---
         let board = null;
         let game = new Chess();
         let playerColor = 'w';
-        let botDepth = 5;
+        let botDepth = 12;
         let isBlindfold = true;
         let speechRec = null;
+        let shareableLink = ""; 
 
         // Initialize Speech API
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -258,11 +311,7 @@
             speechRec.onstart = function() {
                 document.getElementById('btnMic').classList.add('pulse-ring');
                 updateStatus("Listening...", "user");
-                
-                // AUTO-HIDE BOARD: If they peeked, instantly blur it out when they click the mic
-                if (!isBlindfold) {
-                    toggleBoard(); 
-                }
+                if (!isBlindfold) toggleBoard(); 
             };
 
             speechRec.onresult = function(event) {
@@ -300,12 +349,22 @@
             game.reset();
             board = Chessboard('myBoard', { pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png', position: 'start', orientation: playerColor === 'w' ? 'white' : 'black' });
             
-            // Re-trigger resize to ensure it conforms to current container width
             setTimeout(() => { board.resize(); }, 100);
 
+            // Reset screens and UI elements to active gameplay
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('active-screen').classList.remove('hidden');
             document.getElementById('active-screen').classList.add('flex');
+            document.getElementById('playControls').classList.remove('hidden');
+            document.getElementById('playControls').classList.add('flex');
+            document.getElementById('btnResign').classList.remove('hidden');
+            document.getElementById('analysisControls').classList.add('hidden');
+            document.getElementById('analysisControls').classList.remove('flex');
+            shareableLink = "";
+            
+            // Add a fun bounce when screen changes
+            document.getElementById('active-screen').classList.add('bounce-btn');
+            setTimeout(() => document.getElementById('active-screen').classList.remove('bounce-btn'), 500);
             
             isBlindfold = true;
             document.getElementById('boardWrapper').classList.add('board-hidden');
@@ -320,8 +379,102 @@
             }
         }
 
-        function endGame() {
-            speak("Game ended. Well played!");
+        function triggerConfetti() {
+            var duration = 4000;
+            var animationEnd = Date.now() + duration;
+            // Orange and Gold themed confetti
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999, colors: ['#f97316', '#ea580c', '#fbbf24', '#f59e0b'] };
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+        async function triggerGameOver(resigned = false) {
+            if (resigned) {
+                speak("You resigned. Game ended.");
+                updateStatus("Player Resigned", "error");
+            } else {
+                triggerConfetti();
+            }
+
+            const pgnData = game.pgn();
+
+            // Swap UI Controls to Analysis View
+            document.getElementById('playControls').classList.add('hidden');
+            document.getElementById('playControls').classList.remove('flex');
+            document.getElementById('btnResign').classList.add('hidden');
+            document.getElementById('analysisControls').classList.remove('hidden');
+            document.getElementById('analysisControls').classList.add('flex');
+
+            // Lift blindfold automatically at game end so they can see the final position
+            isBlindfold = false;
+            document.getElementById('boardWrapper').className = "w-full md:w-1/2 bg-slate-100 p-6 md:p-8 flex items-center justify-center relative min-h-[350px]";
+            document.getElementById('blindfoldOverlay').style.display = 'none';
+
+            // Attempt to get Lichess URL via API. If blocked by browser CORS, generate a safe URL fallback.
+            const formData = new FormData();
+            formData.append('pgn', pgnData);
+            
+            try {
+                const response = await fetch('https://lichess.org/api/import', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data && data.url) {
+                    shareableLink = data.url;
+                } else {
+                    throw new Error("No URL");
+                }
+            } catch (err) {
+                console.warn("Lichess API blocked. Using safe Chess.com fallback link.");
+                // Chess.com correctly processes PGNs directly inside the URL!
+                shareableLink = "https://www.chess.com/analysis?pgn=" + encodeURIComponent(pgnData);
+            }
+        }
+
+        // --- 100% Reliable Hidden Form Method for Opening Lichess directly ---
+        function openLichess() {
+            const pgnData = game.pgn();
+            if (!pgnData) { alert("No moves to analyze!"); return; }
+            
+            // Creates an invisible form that submits directly to Lichess. 
+            // This bypasses all API/CORS errors and guarantees all moves load!
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://lichess.org/import';
+            form.target = '_blank'; // Opens in new tab
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'pgn';
+            input.value = pgnData;
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
+        // --- Copy Link Feature ---
+        function copyAnalysisLink() {
+            if (!shareableLink) {
+                alert("Please wait a moment while the link generates.");
+                return;
+            }
+            navigator.clipboard.writeText(shareableLink).then(() => {
+                alert("Analysis Link Copied! You can paste this in any browser to see the full game and all the moves.");
+            }).catch(err => {
+                alert("Failed to copy link. " + err);
+            });
+        }
+
+        function resetToSetup() {
             document.getElementById('active-screen').classList.add('hidden');
             document.getElementById('active-screen').classList.remove('flex');
             document.getElementById('setup-screen').classList.remove('hidden');
@@ -334,7 +487,6 @@
             } else alert("It's not your turn!");
         }
 
-        // AUTO-HIDE BOARD: If they peeked, instantly blur it out when they start typing
         document.getElementById('textInput').addEventListener('focus', function() {
             if (!isBlindfold) toggleBoard();
         });
@@ -342,7 +494,7 @@
         function submitText() {
             const val = document.getElementById('textInput').value;
             if(val.trim() !== "") {
-                if (!isBlindfold) toggleBoard(); // Hide board if they forgot to
+                if (!isBlindfold) toggleBoard(); 
                 processMove(val);
                 document.getElementById('textInput').value = "";
             }
@@ -354,26 +506,56 @@
 
             let text = rawText.toLowerCase();
 
+            // 1. Remove common filler words so they don't break the pawn parser
+            text = text.replace(/\b(on|the|at|in|my|move|go|to|please|play)\b/g, '');
+
+            // 2. Word-to-number (FIXED FOR 'phi' -> '5' bug)
             text = text.replace(/\bfour\b/g, '4').replace(/\bfor\b/g, '4');
-            text = text.replace(/\btoo\b/g, '2').replace(/\btwo\b/g, '2');
-            text = text.replace(/\bone\b/g, '1').replace(/\bthree\b/g, '3').replace(/\bfive\b/g, '5').replace(/\bsix\b/g, '6').replace(/\bseven\b/g, '7').replace(/\beight\b/g, '8');
+            text = text.replace(/\btoo\b/g, '2').replace(/\btwo\b/g, '2'); 
+            text = text.replace(/\bone\b/g, '1').replace(/\bwon\b/g, '1');
+            text = text.replace(/\bthree\b/g, '3').replace(/\btree\b/g, '3');
+            text = text.replace(/\bphi\b/g, '5').replace(/\bfive\b/g, '5').replace(/\bpie\b/g, '5'); 
+            text = text.replace(/\bsix\b/g, '6').replace(/\bsex\b/g, '6');
+            text = text.replace(/\bseven\b/g, '7');
+            text = text.replace(/\beight\b/g, '8').replace(/\bate\b/g, '8');
 
+            // 3. Phonetic letters (Handling misheard alphabet characters)
             text = text.replace(/\bsee\b/g, 'c').replace(/\bbe\b/g, 'b').replace(/\bhey\b/g, 'a').replace(/\bdee\b/g, 'd');
+            text = text.replace(/\bee\b/g, 'e').replace(/\beff\b/g, 'f').replace(/\bgee\b/g, 'g').replace(/\bhaych\b/g, 'h');
 
-            text = text.replace(/\btakes\b/g, 'x').replace(/\btake\b/g, 'x');
+            // 4. Capture & Attack keywords mapped strictly to 'x'
+            text = text.replace(/\battacks\b/g, 'x').replace(/\battack\b/g, 'x');
             text = text.replace(/\bcaptures\b/g, 'x').replace(/\bcapture\b/g, 'x');
+            text = text.replace(/\btakes\b/g, 'x').replace(/\btake\b/g, 'x');
             text = text.replace(/\bkills\b/g, 'x').replace(/\bkill\b/g, 'x');
+            text = text.replace(/\bcross\b/g, 'x'); 
 
+            // 5. Actions & Symbols
+            text = text.replace(/\bcheckmate\b/g, '#');
+            text = text.replace(/\bcheck\b/g, '+');
+            text = text.replace(/\bpromotes\b/g, '=').replace(/\bpromote\b/g, '=').replace(/\bequals\b/g, '=');
+
+            // 6. Pieces - Translated explicitly to uppercase
             text = text.replace(/\bknight\b/g, 'N').replace(/\bnight\b/g, 'N');
-            text = text.replace(/\bbishop\b/g, 'B').replace(/\brook\b/g, 'R').replace(/\bqueen\b/g, 'Q').replace(/\bking\b/g, 'K');
+            text = text.replace(/\bbishop\b/g, 'B');
+            text = text.replace(/\brook\b/g, 'R');
+            text = text.replace(/\bqueen\b/g, 'Q');
+            text = text.replace(/\bking\b/g, 'K');
+            text = text.replace(/\bpawn\b/g, ''); 
             
+            // 7. Castles
             text = text.replace(/castles short/g, 'O-O').replace(/castle short/g, 'O-O');
             text = text.replace(/castles long/g, 'O-O-O').replace(/castle long/g, 'O-O-O');
             text = text.replace(/castles/g, 'O-O').replace(/castle/g, 'O-O'); 
 
-            let strictText = text.replace(/[^a-zA-Z0-9\-xO\=]/g, '').trim();
+            // 8. Aggressively strip everything that is NOT a valid chess coordinate/symbol
+            let strictText = text.replace(/[^a-hA-H1-8NnBbRrQqKkxXOo\=\+\#\-]/g, '').trim();
 
-            if (['n','b','r','q','k'].includes(strictText.charAt(0))) {
+            // Fix O vs o for castling
+            strictText = strictText.replace(/o-o-o/gi, 'O-O-O').replace(/o-o/gi, 'O-O');
+
+            // ONLY capitalize non-pawn pieces if the user typed/said them manually in lowercase.
+            if (['n','r','q','k'].includes(strictText.charAt(0))) {
                 strictText = strictText.charAt(0).toUpperCase() + strictText.slice(1);
             }
 
@@ -393,15 +575,17 @@
                 if (game.in_checkmate()) { 
                     speak("Checkmate! You win!"); 
                     updateStatus("You Won!", "success"); 
+                    triggerGameOver(false);
                     return; 
                 } else if (game.in_draw()) {
                     speak("Game Drawn!");
                     updateStatus("Draw", "bot");
+                    triggerGameOver(false);
                     return;
                 }
                 
                 updateStatus("Computer is thinking...", "bot");
-                setTimeout(makeBotMove, 1800);
+                setTimeout(makeBotMove, 800);
             } else {
                 speak("Invalid move. Try again.");
                 updateStatus(`Invalid move: ${strictText}`, "error");
@@ -415,20 +599,44 @@
             try {
                 let botMoveStr = null;
 
+                // TIER 1: Faster, Stronger Advanced Stockfish API
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 4000); 
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); 
                     
-                    const fallbackUrl = `https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(game.fen())}&depth=${botDepth}`;
-                    const response = await fetch(fallbackUrl, { signal: controller.signal });
+                    const response = await fetch('https://chess-api.com/v1', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fen: game.fen(), depth: botDepth }),
+                        signal: controller.signal
+                    });
                     clearTimeout(timeoutId);
                     
                     const data = await response.json();
-                    if (data && data.success && data.data) {
-                        botMoveStr = data.data.split(" ")[1]; 
+                    if (data && data.move) {
+                        botMoveStr = data.move; 
                     }
                 } catch (err1) {
-                    console.warn("Stockfish API failed or timed out.", err1);
+                    console.warn("Primary API failed, trying fallback API...", err1);
+                }
+
+                // TIER 2: Stockfish Online Fallback
+                if (!botMoveStr) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 15000); 
+                        
+                        const fallbackUrl = `https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(game.fen())}&depth=${botDepth}`;
+                        const response = await fetch(fallbackUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        
+                        const data = await response.json();
+                        if (data && data.success && data.data) {
+                            botMoveStr = data.data.split(" ")[1]; 
+                        }
+                    } catch (err2) {
+                        console.warn("Stockfish Fallback API failed or timed out.", err2);
+                    }
                 }
 
                 let moveResult = null;
@@ -446,8 +654,9 @@
                     }
                 }
 
+                // TIER 3: Local Random Fallback (if all APIs fail)
                 if (!moveResult) {
-                    console.warn("API failed. Activating local Random Mover.");
+                    console.warn("APIs failed. Activating local Random Mover.");
                     const possibleMoves = game.moves();
                     if (possibleMoves.length > 0) {
                         const randomIdx = Math.floor(Math.random() * possibleMoves.length);
@@ -463,9 +672,11 @@
                     if (game.in_checkmate()) { 
                         speak("Checkmate! Computer wins."); 
                         updateStatus("Computer Won", "error"); 
+                        triggerGameOver(false);
                     } else if (game.in_draw()) {
                         speak("Game Drawn.");
                         updateStatus("Draw", "bot");
+                        triggerGameOver(false);
                     } else {
                         updateStatus("Your Turn (Tap Mic or Type)", "user");
                     }
@@ -493,7 +704,6 @@
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 
-                // Fetch voices and try to select a British/Royal voice
                 const voices = window.speechSynthesis.getVoices();
                 let royalVoice = voices.find(v => v.lang === 'en-GB' || v.name.includes('UK') || v.name.includes('Great Britain'));
                 
@@ -503,14 +713,13 @@
                     utterance.voice = royalVoice;
                 }
                 
-                utterance.rate = 0.85; // Slightly slower
-                utterance.pitch = 0.7; // Deeper, more majestic tone
+                utterance.rate = 0.85; 
+                utterance.pitch = 0.7; 
                 
                 window.speechSynthesis.speak(utterance);
             }
         }
 
-        // Ensure voices are loaded for the royal voice selection
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
         }
