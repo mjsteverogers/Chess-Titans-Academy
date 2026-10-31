@@ -21,25 +21,25 @@
     .animate-card { animation: slideUpFade 0.6s ease-out forwards; }
     .animate-modal { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-    header { background: #080808; border-bottom: 1px solid var(--accent); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    header { background: #080808; border-bottom: 1px solid var(--accent); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; flex-wrap: wrap; gap: 12px; }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-icon { font-size: 26px; background: var(--text-white); color: var(--accent); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-    .brand h1 { font-size: 1.3rem; color: var(--text-white); text-transform: uppercase; margin-bottom: 2px;}
+    .brand-icon { font-size: 26px; background: var(--text-white); color: var(--accent); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+    .brand h1 { font-size: clamp(1.1rem, 4vw, 1.3rem); color: var(--text-white); text-transform: uppercase; margin-bottom: 2px;}
     .brand h1 span { color: var(--accent); }
     .brand p { font-size: 0.85rem; color: var(--text-muted); }
     .container { max-width: 1100px; margin: 30px auto; padding: 0 16px; }
 
     .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-    .card h2 { font-size: 1.4rem; margin-bottom: 8px; color: var(--text-white); }
+    .card h2 { font-size: clamp(1.2rem, 4vw, 1.4rem); margin-bottom: 8px; color: var(--text-white); }
     .card h2 span { color: var(--accent); }
     .card p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
 
-    .form-group { margin-bottom: 18px; }
+    .form-group { margin-bottom: 18px; width: 100%; }
     label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
     input, select, textarea { width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--card-border); background: #000000; color: var(--text-white); font-size: 1rem; outline: none; }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.95rem; cursor: pointer; text-transform: uppercase; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.95rem; cursor: pointer; text-transform: uppercase; transition: 0.2s; text-align: center; }
     .btn-block { width: 100%; }
     .btn-primary { background: var(--accent); color: var(--text-white); }
     .btn-primary:hover { background: var(--accent-hover); }
@@ -50,45 +50,54 @@
     .btn-sm { padding: 8px 12px; font-size: 0.8rem; }
     .divider { height: 1px; background: var(--card-border); margin: 24px 0; }
 
-    .tabs { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-    .tab-btn { padding: 12px 20px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); cursor: pointer; font-weight: 600; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 16px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); cursor: pointer; font-weight: 600; flex: 1 1 auto; text-align: center; font-size: 0.9rem; }
     .tab-btn.active { background: var(--accent); color: var(--text-white); border-color: var(--accent); }
     
-    .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+    .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; text-align: center; }
     .badge-pending { background: #332200; color: #ffaa00; border: 1px solid #ffaa00; }
     .badge-approved { background: #002211; color: #00ff88; border: 1px solid #00ff88; }
     .badge-rejected { background: #330000; color: #ff4444; border: 1px solid #ff4444; }
 
-    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .task-card { background: #080808; border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-    .task-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; border-bottom: 1px solid #222; padding-bottom: 16px; }
-    .photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-    .photo-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; text-align: center; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+    .task-card { background: #080808; border: 1px solid var(--card-border); border-radius: 12px; padding: clamp(16px, 3vw, 20px); margin-bottom: 20px; }
+    .task-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; border-bottom: 1px solid #222; padding-bottom: 16px; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; }
+    .photo-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
     .photo-box img { width: 100%; height: 220px; object-fit: cover; border-radius: 6px; margin-top: 10px; border: 2px solid #222; cursor: pointer; transition: 0.2s; }
     .photo-box img:hover { border-color: var(--accent); opacity: 0.9; }
     .venue-link { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 8px; padding: 6px 12px; background: rgba(255, 43, 0, 0.1); border-radius: 6px; }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-    .modal-content { background: var(--card-bg); border: 2px solid var(--accent); border-radius: 16px; max-width: 560px; width: 100%; padding: 24px; max-height: 90vh; overflow-y: auto; }
-    video, canvas { width: 100%; border-radius: 8px; background: #000; margin-bottom: 16px; }
-    .gps-box { background: #000000; border: 1px dashed var(--accent); padding: 12px; border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 12px; }
+    .modal-content { background: var(--card-bg); border: 2px solid var(--accent); border-radius: 16px; max-width: 560px; width: 100%; padding: clamp(16px, 4vw, 24px); max-height: 95vh; overflow-y: auto; }
+    video, canvas { width: 100%; border-radius: 8px; background: #000; margin-bottom: 16px; max-height: 60vh; object-fit: cover; }
+    .gps-box { background: #000000; border: 1px dashed var(--accent); padding: 12px; border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); flex: 1; }
     .hidden { display: none !important; }
     .status-banner { padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; font-weight: 700; animation: slideDownFade 0.4s ease-out; }
-    .auth-wrapper { max-width: 460px; margin: 6vh auto; }
+    .auth-wrapper { max-width: 460px; margin: 6vh auto; width: 100%; }
 
     /* CALENDAR STYLES */
-    .calendar-wrapper { background: #080808; border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-    .calendar-day-header { text-align: center; font-size: 0.85rem; color: var(--text-muted); font-weight: bold; margin-bottom: 8px; }
-    .calendar-day { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; aspect-ratio: 1; padding: 8px; cursor: pointer; transition: 0.2s; position: relative; }
+    .calendar-wrapper { background: #080808; border: 1px solid var(--card-border); border-radius: 12px; padding: clamp(12px, 3vw, 20px); }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(4px, 1vw, 8px); }
+    .calendar-day-header { text-align: center; font-size: clamp(0.7rem, 2vw, 0.85rem); color: var(--text-muted); font-weight: bold; margin-bottom: 8px; }
+    .calendar-day { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; aspect-ratio: 1; padding: clamp(4px, 1vw, 8px); cursor: pointer; transition: 0.2s; position: relative; display: flex; flex-direction: column; align-items: center; }
     .calendar-day:hover { border-color: var(--accent); }
-    .calendar-day .day-num { font-size: 0.9rem; font-weight: 700; color: var(--text-white); }
+    .calendar-day .day-num { font-size: clamp(0.75rem, 2.5vw, 0.9rem); font-weight: 700; color: var(--text-white); }
     .calendar-day.empty { background: transparent; border: none; cursor: default; }
-    .dot-container { display: flex; gap: 4px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
-    .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
-    .late-text { color: var(--danger); font-size: 0.8rem; font-weight: bold; margin-top: 6px; padding: 4px; background: rgba(239, 68, 68, 0.1); border-radius: 4px; display: inline-block; }
-    .ontime-text { color: var(--success); font-size: 0.8rem; font-weight: bold; margin-top: 6px; padding: 4px; background: rgba(34, 197, 94, 0.1); border-radius: 4px; display: inline-block; }
+    .dot-container { display: flex; gap: 4px; justify-content: center; margin-top: auto; flex-wrap: wrap; }
+    .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+    .late-text { color: var(--danger); font-size: 0.75rem; font-weight: bold; margin-top: 6px; padding: 4px; background: rgba(239, 68, 68, 0.1); border-radius: 4px; display: inline-block; word-break: break-word; }
+    .ontime-text { color: var(--success); font-size: 0.75rem; font-weight: bold; margin-top: 6px; padding: 4px; background: rgba(34, 197, 94, 0.1); border-radius: 4px; display: inline-block; word-break: break-word; }
+
+    @media (max-width: 600px) {
+      .card { padding: 16px; }
+      .photo-box img { height: 180px; }
+      header { padding: 12px 16px; }
+      #userHeaderInfo { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
+      .task-header > div:first-child { width: 100%; }
+      .task-header > div:last-child { width: 100%; display: flex; gap: 10px; }
+    }
   </style>
   
   <script>
@@ -109,7 +118,7 @@
     </div>
     <div id="userHeaderInfo" class="hidden">
       <span id="loggedUserText" style="margin-right: 16px; font-weight: 600;"></span>
-      <button class="btn btn-outline" style="padding: 8px 16px; font-size: 0.8rem;" onclick="logout()">Logout</button>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
     </div>
   </header>
 
@@ -147,9 +156,9 @@
       <div class="tabs animate-card">
         <button class="tab-btn active" id="tabBtnPending" onclick="switchAdminTab('pending')">Staff Approvals <span id="pendingCountBadge" class="badge badge-pending" style="margin-left:8px;">0</span></button>
         <button class="tab-btn" id="tabBtnAssign" onclick="switchAdminTab('assign')">Assign Task</button>
-        <button class="tab-btn" id="tabBtnAttendance" onclick="switchAdminTab('attendance')">Verify Attendance</button>
-        <button class="tab-btn" id="tabBtnCalendar" onclick="switchAdminTab('calendar')">Calendar Log</button>
-        <button class="btn btn-outline" style="margin-left:auto; padding: 10px 16px;" onclick="loadAdminData()">↻ Refresh</button>
+        <button class="tab-btn" id="tabBtnAttendance" onclick="switchAdminTab('attendance')">Verify</button>
+        <button class="tab-btn" id="tabBtnCalendar" onclick="switchAdminTab('calendar')">Calendar</button>
+        <button class="btn btn-outline" style="padding: 10px 16px; flex-grow: 1;" onclick="loadAdminData()">↻ Refresh</button>
       </div>
       
       <div id="adminTabPending" class="card">
@@ -192,9 +201,9 @@
     <!-- STAFF SECTION -->
     <div id="staffSection" class="hidden">
       <div class="tabs animate-card" style="margin-bottom: 20px;">
-        <button class="tab-btn active" id="staffTabBtnDuties" onclick="switchStaffTab('duties')">My Active Duties</button>
-        <button class="tab-btn" id="staffTabBtnCalendar" onclick="switchStaffTab('calendar')">My History / Calendar</button>
-        <button class="btn btn-outline" style="margin-left:auto; padding: 10px 16px;" onclick="loadStaffTasks()">↻ Sync Data</button>
+        <button class="tab-btn active" id="staffTabBtnDuties" onclick="switchStaffTab('duties')">Active Duties</button>
+        <button class="tab-btn" id="staffTabBtnCalendar" onclick="switchStaffTab('calendar')">History</button>
+        <button class="btn btn-outline" style="padding: 10px 16px; flex-grow: 1;" onclick="loadStaffTasks()">↻ Sync</button>
       </div>
 
       <div id="staffTabDuties" class="animate-card">
@@ -215,9 +224,9 @@
       <h3 id="cameraModalTitle" style="color:var(--text-white); font-size:1.3rem; margin-bottom:8px; text-transform:uppercase;">Verification Photo</h3>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">GPS coordinates and address will be automatically stamped.</p>
       
-      <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: stretch;">
-        <div id="gpsStatusBox" class="gps-box" style="flex-grow: 1; margin: 0;"></div>
-        <button class="btn btn-outline" onclick="toggleCamera()" style="white-space: nowrap; font-size: 0.8rem; padding: 0 12px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: stretch; flex-wrap: wrap;">
+        <div id="gpsStatusBox" class="gps-box" style="flex-grow: 1; margin: 0; min-width: 200px;"></div>
+        <button class="btn btn-outline" onclick="toggleCamera()" style="white-space: nowrap; font-size: 0.8rem; padding: 0 12px; flex-grow: 1;">
           🔄 Switch Cam
         </button>
       </div>
@@ -225,9 +234,9 @@
       <video id="cameraStream" autoplay playsinline muted></video>
       <canvas id="photoCanvas" class="hidden"></canvas>
       
-      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
-        <button class="btn btn-outline" onclick="closeCameraModal()">Cancel</button>
-        <button class="btn btn-primary" id="captureBtn" onclick="captureWatermarkedPhoto()">📸 Capture & Submit</button>
+      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px; flex-wrap: wrap;">
+        <button class="btn btn-outline" onclick="closeCameraModal()" style="flex: 1;">Cancel</button>
+        <button class="btn btn-primary" id="captureBtn" onclick="captureWatermarkedPhoto()" style="flex: 2;">📸 Capture & Submit</button>
       </div>
     </div>
   </div>
@@ -239,9 +248,9 @@
       <input type="hidden" id="editTaskId" />
       <div class="form-group"><label>VENUE NAME</label><input type="text" id="editVenueName" /></div>
       <div class="form-group"><label>TASK DETAILS</label><textarea id="editTaskDetailsInput" rows="3"></textarea></div>
-      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
-        <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
-        <button class="btn btn-primary" id="saveEditBtn" onclick="submitEditTask()">Save Changes</button>
+      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px; flex-wrap: wrap;">
+        <button class="btn btn-outline" onclick="closeEditModal()" style="flex: 1;">Cancel</button>
+        <button class="btn btn-primary" id="saveEditBtn" onclick="submitEditTask()" style="flex: 2;">Save Changes</button>
       </div>
     </div>
   </div>
@@ -258,7 +267,6 @@
     let currentGeoData = { lat: null, lng: null, address: "Fetching address...", ready: false };
     let currentFacingMode = "environment";
 
-    // Calendar global state
     let globalCompletedTasks = [];
     let currentCalMonth = new Date().getMonth();
     let currentCalYear = new Date().getFullYear();
@@ -386,7 +394,6 @@
           renderStaffApprovals(res.staffList);
           populateApprovedStaffDropdown(res.staffList);
           
-          // Split active vs fully approved (Calendar) tasks
           const activeTasks = res.tasks.filter(t => t.inStatus !== "Approved" || t.outStatus !== "Approved");
           globalCompletedTasks = res.tasks.filter(t => t.inStatus === "Approved" && t.outStatus === "Approved");
           
@@ -410,10 +417,10 @@
               <h3 style="font-size:1.1rem;">${escapeHtml(staff.username)}</h3>
               <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">📞 ${escapeHtml(staff.phone)} | Joined: ${escapeHtml(String(staff.createdAt).split(' ')[0])}</p>
             </div>
-            <div style="display:flex; align-items:center; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap: wrap;">
               <span class="badge ${badge}">${escapeHtml(staff.status)}</span>
-              ${staff.status !== "Approved" ? `<button class="btn btn-outline" style="border-color:var(--success); color:var(--success);" onclick="updateStaffStatus('${staff.staffId}', 'Approved')">Approve</button>` : ""}
-              ${staff.status !== "Rejected" ? `<button class="btn btn-outline" style="border-color:var(--danger); color:var(--danger);" onclick="updateStaffStatus('${staff.staffId}', 'Rejected')">Reject</button>` : ""}
+              ${staff.status !== "Approved" ? `<button class="btn btn-outline btn-sm" style="border-color:var(--success); color:var(--success);" onclick="updateStaffStatus('${staff.staffId}', 'Approved')">Approve</button>` : ""}
+              ${staff.status !== "Rejected" ? `<button class="btn btn-outline btn-sm" style="border-color:var(--danger); color:var(--danger);" onclick="updateStaffStatus('${staff.staffId}', 'Rejected')">Reject</button>` : ""}
             </div>
           </div>
         `;
@@ -486,12 +493,12 @@
                 ${t.inPhoto ? `<img src="${t.inPhoto}" onclick="window.open(this.src)" />
                                <p style="font-size:0.75rem; color:#aaa; margin-top:8px;">${escapeHtml(t.inLocation)}</p>
                                ${getLateBadge(t.inTime, t.startTime, "ENTRY")}` 
-                             : `<p style="color:#555; margin-top:20px;">Awaiting Submission</p>`}
+                             : `<p style="color:#555; margin-top:20px; margin-bottom:20px;">Awaiting Submission</p>`}
                 
-                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">
+                <div style="margin-top:auto; padding-top:10px; border-top:1px solid #333;">
                   <span class="badge ${t.inStatus === 'Approved' ? 'badge-approved' : t.inStatus === 'Rejected' ? 'badge-rejected' : 'badge-pending'}">${escapeHtml(t.inStatus)}</span>
                   ${t.inStatus === 'Submitted' ? `
-                    <div style="display:flex; gap:6px; justify-content:center; margin-top:8px;">
+                    <div style="display:flex; gap:6px; justify-content:center; margin-top:8px; flex-wrap:wrap;">
                       <button class="btn btn-sm btn-outline" style="border-color:var(--success); color:var(--success);" onclick="handleAttendanceApproval('${t.taskId}', 'IN', 'Approved')">✓ Apprv</button>
                       <button class="btn btn-sm btn-outline" style="border-color:var(--danger); color:var(--danger);" onclick="handleAttendanceApproval('${t.taskId}', 'IN', 'Rejected')">✕ Rjct</button>
                     </div>
@@ -504,12 +511,12 @@
                 ${t.outPhoto ? `<img src="${t.outPhoto}" onclick="window.open(this.src)" />
                                 <p style="font-size:0.75rem; color:#aaa; margin-top:8px;">${escapeHtml(t.outLocation)}</p>
                                 ${getLateBadge(t.outTime, t.endTime, "EXIT")}` 
-                              : `<p style="color:#555; margin-top:20px;">Awaiting Submission</p>`}
+                              : `<p style="color:#555; margin-top:20px; margin-bottom:20px;">Awaiting Submission</p>`}
                 
-                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">
+                <div style="margin-top:auto; padding-top:10px; border-top:1px solid #333;">
                   <span class="badge ${t.outStatus === 'Approved' ? 'badge-approved' : t.outStatus === 'Rejected' ? 'badge-rejected' : 'badge-pending'}">${escapeHtml(t.outStatus)}</span>
                   ${t.outStatus === 'Submitted' ? `
-                    <div style="display:flex; gap:6px; justify-content:center; margin-top:8px;">
+                    <div style="display:flex; gap:6px; justify-content:center; margin-top:8px; flex-wrap:wrap;">
                       <button class="btn btn-sm btn-outline" style="border-color:var(--success); color:var(--success);" onclick="handleAttendanceApproval('${t.taskId}', 'OUT', 'Approved')">✓ Apprv</button>
                       <button class="btn btn-sm btn-outline" style="border-color:var(--danger); color:var(--danger);" onclick="handleAttendanceApproval('${t.taskId}', 'OUT', 'Rejected')">✕ Rjct</button>
                     </div>
@@ -526,7 +533,7 @@
       const res = await callBackend({ action: "updateAttendanceStatus", taskId, photoType, newStatus });
       if (res && res.status === "success") {
         showAlert(photoType + " Status updated to " + newStatus, "success");
-        loadAdminData(); // This will auto-move it to calendar if both are approved
+        loadAdminData(); 
       }
     }
 
@@ -568,25 +575,29 @@
                 <strong style="color:var(--info);">STEP 1: IN (Entry)</strong>
                 ${t.inPhoto ? `<img src="${t.inPhoto}" onclick="window.open(this.src)" />${getLateBadge(t.inTime, t.startTime, "ENTRY")}` : `<p style="font-size:0.8rem; color:#666; margin:20px 0;">Record live entry location</p>`}
                 
-                <span class="badge ${t.inStatus === 'Approved' ? 'badge-approved' : t.inStatus === 'Rejected' ? 'badge-rejected' : 'badge-pending'}" style="margin-top:8px; display:block;">${escapeHtml(t.inStatus)}</span>
-                
-                ${t.inStatus !== 'Approved' ? `
-                  <button class="btn btn-outline btn-block" style="margin-top:12px;" onclick="openCameraModal('${t.taskId}', 'IN', '${escapeHtml(t.venueName)}')">
-                    📷 ${t.inPhoto ? "RETAKE IN" : "CAPTURE IN"}
-                  </button>
-                ` : ''}
+                <div style="margin-top:auto;">
+                  <span class="badge ${t.inStatus === 'Approved' ? 'badge-approved' : t.inStatus === 'Rejected' ? 'badge-rejected' : 'badge-pending'}" style="margin-top:8px; margin-bottom:8px; display:block;">${escapeHtml(t.inStatus)}</span>
+                  
+                  ${t.inStatus !== 'Approved' ? `
+                    <button class="btn btn-outline btn-block" onclick="openCameraModal('${t.taskId}', 'IN', '${escapeHtml(t.venueName)}')">
+                      📷 ${t.inPhoto ? "RETAKE IN" : "CAPTURE IN"}
+                    </button>
+                  ` : ''}
+                </div>
               </div>
               <div class="photo-box">
                 <strong style="color:var(--success);">STEP 2: EXIT (Out)</strong>
                 ${t.outPhoto ? `<img src="${t.outPhoto}" onclick="window.open(this.src)" />${getLateBadge(t.outTime, t.endTime, "EXIT")}` : `<p style="font-size:0.8rem; color:#666; margin:20px 0;">Record task completion location</p>`}
                 
-                <span class="badge ${t.outStatus === 'Approved' ? 'badge-approved' : t.outStatus === 'Rejected' ? 'badge-rejected' : 'badge-pending'}" style="margin-top:8px; display:block;">${escapeHtml(t.outStatus)}</span>
+                <div style="margin-top:auto;">
+                  <span class="badge ${t.outStatus === 'Approved' ? 'badge-approved' : t.outStatus === 'Rejected' ? 'badge-rejected' : 'badge-pending'}" style="margin-top:8px; margin-bottom:8px; display:block;">${escapeHtml(t.outStatus)}</span>
 
-                ${t.outStatus !== 'Approved' ? `
-                  <button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="openCameraModal('${t.taskId}', 'OUT', '${escapeHtml(t.venueName)}')">
-                    📷 ${t.outPhoto ? "RETAKE EXIT" : "CAPTURE EXIT"}
-                  </button>
-                ` : ''}
+                  ${t.outStatus !== 'Approved' ? `
+                    <button class="btn btn-primary btn-block" onclick="openCameraModal('${t.taskId}', 'OUT', '${escapeHtml(t.venueName)}')">
+                      📷 ${t.outPhoto ? "RETAKE EXIT" : "CAPTURE EXIT"}
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
           </div>
@@ -595,7 +606,7 @@
     }
 
     // ==========================================
-    // CALENDAR UI GENERATOR (UPDATED WITH IMAGES)
+    // CALENDAR UI GENERATOR
     // ==========================================
     function renderCalendarUI(wrapperId, tasks, isAdmin) {
       const wrapper = document.getElementById(wrapperId);
@@ -603,7 +614,6 @@
       const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-      // Group tasks by Date string (YYYY-MM-DD)
       const tasksByDate = {};
       tasks.forEach(t => {
         if(!t.startTime) return;
@@ -616,7 +626,7 @@
       let html = `
         <div class="calendar-header">
           <button class="btn btn-outline btn-sm" onclick="changeCalMonth(-1, '${wrapperId}', ${isAdmin})">◄ Prev</button>
-          <h3 style="color:var(--text-white);">${monthNames[currentCalMonth]} ${currentCalYear}</h3>
+          <h3 style="color:var(--text-white); font-size: clamp(1rem, 3vw, 1.2rem);">${monthNames[currentCalMonth]} ${currentCalYear}</h3>
           <button class="btn btn-outline btn-sm" onclick="changeCalMonth(1, '${wrapperId}', ${isAdmin})">Next ►</button>
         </div>
         <div class="calendar-grid">
@@ -643,7 +653,6 @@
       html += `</div>`;
       wrapper.innerHTML = html;
       
-      // Clear detail box when month changes
       const detailsBoxId = isAdmin ? 'adminCalendarDetails' : 'staffCalendarDetails';
       document.getElementById(detailsBoxId).innerHTML = '';
     }
@@ -655,7 +664,6 @@
       renderCalendarUI(wrapperId, globalCompletedTasks, isAdmin);
     }
 
-    // UPDATED FUNCTION: Now renders the images in the calendar details view!
     function showCalendarDetails(dateStr, isAdmin) {
       const detailsBoxId = isAdmin ? 'adminCalendarDetails' : 'staffCalendarDetails';
       const container = document.getElementById(detailsBoxId);
@@ -673,15 +681,15 @@
 
       container.innerHTML = `<h3 style="color:var(--accent); margin-bottom:12px;">Tasks for ${dateStr}</h3>` + dayTasks.map(t => `
         <div class="task-card">
-          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #222;">
-            <div>
+          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #222; gap: 12px;">
+            <div style="flex: 1; min-width: 200px;">
               <strong style="color:#fff; font-size:1.1rem;">${escapeHtml(t.venueName)}</strong>
               <p style="color:#ddd; margin:6px 0;">${escapeHtml(t.taskDetails)}</p>
               <p style="color:var(--text-muted); font-size:0.85rem;">Staff: <span style="color:var(--accent);">${escapeHtml(t.staffUsername)}</span></p>
               <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Scheduled IN: ${escapeHtml(t.startTime)} | Scheduled OUT: ${escapeHtml(t.endTime)}</p>
             </div>
             ${isAdmin ? `
-              <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; flex-direction:column; gap:8px; min-width: 100px;">
                 <button class="btn btn-sm btn-outline" style="border-color:var(--info); color:var(--info);" onclick="openEditModal('${t.taskId}', '${escapeHtml(t.venueName)}', '${escapeHtml(t.taskDetails)}')">✎ Edit</button>
                 <button class="btn btn-sm btn-outline" style="border-color:var(--danger); color:var(--danger);" onclick="deleteTask('${t.taskId}')">🗑 Delete</button>
               </div>
