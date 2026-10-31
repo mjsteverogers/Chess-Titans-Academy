@@ -69,7 +69,7 @@
     .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .modal-content { background: var(--card-bg); border: 2px solid var(--accent); border-radius: 16px; max-width: 560px; width: 100%; padding: 24px; }
     video, canvas { width: 100%; border-radius: 8px; background: #000; margin-bottom: 16px; }
-    .gps-box { background: #000000; border: 1px dashed var(--accent); padding: 12px; border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+    .gps-box { background: #000000; border: 1px dashed var(--accent); padding: 12px; border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); }
     .hidden { display: none !important; }
     .status-banner { padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; font-weight: 700; animation: slideDownFade 0.4s ease-out; }
     .auth-wrapper { max-width: 460px; margin: 6vh auto; }
@@ -101,6 +101,7 @@
   <div class="container">
     <div id="alertBox" class="status-banner hidden"></div>
 
+    <!-- AUTHENTICATION SECTION -->
     <div id="authSection" class="auth-wrapper">
       <div id="loginCard" class="card animate-card">
         <h2>Portal <span>Login</span></h2>
@@ -126,6 +127,7 @@
       </div>
     </div>
 
+    <!-- ADMIN SECTION -->
     <div id="adminSection" class="hidden">
       <div class="tabs animate-card">
         <button class="tab-btn active" id="tabBtnPending" onclick="switchAdminTab('pending')">Staff Approvals <span id="pendingCountBadge" class="badge badge-pending" style="margin-left:8px;">0</span></button>
@@ -161,6 +163,7 @@
       </div>
     </div>
 
+    <!-- STAFF SECTION -->
     <div id="staffSection" class="hidden">
       <div class="animate-card" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
         <div><h2>My <span>Duties</span></h2><p class="subtitle" style="margin-bottom:0;">View locations and submit geo-verified attendance</p></div>
@@ -170,13 +173,23 @@
     </div>
   </div>
 
+  <!-- CAMERA MODAL -->
   <div id="cameraModal" class="modal-overlay hidden">
     <div class="modal-content animate-modal">
       <h3 id="cameraModalTitle" style="color:var(--text-white); font-size:1.3rem; margin-bottom:8px; text-transform:uppercase;">Verification Photo</h3>
-      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">GPS coordinates and address will be automatically stamped.</p>
-      <div id="gpsStatusBox" class="gps-box"></div>
-      <video id="cameraStream" autoplay playsinline></video>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">GPS coordinates and address will be automatically stamped.</p>
+      
+      <!-- GPS & CAMERA CONTROLS -->
+      <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: stretch;">
+        <div id="gpsStatusBox" class="gps-box" style="flex-grow: 1; margin: 0;"></div>
+        <button class="btn btn-outline" onclick="toggleCamera()" style="white-space: nowrap; font-size: 0.8rem; padding: 0 12px;">
+          🔄 Switch Cam
+        </button>
+      </div>
+
+      <video id="cameraStream" autoplay playsinline muted></video>
       <canvas id="photoCanvas" class="hidden"></canvas>
+      
       <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
         <button class="btn btn-outline" onclick="closeCameraModal()">Cancel</button>
         <button class="btn btn-primary" id="captureBtn" onclick="captureWatermarkedPhoto()">📸 Capture & Submit</button>
@@ -189,12 +202,15 @@
     // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
     // IMPORTANT: Keep the quotation marks around the URL!
     // =========================================================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVX-_q9twpWMCjKrCc7b4wuoBDtH1BQ41dyFJsKL3uBpTxydEa5T5TU6Y0ag3QtGeQYg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqR9uYgAYzk2C-ywzFZjMn-YlKGpGx5Y3nfszhj7g9XcXBNGSq-PKhpUWnwkr4vn1M5Q/exec";
 
     let currentUser = null;
     let activeCameraStream = null;
     let activePhotoTask = null; 
     let currentGeoData = { lat: null, lng: null, address: "Fetching address...", ready: false };
+    
+    // CAMERA TOGGLE STATE (Front or Rear)
+    let currentFacingMode = "environment";
 
     function showAlert(message, type = "info") {
       const box = document.getElementById("alertBox");
@@ -223,11 +239,10 @@
           method: "POST",
           body: JSON.stringify(payload) 
         });
-        
         const data = await response.json();
         return data;
       } catch (error) {
-        throw new Error("Network Fetch Failed. Ensure Google Script is deployed as 'Execute as: Me' and 'Access: Anyone'.");
+        throw new Error("Network Fetch Failed. Ensure Google Script is deployed correctly.");
       }
     }
 
@@ -497,24 +512,46 @@
       } catch (e) {}
     }
 
+    // ==========================================
+    // CAMERA & GPS HANDLING (UPDATED)
+    // ==========================================
+
     async function openCameraModal(taskId, photoType, venueName) {
       activePhotoTask = { taskId, photoType, venueName };
       document.getElementById("cameraModalTitle").innerHTML = `<span style="color:var(--accent);">${photoType}</span> VERIFICATION`;
       document.getElementById("cameraModal").classList.remove("hidden");
-
-      const gpsBox = document.getElementById("gpsStatusBox");
       
-      // SYNTAX ERROR FIXED HERE
-      gpsBox.innerHTML = '<span style="color:var(--accent);">📡 Connecting to GPS satellites...</span>';
-      
-      currentGeoData = { lat: null, lng: null, address: "Fetching...", ready: false };
+      currentFacingMode = "environment"; // default to back camera
+      await startCamera();
+      fetchLocation();
+    }
 
+    // Stop existing camera and start a new one based on facing mode
+    async function startCamera() {
+      if (activeCameraStream) { 
+        activeCameraStream.getTracks().forEach(t => t.stop()); 
+      }
       try {
-        activeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        activeCameraStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: currentFacingMode } 
+        });
         document.getElementById("cameraStream").srcObject = activeCameraStream;
       } catch (err) {
-        showAlert("Camera access required.", "error"); return closeCameraModal();
+        showAlert("Camera access required. Please allow permissions in your browser.", "error");
       }
+    }
+
+    // Switch between front/back cameras
+    function toggleCamera() {
+      currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+      startCamera();
+    }
+
+    // Robust Location Fetcher with Fallback/Retry UI
+    function fetchLocation() {
+      const gpsBox = document.getElementById("gpsStatusBox");
+      gpsBox.innerHTML = '<span style="color:var(--accent);">📡 Connecting to GPS satellites...</span>';
+      currentGeoData = { lat: null, lng: null, address: "Fetching...", ready: false };
 
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -533,11 +570,20 @@
             `;
           },
           (err) => {
-            // SYNTAX ERROR FIXED HERE
-            gpsBox.innerHTML = '<span style="color:var(--danger);">⚠️ GPS Error: Enable Location</span>';
+            console.warn("GPS Error:", err);
+            // Allow retry if device timed out or permissions were blocked
+            gpsBox.innerHTML = `
+              <span style="color:var(--danger); font-size:0.85rem;">⚠️ GPS Error: Allow Location Access</span><br/>
+              <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 8px;" onclick="fetchLocation()">
+                🔄 Retry Location
+              </button>
+            `;
           },
-          { enableHighAccuracy: true, timeout: 15000 }
+          // Relaxed settings to prevent infinite timeout on specific Android/iOS models
+          { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
         );
+      } else {
+        gpsBox.innerHTML = '<span style="color:var(--danger);">⚠️ Browser does not support Location.</span>';
       }
     }
 
@@ -547,13 +593,23 @@
     }
 
     async function captureWatermarkedPhoto() {
-      if (!currentGeoData.lat) return showAlert("Waiting for GPS lock.", "error");
+      if (!currentGeoData.lat) return showAlert("Please wait for GPS Lock or Retry Location.", "error");
 
       const video = document.getElementById("cameraStream");
       const canvas = document.getElementById("photoCanvas");
       canvas.width = 640; canvas.height = 480;
       const ctx = canvas.getContext("2d");
+      
+      // If front camera, flip horizontally so it mirrors nicely
+      if (currentFacingMode === "user") {
+        ctx.translate(640, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(video, 0, 0, 640, 480);
+      // Reset flip for text
+      if (currentFacingMode === "user") {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
 
       ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
       ctx.fillRect(0, 480 - 120, 640, 120);
