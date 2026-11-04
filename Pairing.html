@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Titans Academy - Tournament Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --brand-orange: #ea580c; 
+            --brand-orange-hover: #c2410c;
+        }
+        body { 
+            /* Subtle Chessboard Theme Background */
+            background-color: #f8fafc; 
+            background-image: 
+                linear-gradient(45deg, #f1f5f9 25%, transparent 25%, transparent 75%, #f1f5f9 75%, #f1f5f9),
+                linear-gradient(45deg, #f1f5f9 25%, transparent 25%, transparent 75%, #f1f5f9 75%, #f1f5f9);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            font-family: 'Inter', sans-serif; 
+            color: #0f172a;
+        }
+        .bg-brand { background-color: var(--brand-orange); }
+        .text-brand { color: var(--brand-orange); }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .pulse-ongoing { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        
+        .modal { 
+            opacity: 0; pointer-events: none; 
+            transition: all 0.3s ease; 
+            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.4); 
+        }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal.active .modal-content { transform: translateY(0); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Top Navigation Bar & Logo Space -->
+    <nav class="w-full bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col items-center text-center">
+            
+            <!-- Replace 'logo.png' with your actual logo file name -->
+            <img src="" alt="Chess Titans Logo" class="h-16 w-auto object-contain mb-2" onerror="this.style.display='none'">
+            
+            <h1 class="text-2xl font-bold tracking-tight text-slate-800 uppercase flex items-center gap-2">
+                <span class="text-brand">♚</span> Chess Titans Academy <span class="text-brand">♚</span>
+            </h1>
+            <p class="text-sm font-semibold text-slate-500 mt-1 uppercase tracking-widest border-t border-slate-100 pt-1 w-full max-w-md">
+                This is the official Chess Titans Academy Pairing Software
+            </p>
+            
+            <div id="statusIndicator" class="mt-3 hidden items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold">
+                <!-- Status injected here -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 flex-grow relative z-0">
+        
+        <div id="loading" class="flex flex-col items-center justify-center py-20 text-slate-500 bg-white/80 rounded-xl shadow-sm border border-slate-200 backdrop-blur-sm">
+            <svg class="animate-spin h-8 w-8 text-brand mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <p class="font-bold text-lg text-slate-700">Connecting to Database...</p>
+            <p class="text-sm mt-2" id="refreshMsg">Please wait</p>
+        </div>
+        
+        <!-- Setup View (Arbiter Only) -->
+        <div id="view-setup" class="hidden bg-white/95 backdrop-blur shadow-xl border border-slate-200 rounded-xl p-6 sm:p-8">
+            <div class="mb-6 border-b border-slate-100 pb-4">
+                <h2 class="text-2xl font-bold text-slate-800">New Tournament Setup</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Tournament Name</label>
+                    <input type="text" id="tName" placeholder="e.g. Summer Championship" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Number of Rounds</label>
+                    <input type="number" id="tRounds" placeholder="e.g. 5" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none transition">
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Players Roster</label>
+                <textarea id="tPlayers" placeholder="Enter one player name per line..." class="w-full p-3 border border-slate-300 rounded-lg h-40 focus:ring-2 focus:ring-brand outline-none transition resize-y"></textarea>
+            </div>
+            <button onclick="startTournament()" class="w-full bg-brand text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:bg-orange-700 transition">
+                Start Tournament
+            </button>
+        </div>
+
+        <!-- Dashboard View (Viewer & Arbiter) -->
+        <div id="view-dashboard" class="hidden space-y-6">
+            
+            <!-- Tournament Header Card -->
+            <div class="bg-white/95 backdrop-blur shadow-sm border border-slate-200 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 id="tournamentTitle" class="text-2xl font-bold text-slate-800 hidden"></h2>
+                    <p id="roundHeader" class="text-sm font-bold text-brand mt-1 uppercase tracking-wider"></p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="btnShare" onclick="copyViewerLink()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition shadow-sm">
+                        Copy Viewer Link
+                    </button>
+                    <button id="btnDelete" onclick="deleteTournament()" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-bold rounded-lg transition shadow-sm hidden">
+                        End Tournament Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Standings Column -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white/95 backdrop-blur shadow-md border border-slate-200 rounded-xl overflow-hidden h-full flex flex-col">
+                        
+                        <!-- Search Box for Standings -->
+                        <div class="bg-slate-100 border-b border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                            <h3 class="font-bold text-slate-800">Current Standings</h3>
+                            <div class="relative w-full sm:w-auto">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                                <input type="text" id="searchStandings" onkeyup="filterStandings()" placeholder="Search player..." class="w-full sm:w-40 pl-9 pr-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand outline-none transition shadow-sm">
+                            </div>
+                        </div>
+
+                        <!-- SCROLLABLE STANDINGS AREA -->
+                        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] relative">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-white border-b border-slate-200 text-slate-500 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="p-3 pl-4 w-12 text-center">#</th>
+                                        <th class="p-3">Player</th>
+                                        <th class="p-3 text-center w-16">Pts</th>
+                                        <th class="p-3 pr-4 text-center w-20">Penalties</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="standingsBody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pairings Column -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white/95 backdrop-blur shadow-md border border-slate-200 rounded-xl p-4 sm:p-6 flex flex-col h-full">
+                        
+                        <!-- Search Box for Pairings -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3 shrink-0">
+                            <h3 class="font-bold text-slate-800">Match Pairings</h3>
+                            <div class="relative w-full sm:w-auto">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                                <input type="text" id="searchPairings" onkeyup="filterPairings()" placeholder="Search player matches..." class="w-full sm:w-56 pl-9 pr-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand outline-none transition shadow-sm">
+                            </div>
+                        </div>
+                        
+                        <!-- SCROLLABLE PAIRINGS AREA -->
+                        <div class="overflow-y-auto max-h-[60vh] pr-2 space-y-4">
+                            <div id="pairingsList" class="space-y-4"></div>
+                            
+                            <!-- Added 'bye-card' class to filter correctly -->
+                            <div id="byePlayer" class="bye-card mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 hidden">
+                                <span class="font-bold text-green-800 flex items-center gap-2">👋 BYE ALLOCATED: <span id="byeName"></span></span>
+                                <span class="px-2 py-1 bg-green-200 text-green-900 text-xs font-bold rounded">+1 Point</span>
+                            </div>
+                        </div>
+                        
+                        <button id="btnSubmitRound" onclick="submitRound()" class="w-full bg-brand text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-orange-700 transition mt-6 hidden text-lg shrink-0">
+                            Confirm Results & Proceed to Next Round
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Player History Modal -->
+    <div id="historyModal" class="modal fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md border-t-4 border-brand overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 border-b border-slate-200 p-4 flex justify-between items-center shrink-0">
+                <h3 id="modalTitle" class="font-bold text-slate-800 text-lg"></h3>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-red-500 transition font-bold text-xl">&times;</button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <ul id="modalHistory" class="space-y-2"></ul>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 shrink-0">
+                <button onclick="closeModal()" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-700 transition">Close History</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzC-zvvZUqkFplMEWUgz9KYYVC8ZVt3772sV0l4Y-L_3oCVTZOWhvAdJfylB3QNbTXa/exec";
+
+    let state = { status: "empty" };
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // --- SECURITY FIX ---
+    let isViewer = true;
+    if (urlParams.get('mode') !== 'view') {
+        const pin = prompt("Arbiter Access Required.\nPlease enter the Arbiter PIN to manage the tournament:\n(Default PIN is: admin123)");
+        if (pin === "admin123") {
+            isViewer = false;
+        } else {
+            alert("Incorrect PIN. Switching to Viewer mode.");
+            window.history.replaceState(null, '', window.location.pathname + '?mode=view');
+            isViewer = true;
+        }
+    }
+
+    // --- SEARCH FILTER FUNCTIONS ---
+    function filterStandings() {
+        let input = document.getElementById('searchStandings').value.toLowerCase();
+        let rows = document.getElementById('standingsBody').getElementsByTagName('tr');
+        for (let row of rows) {
+            let playerName = row.getElementsByTagName('button')[0].innerText.toLowerCase();
+            row.style.display = playerName.includes(input) ? '' : 'none';
+        }
+    }
+
+    function filterPairings() {
+        let input = document.getElementById('searchPairings').value.toLowerCase();
+        
+        // Filter regular match cards
+        let matches = document.querySelectorAll('.match-card');
+        matches.forEach(match => {
+            let textContent = match.innerText.toLowerCase();
+            match.style.display = textContent.includes(input) ? '' : 'none';
+        });
+
+        // Filter the Bye allocated card if it exists
+        let byeCard = document.getElementById('byePlayer');
+        if (!byeCard.classList.contains('hidden')) {
+            let byeName = document.getElementById('byeName').innerText.toLowerCase();
+            if(input === "" || byeName.includes(input)) {
+                // Return to appropriate display type (flex with wrapping for mobile)
+                byeCard.style.display = 'flex'; 
+            } else {
+                byeCard.style.display = 'none';
+            }
+        }
+    }
+
+    async function init() {
+        try {
+            let res = await fetch(APPS_SCRIPT_URL, { redirect: "follow" });
+            let data = await res.json();
+            if (data && data.status !== "empty") {
+                state = data;
+                renderDashboard();
+                
+                if(isViewer) {
+                    document.getElementById('refreshMsg').innerText = "Live updates active...";
+                    setInterval(async () => {
+                        try {
+                            let liveRes = await fetch(APPS_SCRIPT_URL, { redirect: "follow" });
+                            let liveData = await liveRes.json();
+                            if (liveData && liveData.status !== "empty") {
+                                state = liveData;
+                                renderDashboard(); 
+                            }
+                        } catch(e) { console.log("Silent update fetch failed"); }
+                    }, 30000); // 30 seconds
+                }
+
+            } else {
+                if (isViewer) document.getElementById('loading').innerHTML = "<p class='font-bold text-slate-500'>No active tournament found.</p>";
+                else showView('view-setup');
+            }
+        } catch (e) {
+            console.error(e);
+            document.getElementById('loading').innerHTML = "<p class='font-bold text-red-600'>Connection error. Please check your network.</p>";
+        }
+    }
+
+    async function syncBackend(action = "save") {
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('refreshMsg').innerText = "Saving to Database...";
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                redirect: "follow",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: action, data: state })
+            });
+        } catch (e) {
+            console.error(e);
+            alert("Error saving data to Google Sheets.");
+        }
+        document.getElementById('loading').style.display = 'none';
+    }
+
+    function saveArbiterDraft() {
+        if (isViewer) return;
+        let draft = {};
+        document.querySelectorAll('#pairingsList input[type="checkbox"]').forEach(cb => {
+            if(cb.checked) draft[cb.id] = true;
+        });
+        document.querySelectorAll('#pairingsList input[type="radio"]:checked').forEach(rb => {
+            draft[rb.name] = rb.value;
+        });
+        localStorage.setItem('chess_draft', JSON.stringify({ round: state.currentRound, data: draft }));
+    }
+
+    function restoreArbiterDraft() {
+        if (isViewer) return;
+        let stored = localStorage.getItem('chess_draft');
+        if (stored) {
+            stored = JSON.parse(stored);
+            if (stored.round === state.currentRound) {
+                let draft = stored.data;
+                for (let key in draft) {
+                    let cb = document.getElementById(key); 
+                    if (cb) cb.checked = true;
+                    let rb = document.querySelector(`input[name="${key}"][value="${draft[key]}"]`); 
+                    if (rb) rb.checked = true;
+                }
+            }
+        }
+    }
+
+    async function startTournament() {
+        const name = document.getElementById('tName').value;
+        const rounds = parseInt(document.getElementById('tRounds').value);
+        const playersRaw = document.getElementById('tPlayers').value.split('\n').filter(p => p.trim() !== '');
+
+        if (!name || !rounds || playersRaw.length < 2) return alert("Please fill all details and add at least 2 players.");
+
+        state = {
+            title: name,
+            totalRounds: rounds,
+            currentRound: 1,
+            status: "ongoing",
+            players: playersRaw.map((p, i) => ({
+                id: i, name: p.trim(), points: 0, illegals: 0, 
+                opponents: [], colors: [], results: [], hasBye: false
+            })),
+            pairings: []
+        };
+
+        generatePairings();
+        localStorage.removeItem('chess_draft');
+        await syncBackend();
+        renderDashboard();
+    }
+
+    function generatePairings() {
+        let toPair = [...state.players];
+        let currentMatches = [];
+        let byePlayer = null;
+
+        if (toPair.length % 2 !== 0) {
+            toPair.sort((a, b) => a.points - b.points); 
+            for (let i = 0; i < toPair.length; i++) {
+                if (!toPair[i].hasBye) {
+                    byePlayer = toPair.splice(i, 1)[0];
+                    break;
+                }
+            }
+            if (!byePlayer) byePlayer = toPair.pop(); 
+        }
+
+        toPair.sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            return a.illegals - b.illegals;
+        });
+
+        while (toPair.length > 1) {
+            let p1 = toPair.shift();
+            let p2Index = 0;
+            while (p2Index < toPair.length && p1.opponents.includes(toPair[p2Index].id)) p2Index++;
+            if (p2Index >= toPair.length) p2Index = 0; 
+            let p2 = toPair.splice(p2Index, 1)[0];
+
+            let p1W = p1.colors.filter(c => c === 'W').length;
+            let p2W = p2.colors.filter(c => c === 'W').length;
+            
+            if (p1W > p2W) currentMatches.push({ w: p2.id, b: p1.id, resW: null, resB: null });
+            else currentMatches.push({ w: p1.id, b: p2.id, resW: null, resB: null });
+        }
+
+        state.pairings.push({ round: state.currentRound, matches: currentMatches, bye: byePlayer ? byePlayer.id : null });
+    }
+
+    function renderDashboard() {
+        showView('view-dashboard');
+        
+        document.getElementById('tournamentTitle').innerText = state.title;
+        document.getElementById('tournamentTitle').style.display = 'block';
+        
+        const statusEl = document.getElementById('statusIndicator');
+        statusEl.style.display = 'flex';
+        if (state.status === "ongoing") {
+            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 pulse-ongoing"></span> <span class="text-green-700 bg-green-100 px-2 py-0.5 rounded border border-green-300">LIVE TOURNAMENT</span>`;
+        } else {
+            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span> <span class="text-slate-700 bg-slate-200 px-2 py-0.5 rounded border border-slate-300">TOURNAMENT COMPLETED</span>`;
+        }
+
+        document.getElementById('roundHeader').innerText = state.status === "over" ? "Final Standings" : `Round ${state.currentRound} of ${state.totalRounds}`;
+        if (!isViewer && state.status !== "over") document.getElementById('btnSubmitRound').classList.remove('hidden');
+        if (!isViewer) document.getElementById('btnDelete').classList.remove('hidden');
+
+        let sortedPlayers = [...state.players].sort((a,b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            return a.illegals - b.illegals; // Tiebreaker
+        });
+
+        document.getElementById('standingsBody').innerHTML = sortedPlayers.map((p, i) => `
+            <tr class="hover:bg-orange-50 transition border-b border-slate-100">
+                <td class="p-3 pl-4 text-center font-bold text-slate-500">${i+1}</td>
+                <td class="p-3">
+                    <button class="text-brand font-bold hover:text-orange-900 hover:underline transition text-left text-[15px]" onclick="openHistory(${p.id})">
+                        ${p.name}
+                    </button>
+                </td>
+                <td class="p-3 text-center text-lg">
+                    <span class="font-bold text-slate-900">${p.points}</span>
+                </td>
+                <td class="p-3 pr-4 text-center">
+                    ${p.illegals > 0 
+                        ? `<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-bold shadow-sm">${p.illegals}</span>` 
+                        : `<span class="text-slate-300 font-bold">-</span>`}
+                </td>
+            </tr>
+        `).join('');
+
+        if(state.status === "over") {
+            document.getElementById('pairingsList').innerHTML = '<div class="text-center py-10 bg-white rounded-lg border-2 border-slate-200"><p class="text-slate-600 font-bold text-xl">🏆 All matches concluded!</p></div>';
+            document.getElementById('byePlayer').classList.add('hidden');
+            
+            // Reapply searches if active
+            filterStandings();
+            filterPairings();
+            return;
+        }
+
+        let currentRoundData = state.pairings[state.currentRound - 1];
+        document.getElementById('pairingsList').innerHTML = currentRoundData.matches.map((m, i) => {
+            let w = state.players.find(p => p.id === m.w);
+            let b = state.players.find(p => p.id === m.b);
+            
+            let arbiterControls = isViewer ? "" : `
+                <div class="mt-4 pt-3 border-t border-slate-200 flex flex-col lg:flex-row flex-wrap gap-4 justify-center lg:justify-between items-center bg-slate-50 p-3 rounded-lg border">
+                    <!-- White Checkboxes -->
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider">White Penalties:</span>
+                        <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill1_${w.id}" onchange="saveArbiterDraft()"> 1st Ill
+                        </label>
+                        <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill2_${w.id}" onchange="saveArbiterDraft()"> 2nd Ill
+                        </label>
+                    </div>
+                    
+                    <!-- Result Selectors -->
+                    <div class="flex flex-wrap justify-center gap-1 sm:gap-2 bg-white p-1.5 rounded-lg shadow border border-slate-200">
+                        <label class="text-sm font-bold px-3 py-1.5 rounded cursor-pointer hover:bg-orange-100 transition flex items-center gap-2 border-r border-slate-100">
+                            <input type="radio" class="w-4 h-4" name="res_${i}" value="1-0" onchange="saveArbiterDraft()"> 1 - 0
+                        </label>
+                        <label class="text-sm font-bold px-3 py-1.5 rounded cursor-pointer hover:bg-orange-100 transition flex items-center gap-2 border-r border-slate-100">
+                            <input type="radio" class="w-4 h-4" name="res_${i}" value="0.5-0.5" onchange="saveArbiterDraft()"> ½ - ½
+                        </label>
+                        <label class="text-sm font-bold px-3 py-1.5 rounded cursor-pointer hover:bg-orange-100 transition flex items-center gap-2">
+                            <input type="radio" class="w-4 h-4" name="res_${i}" value="0-1" onchange="saveArbiterDraft()"> 0 - 1
+                        </label>
+                    </div>
+
+                    <!-- Black Checkboxes -->
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider">Black Penalties:</span>
+                        <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill1_${b.id}" onchange="saveArbiterDraft()"> 1st Ill
+                        </label>
+                        <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill2_${b.id}" onchange="saveArbiterDraft()"> 2nd Ill
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            // Note the 'match-card' class added here for searching
+            return `
+            <div class="match-card p-4 border-2 border-slate-200 rounded-xl bg-white shadow-sm hover:border-brand transition duration-200 relative overflow-hidden">
+                <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-lg font-bold">
+                    <div class="text-right flex items-center justify-end gap-2 text-slate-800">
+                        ${w.name}
+                        <span class="w-4 h-4 rounded-full bg-white border-2 border-slate-400 shadow" title="White"></span>
+                    </div>
+                    <div class="text-brand text-sm font-black bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg">VS</div>
+                    <div class="text-left flex items-center justify-start gap-2 text-slate-800">
+                        <span class="w-4 h-4 rounded-full bg-slate-900 border-2 border-slate-700 shadow" title="Black"></span>
+                        ${b.name}
+                    </div>
+                </div>
+                ${arbiterControls}
+            </div>`;
+        }).join('');
+
+        if (currentRoundData.bye !== null) {
+            let byeP = state.players.find(p => p.id === currentRoundData.bye);
+            document.getElementById('byeName').innerText = byeP.name;
+            document.getElementById('byePlayer').classList.remove('hidden');
+        } else {
+            document.getElementById('byePlayer').classList.add('hidden');
+        }
+
+        restoreArbiterDraft();
+        
+        // Reapply searches if user typed something while waiting for refresh
+        filterStandings();
+        filterPairings();
+    }
+
+    async function submitRound() {
+        let currentRoundData = state.pairings[state.currentRound - 1];
+        
+        for (let i = 0; i < currentRoundData.matches.length; i++) {
+            let m = currentRoundData.matches[i];
+            let res = document.querySelector(`input[name="res_${i}"]:checked`);
+            if (!res) return alert(`⚠️ Missing Result: Please select a winner/draw for Board ${i+1}`);
+            
+            let wP = state.players.find(p => p.id === m.w);
+            let bP = state.players.find(p => p.id === m.b);
+
+            if(!wP.results) wP.results = [];
+            if(!bP.results) bP.results = [];
+
+            if (res.value === "1-0") { 
+                wP.points += 1; 
+                wP.results.push('W'); bP.results.push('L');
+            }
+            else if (res.value === "0-1") { 
+                bP.points += 1; 
+                wP.results.push('L'); bP.results.push('W');
+            }
+            else { 
+                wP.points += 0.5; bP.points += 0.5; 
+                wP.results.push('D'); bP.results.push('D');
+            }
+
+            wP.opponents.push(bP.id); wP.colors.push('W');
+            bP.opponents.push(wP.id); bP.colors.push('B');
+
+            if(document.getElementById(`ill1_${wP.id}`).checked) wP.illegals += 1;
+            if(document.getElementById(`ill2_${wP.id}`).checked) wP.illegals += 1;
+            if(document.getElementById(`ill1_${bP.id}`).checked) bP.illegals += 1;
+            if(document.getElementById(`ill2_${bP.id}`).checked) bP.illegals += 1;
+        }
+
+        if (currentRoundData.bye !== null) {
+            let byeP = state.players.find(p => p.id === currentRoundData.bye);
+            byeP.points += 1;
+            byeP.hasBye = true;
+        }
+
+        if (state.currentRound >= state.totalRounds) {
+            state.status = "over";
+        } else {
+            state.currentRound++;
+            generatePairings();
+        }
+
+        localStorage.removeItem('chess_draft');
+        
+        await syncBackend();
+        renderDashboard();
+        
+        // Reset Search bars on new round load
+        document.getElementById('searchStandings').value = '';
+        document.getElementById('searchPairings').value = '';
+        filterStandings(); filterPairings();
+    }
+
+    // --- ACCURATE ROUND-BY-ROUND HISTORY LOGIC ---
+    function openHistory(playerId) {
+        let p = state.players.find(x => x.id === playerId);
+        document.getElementById('modalTitle').innerText = `${p.name}'s Match History`;
+        
+        let histHTML = '';
+        let matchIndex = 0; // Tracks their actual played match index
+        let roundsPlayed = state.status === "over" ? state.totalRounds : state.currentRound - 1;
+        
+        for (let r = 0; r < roundsPlayed; r++) {
+            let roundData = state.pairings[r];
+            if (!roundData) continue;
+            
+            // If the player received the Bye in THIS specific round
+            if (roundData.bye === playerId) {
+                histHTML += `
+                <li class="p-3 border-2 border-green-200 rounded-xl bg-green-50 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="text-[15px] font-bold text-green-800">
+                        <span class="font-black text-green-700 mr-2 bg-green-200 px-2 rounded">R${r+1}</span>
+                        Tournament Bye Allocated
+                    </div>
+                    <span class="px-3 py-1 text-xs font-black rounded-md bg-green-200 text-green-900 shadow-sm self-start sm:self-auto">+1 Point</span>
+                </li>`;
+            } 
+            // Otherwise, they played a match in this round
+            else {
+                let match = roundData.matches.find(m => m.w === playerId || m.b === playerId);
+                if (match && p.opponents[matchIndex] !== undefined) {
+                    let oppId = p.opponents[matchIndex];
+                    let oppName = state.players.find(x => x.id === oppId)?.name || "Unknown Player";
+                    
+                    let isWhite = p.colors[matchIndex] === 'W';
+                    let colorChip = isWhite 
+                        ? `<span class="inline-block w-3 h-3 rounded-full bg-white border-2 border-slate-400 mr-1 align-middle"></span> White` 
+                        : `<span class="inline-block w-3 h-3 rounded-full bg-slate-900 border-2 border-slate-700 mr-1 align-middle"></span> Black`;
+                    
+                    let resCode = (p.results && p.results[matchIndex]) ? p.results[matchIndex] : null;
+                    let badgeHTML = '';
+                    
+                    if (resCode === 'W') badgeHTML = `<span class="px-3 py-1 text-xs font-black rounded-md bg-green-100 text-green-700 border border-green-200 shadow-sm">WON</span>`;
+                    else if (resCode === 'L') badgeHTML = `<span class="px-3 py-1 text-xs font-black rounded-md bg-red-100 text-red-700 border border-red-200 shadow-sm">LOST</span>`;
+                    else if (resCode === 'D') badgeHTML = `<span class="px-3 py-1 text-xs font-black rounded-md bg-slate-200 text-slate-700 border border-slate-300 shadow-sm">DRAW</span>`;
+                    else badgeHTML = `<span class="px-3 py-1 text-xs font-bold rounded-md bg-slate-100 text-slate-400">N/A</span>`;
+
+                    histHTML += `
+                    <li class="p-3 border border-slate-200 rounded-xl bg-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="text-[15px]">
+                            <span class="font-black text-slate-500 mr-2 bg-slate-100 px-2 rounded">R${r+1}</span>
+                            <span class="text-slate-600 font-bold">${colorChip}</span> 
+                            <span class="text-slate-400 mx-1 text-xs">vs</span> 
+                            <span class="font-bold text-slate-900">${oppName}</span>
+                        </div>
+                        <div class="self-start sm:self-auto">${badgeHTML}</div>
+                    </li>`;
+                    
+                    matchIndex++;
+                }
+            }
+        }
+        
+        if(histHTML === "") histHTML = "<li class='text-slate-500 font-bold text-center py-6'>No matches played yet.</li>";
+
+        document.getElementById('modalHistory').innerHTML = histHTML;
+        document.getElementById('historyModal').classList.add('active');
+    }
+
+    function closeModal() { document.getElementById('historyModal').classList.remove('active'); }
+
+    function showView(id) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('view-setup').classList.add('hidden');
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function copyViewerLink() {
+        const url = window.location.origin + window.location.pathname + "?mode=view";
+        navigator.clipboard.writeText(url);
+        alert("🔗 Permanent Viewer Link copied!\nShare this with students. It will auto-refresh for them every 30 seconds.");
+    }
+
+    async function deleteTournament() {
+        if(confirm("⚠️ DANGER: Are you sure you want to completely delete all tournament data? This cannot be undone.")) {
+            localStorage.removeItem('chess_draft');
+            await syncBackend("delete");
+            window.location.reload();
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
