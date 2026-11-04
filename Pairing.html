@@ -208,7 +208,7 @@
     // --- SECURITY FIX ---
     let isViewer = true;
     if (urlParams.get('mode') !== 'view') {
-        const pin = prompt("Arbiter Access Required.\nPlease enter the Arbiter PIN to manage the tournament:\n(Default PIN is: admin123)");
+        const pin = prompt("Arbiter Access Required.\nPlease enter the Arbiter PIN to manage the tournament");
         if (pin === "admin123") {
             isViewer = false;
         } else {
