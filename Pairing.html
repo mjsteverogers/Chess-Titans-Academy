@@ -33,6 +33,30 @@
 
         .pulse-ongoing { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* LIVE Animations */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .live-red-pulse {
+            animation: pulse-red 1.5s infinite;
+        }
+        
+        @keyframes clash {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-4px) rotate(15deg) scale(1.2); }
+        }
+        .animate-clash {
+            display: inline-block;
+            animation: clash 0.8s ease-in-out infinite;
+        }
+        .animate-clash-delay {
+            display: inline-block;
+            animation: clash 0.8s ease-in-out infinite;
+            animation-delay: 0.4s;
+        }
         
         .modal { 
             opacity: 0; pointer-events: none; 
@@ -51,7 +75,6 @@
     <nav class="w-full bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col items-center text-center">
             
-            <!-- Replace 'logo.png' with your actual logo file name -->
             <img src="" alt="Chess Titans Logo" class="h-16 w-auto object-contain mb-2" onerror="this.style.display='none'">
             
             <h1 class="text-2xl font-bold tracking-tight text-slate-800 uppercase flex items-center gap-2">
@@ -119,9 +142,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <!-- Standings Column -->
-                <div class="lg:col-span-1">
+                <div class="xl:col-span-1">
                     <div class="bg-white/95 backdrop-blur shadow-md border border-slate-200 rounded-xl overflow-hidden h-full flex flex-col">
                         
                         <!-- Search Box for Standings -->
@@ -138,10 +161,11 @@
                             <table class="w-full text-left text-sm whitespace-nowrap">
                                 <thead class="bg-white border-b border-slate-200 text-slate-500 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
                                     <tr>
-                                        <th class="p-3 pl-4 w-12 text-center">#</th>
+                                        <th class="p-3 pl-4 w-10 text-center">#</th>
                                         <th class="p-3">Player</th>
-                                        <th class="p-3 text-center w-16">Pts</th>
-                                        <th class="p-3 pr-4 text-center w-20">Penalties</th>
+                                        <th class="p-3 text-center w-12">Pts</th>
+                                        <th class="p-3 text-center w-16">Penalties</th>
+                                        <th class="p-3 pr-4 text-center w-24">Perf. Rating</th>
                                     </tr>
                                 </thead>
                                 <tbody id="standingsBody" class="divide-y divide-slate-100"></tbody>
@@ -151,7 +175,7 @@
                 </div>
 
                 <!-- Pairings Column -->
-                <div class="lg:col-span-2">
+                <div class="xl:col-span-2">
                     <div class="bg-white/95 backdrop-blur shadow-md border border-slate-200 rounded-xl p-4 sm:p-6 flex flex-col h-full">
                         
                         <!-- Search Box for Pairings -->
@@ -167,7 +191,7 @@
                         <div class="overflow-y-auto max-h-[60vh] pr-2 space-y-4">
                             <div id="pairingsList" class="space-y-4"></div>
                             
-                            <!-- Added 'bye-card' class to filter correctly -->
+                            <!-- Bye allocated card -->
                             <div id="byePlayer" class="bye-card mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 hidden">
                                 <span class="font-bold text-green-800 flex items-center gap-2">👋 BYE ALLOCATED: <span id="byeName"></span></span>
                                 <span class="px-2 py-1 bg-green-200 text-green-900 text-xs font-bold rounded">+1 Point</span>
@@ -200,7 +224,7 @@
     </div>
 
 <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzC-zvvZUqkFplMEWUgz9KYYVC8ZVt3772sV0l4Y-L_3oCVTZOWhvAdJfylB3QNbTXa/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZiEy5_Nf2-cNdVCUzQThBcKmkWFxDQ5WzvGA1IEAAZDp7-_lRRg-MWP4SSNxpaB7N/exec";
 
     let state = { status: "empty" };
     const urlParams = new URLSearchParams(window.location.search);
@@ -208,7 +232,7 @@
     // --- SECURITY FIX ---
     let isViewer = true;
     if (urlParams.get('mode') !== 'view') {
-        const pin = prompt("Arbiter Access Required.\nPlease enter the Arbiter PIN to manage the tournament");
+        const pin = prompt("Arbiter Access Required.\nPlease enter the Arbiter PIN to manage the tournament:");
         if (pin === "admin123") {
             isViewer = false;
         } else {
@@ -231,19 +255,16 @@
     function filterPairings() {
         let input = document.getElementById('searchPairings').value.toLowerCase();
         
-        // Filter regular match cards
         let matches = document.querySelectorAll('.match-card');
         matches.forEach(match => {
             let textContent = match.innerText.toLowerCase();
             match.style.display = textContent.includes(input) ? '' : 'none';
         });
 
-        // Filter the Bye allocated card if it exists
         let byeCard = document.getElementById('byePlayer');
         if (!byeCard.classList.contains('hidden')) {
             let byeName = document.getElementById('byeName').innerText.toLowerCase();
             if(input === "" || byeName.includes(input)) {
-                // Return to appropriate display type (flex with wrapping for mobile)
                 byeCard.style.display = 'flex'; 
             } else {
                 byeCard.style.display = 'none';
@@ -270,9 +291,8 @@
                                 renderDashboard(); 
                             }
                         } catch(e) { console.log("Silent update fetch failed"); }
-                    }, 30000); // 30 seconds
+                    }, 30000);
                 }
-
             } else {
                 if (isViewer) document.getElementById('loading').innerHTML = "<p class='font-bold text-slate-500'>No active tournament found.</p>";
                 else showView('view-setup');
@@ -298,6 +318,78 @@
             alert("Error saving data to Google Sheets.");
         }
         document.getElementById('loading').style.display = 'none';
+    }
+
+    // --- NEW: WITHDRAW PLAYER FUNCTIONALITY ---
+    async function toggleWithdraw(id) {
+        if (isViewer) return;
+        let player = state.players.find(p => p.id === id);
+        if (!player) return;
+        
+        if (!player.withdrawn) {
+            if (!confirm(`Are you sure you want to withdraw ${player.name}? They will NOT be paired in future rounds.`)) return;
+            player.withdrawn = true;
+        } else {
+            if (!confirm(`Re-enter ${player.name} into the tournament? They will be paired in the next round.`)) return;
+            player.withdrawn = false;
+        }
+        
+        // Immediately sync to save this state
+        await syncBackend();
+        renderDashboard();
+    }
+
+    function handleIllegal(boardIndex, color, playerId) {
+        if (isViewer) return;
+        
+        let ill1 = document.getElementById(`ill1_${playerId}`);
+        let ill2 = document.getElementById(`ill2_${playerId}`);
+        
+        // Auto check 1st illegal if 2nd is checked
+        if (ill2 && ill2.checked && ill1) {
+            ill1.checked = true;
+        }
+
+        // Auto assign win to opponent on 2nd illegal
+        if (ill2 && ill2.checked) {
+            let radioW = document.querySelector(`input[name="res_${boardIndex}"][value="1-0"]`);
+            let radioB = document.querySelector(`input[name="res_${boardIndex}"][value="0-1"]`);
+            
+            if (color === 'W' && radioB) radioB.checked = true;
+            if (color === 'B' && radioW) radioW.checked = true;
+        }
+        
+        updateBoardUI();
+        saveArbiterDraft();
+    }
+
+    function updateBoardUI() {
+        if (isViewer) return;
+        let matches = document.querySelectorAll('.match-card');
+        matches.forEach((card, i) => {
+            let res = document.querySelector(`input[name="res_${i}"]:checked`);
+            let badge = document.getElementById(`status-badge-${i}`);
+            
+            if (res) {
+                // Decision made -> Red Highlight
+                card.classList.remove('bg-white', 'border-slate-200');
+                card.classList.add('bg-red-50', 'border-red-500');
+                if(badge) {
+                    badge.innerText = 'RESULT RECORDED';
+                    badge.classList.remove('text-slate-400');
+                    badge.classList.add('text-red-600');
+                }
+            } else {
+                // Ongoing -> Default Style
+                card.classList.remove('bg-red-50', 'border-red-500');
+                card.classList.add('bg-white', 'border-slate-200');
+                if(badge) {
+                    badge.innerText = 'Match in progress';
+                    badge.classList.remove('text-red-600');
+                    badge.classList.add('text-slate-400');
+                }
+            }
+        });
     }
 
     function saveArbiterDraft() {
@@ -327,6 +419,7 @@
                 }
             }
         }
+        updateBoardUI(); // Apply coloring to loaded draft choices
     }
 
     async function startTournament() {
@@ -343,7 +436,7 @@
             status: "ongoing",
             players: playersRaw.map((p, i) => ({
                 id: i, name: p.trim(), points: 0, illegals: 0, 
-                opponents: [], colors: [], results: [], hasBye: false
+                opponents: [], colors: [], results: [], hasBye: false, performance: 0, withdrawn: false
             })),
             pairings: []
         };
@@ -355,7 +448,8 @@
     }
 
     function generatePairings() {
-        let toPair = [...state.players];
+        // Only pair players who have not withdrawn
+        let toPair = state.players.filter(p => !p.withdrawn);
         let currentMatches = [];
         let byePlayer = null;
 
@@ -372,6 +466,7 @@
 
         toPair.sort((a, b) => {
             if (b.points !== a.points) return b.points - a.points;
+            if (b.performance !== a.performance) return b.performance - a.performance;
             return a.illegals - b.illegals;
         });
 
@@ -392,6 +487,22 @@
         state.pairings.push({ round: state.currentRound, matches: currentMatches, bye: byePlayer ? byePlayer.id : null });
     }
 
+    function calculatePerformances() {
+        state.players.forEach(p => {
+            let bh = 0; 
+            p.opponents.forEach(oppId => {
+                let opp = state.players.find(x => x.id === oppId);
+                if(opp) bh += opp.points;
+            });
+            
+            if (p.results.length > 0 || p.hasBye) {
+                p.performance = Math.round(1000 + (p.points * 100) + (bh * 15) - (p.illegals * 40));
+            } else {
+                p.performance = 0;
+            }
+        });
+    }
+
     function renderDashboard() {
         showView('view-dashboard');
         
@@ -400,8 +511,15 @@
         
         const statusEl = document.getElementById('statusIndicator');
         statusEl.style.display = 'flex';
+        
         if (state.status === "ongoing") {
-            statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 pulse-ongoing"></span> <span class="text-green-700 bg-green-100 px-2 py-0.5 rounded border border-green-300">LIVE TOURNAMENT</span>`;
+            statusEl.innerHTML = `
+                <span class="w-3 h-3 rounded-full bg-red-600 live-red-pulse"></span> 
+                <span class="text-red-700 bg-red-100 px-3 py-1 rounded border border-red-300 flex items-center gap-2 font-bold shadow-sm">
+                    <span class="animate-clash text-lg">♘</span> 
+                    LIVE TOURNAMENT 
+                    <span class="animate-clash-delay text-lg">♚</span>
+                </span>`;
         } else {
             statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span> <span class="text-slate-700 bg-slate-200 px-2 py-0.5 rounded border border-slate-300">TOURNAMENT COMPLETED</span>`;
         }
@@ -410,26 +528,43 @@
         if (!isViewer && state.status !== "over") document.getElementById('btnSubmitRound').classList.remove('hidden');
         if (!isViewer) document.getElementById('btnDelete').classList.remove('hidden');
 
+        calculatePerformances();
+
         let sortedPlayers = [...state.players].sort((a,b) => {
-            if (b.points !== a.points) return b.points - a.points;
-            return a.illegals - b.illegals; // Tiebreaker
+            if (b.points !== a.points) return b.points - a.points; 
+            if (b.performance !== a.performance) return b.performance - a.performance; 
+            return a.illegals - b.illegals; 
         });
 
         document.getElementById('standingsBody').innerHTML = sortedPlayers.map((p, i) => `
-            <tr class="hover:bg-orange-50 transition border-b border-slate-100">
+            <tr class="hover:bg-orange-50 transition border-b border-slate-100 ${p.withdrawn ? 'bg-slate-50 opacity-60' : ''}">
                 <td class="p-3 pl-4 text-center font-bold text-slate-500">${i+1}</td>
                 <td class="p-3">
-                    <button class="text-brand font-bold hover:text-orange-900 hover:underline transition text-left text-[15px]" onclick="openHistory(${p.id})">
-                        ${p.name}
-                    </button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button class="text-brand font-bold hover:text-orange-900 hover:underline transition text-left text-[15px] ${p.withdrawn ? 'line-through text-slate-500' : ''}" onclick="openHistory(${p.id})">
+                            ${p.name}
+                        </button>
+                        ${p.withdrawn ? `<span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded shadow-sm uppercase tracking-wider">Withdrawn</span>` : ''}
+                        
+                        ${!isViewer && state.status !== 'over' ? `
+                            <button onclick="toggleWithdraw(${p.id})" class="text-[10px] font-bold px-2 py-0.5 rounded shadow-sm transition ${p.withdrawn ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}">
+                                ${p.withdrawn ? 'Re-enter' : 'Withdraw'}
+                            </button>
+                        ` : ''}
+                    </div>
                 </td>
                 <td class="p-3 text-center text-lg">
                     <span class="font-bold text-slate-900">${p.points}</span>
                 </td>
-                <td class="p-3 pr-4 text-center">
+                <td class="p-3 text-center">
                     ${p.illegals > 0 
                         ? `<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-bold shadow-sm">${p.illegals}</span>` 
                         : `<span class="text-slate-300 font-bold">-</span>`}
+                </td>
+                <td class="p-3 pr-4 text-center">
+                    <span class="font-bold text-brand bg-orange-50 border border-orange-200 px-2 py-1 rounded shadow-sm whitespace-nowrap">
+                        ${p.performance > 0 ? p.performance + ' ⚡' : '-'}
+                    </span>
                 </td>
             </tr>
         `).join('');
@@ -438,7 +573,6 @@
             document.getElementById('pairingsList').innerHTML = '<div class="text-center py-10 bg-white rounded-lg border-2 border-slate-200"><p class="text-slate-600 font-bold text-xl">🏆 All matches concluded!</p></div>';
             document.getElementById('byePlayer').classList.add('hidden');
             
-            // Reapply searches if active
             filterStandings();
             filterPairings();
             return;
@@ -455,23 +589,23 @@
                     <div class="flex flex-wrap items-center justify-center gap-3">
                         <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider">White Penalties:</span>
                         <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded" id="ill1_${w.id}" onchange="saveArbiterDraft()"> 1st Ill
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill1_${w.id}" onchange="handleIllegal(${i}, 'W', ${w.id})"> 1st Ill
                         </label>
                         <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded" id="ill2_${w.id}" onchange="saveArbiterDraft()"> 2nd Ill
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill2_${w.id}" onchange="handleIllegal(${i}, 'W', ${w.id})"> 2nd Ill
                         </label>
                     </div>
                     
                     <!-- Result Selectors -->
                     <div class="flex flex-wrap justify-center gap-1 sm:gap-2 bg-white p-1.5 rounded-lg shadow border border-slate-200">
                         <label class="text-sm font-bold px-3 py-1.5 rounded cursor-pointer hover:bg-orange-100 transition flex items-center gap-2 border-r border-slate-100">
-                            <input type="radio" class="w-4 h-4" name="res_${i}" value="1-0" onchange="saveArbiterDraft()"> 1 - 0
+                            <input type="radio" class="w-4 h-4" name="res_${i}" value="1-0" onchange="updateBoardUI(); saveArbiterDraft()"> 1 - 0
                         </label>
                         <label class="text-sm font-bold px-3 py-1.5 rounded cursor-pointer hover:bg-orange-100 transition flex items-center gap-2 border-r border-slate-100">
-                            <input type="radio" class="w-4 h-4" name="res_${i}" value="0.5-0.5" onchange="saveArbiterDraft()"> ½ - ½
+                            <input type="radio" class="w-4 h-4" name="res_${i}" value="0.5-0.5" onchange="updateBoardUI(); saveArbiterDraft()"> ½ - ½
                         </label>
                         <label class="text-sm font-bold px-3 py-1.5 rounded cursor-pointer hover:bg-orange-100 transition flex items-center gap-2">
-                            <input type="radio" class="w-4 h-4" name="res_${i}" value="0-1" onchange="saveArbiterDraft()"> 0 - 1
+                            <input type="radio" class="w-4 h-4" name="res_${i}" value="0-1" onchange="updateBoardUI(); saveArbiterDraft()"> 0 - 1
                         </label>
                     </div>
 
@@ -479,24 +613,29 @@
                     <div class="flex flex-wrap items-center justify-center gap-3">
                         <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider">Black Penalties:</span>
                         <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded" id="ill1_${b.id}" onchange="saveArbiterDraft()"> 1st Ill
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill1_${b.id}" onchange="handleIllegal(${i}, 'B', ${b.id})"> 1st Ill
                         </label>
                         <label class="text-xs font-bold text-red-700 flex items-center gap-1.5 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded" id="ill2_${b.id}" onchange="saveArbiterDraft()"> 2nd Ill
+                            <input type="checkbox" class="w-4 h-4 rounded" id="ill2_${b.id}" onchange="handleIllegal(${i}, 'B', ${b.id})"> 2nd Ill
                         </label>
                     </div>
                 </div>
             `;
 
-            // Note the 'match-card' class added here for searching
             return `
-            <div class="match-card p-4 border-2 border-slate-200 rounded-xl bg-white shadow-sm hover:border-brand transition duration-200 relative overflow-hidden">
+            <div id="match-card-${i}" class="match-card p-4 border-2 border-slate-200 rounded-xl bg-white shadow-sm hover:border-brand transition duration-200 relative overflow-hidden">
+                <!-- Board Header -->
+                <div class="mb-4 pb-2 border-b border-slate-100 flex justify-between items-center">
+                    <span class="bg-slate-800 text-white text-xs font-black px-3 py-1 rounded shadow-sm tracking-wider">BOARD ${i + 1}</span>
+                    <span id="status-badge-${i}" class="text-xs font-bold text-slate-400">Match in progress</span>
+                </div>
+
                 <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-lg font-bold">
                     <div class="text-right flex items-center justify-end gap-2 text-slate-800">
                         ${w.name}
                         <span class="w-4 h-4 rounded-full bg-white border-2 border-slate-400 shadow" title="White"></span>
                     </div>
-                    <div class="text-brand text-sm font-black bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg">VS</div>
+                    <div class="text-brand text-sm font-black bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg shadow-sm">VS</div>
                     <div class="text-left flex items-center justify-start gap-2 text-slate-800">
                         <span class="w-4 h-4 rounded-full bg-slate-900 border-2 border-slate-700 shadow" title="Black"></span>
                         ${b.name}
@@ -516,7 +655,6 @@
 
         restoreArbiterDraft();
         
-        // Reapply searches if user typed something while waiting for refresh
         filterStandings();
         filterPairings();
     }
@@ -563,6 +701,8 @@
             byeP.hasBye = true;
         }
 
+        calculatePerformances();
+
         if (state.currentRound >= state.totalRounds) {
             state.status = "over";
         } else {
@@ -575,26 +715,23 @@
         await syncBackend();
         renderDashboard();
         
-        // Reset Search bars on new round load
         document.getElementById('searchStandings').value = '';
         document.getElementById('searchPairings').value = '';
         filterStandings(); filterPairings();
     }
 
-    // --- ACCURATE ROUND-BY-ROUND HISTORY LOGIC ---
     function openHistory(playerId) {
         let p = state.players.find(x => x.id === playerId);
         document.getElementById('modalTitle').innerText = `${p.name}'s Match History`;
         
         let histHTML = '';
-        let matchIndex = 0; // Tracks their actual played match index
+        let matchIndex = 0; 
         let roundsPlayed = state.status === "over" ? state.totalRounds : state.currentRound - 1;
         
         for (let r = 0; r < roundsPlayed; r++) {
             let roundData = state.pairings[r];
             if (!roundData) continue;
             
-            // If the player received the Bye in THIS specific round
             if (roundData.bye === playerId) {
                 histHTML += `
                 <li class="p-3 border-2 border-green-200 rounded-xl bg-green-50 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -605,7 +742,6 @@
                     <span class="px-3 py-1 text-xs font-black rounded-md bg-green-200 text-green-900 shadow-sm self-start sm:self-auto">+1 Point</span>
                 </li>`;
             } 
-            // Otherwise, they played a match in this round
             else {
                 let match = roundData.matches.find(m => m.w === playerId || m.b === playerId);
                 if (match && p.opponents[matchIndex] !== undefined) {
