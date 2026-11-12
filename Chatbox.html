@@ -48,14 +48,12 @@
 
     /* Smooth WhatsApp Message Pop-in Animations */
     @keyframes slideInRight {
-      0% { opacity: 0; transform: translateY(18px) translateX(15px) scale(0.92); }
-      70% { transform: translateY(-2px) translateX(0) scale(1.01); }
+      0% { opacity: 0; transform: translateY(10px) translateX(8px) scale(0.96); }
       100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
     }
 
     @keyframes slideInLeft {
-      0% { opacity: 0; transform: translateY(18px) translateX(-15px) scale(0.92); }
-      70% { transform: translateY(-2px) translateX(0) scale(1.01); }
+      0% { opacity: 0; transform: translateY(10px) translateX(-8px) scale(0.96); }
       100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
     }
 
@@ -75,15 +73,15 @@
     }
 
     .msg-anim-right {
-      animation: slideInRight 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: slideInRight 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .msg-anim-left {
-      animation: slideInLeft 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: slideInLeft 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .card-anim {
-      animation: fadeScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     /* Typing Dots Animation */
@@ -171,9 +169,7 @@
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-1 relative overflow-hidden flex flex-col w-full bg-white">
 
-      <!-- ==========================================
-           VIEW 0: ADMIN PASSWORD LOCK SCREEN
-           ========================================== -->
+      <!-- VIEW 0: ADMIN PASSWORD LOCK SCREEN -->
       <section id="adminAuthView" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 chess-chat-bg flex items-center justify-center">
         <div class="w-full max-w-sm sm:max-w-md bg-white rounded-2xl shadow-xl border-2 border-[#FF2B00] overflow-hidden card-anim my-auto">
           <div class="bg-[#FF2B00] text-white p-5 text-center">
@@ -210,9 +206,7 @@
         </div>
       </section>
 
-      <!-- ==========================================
-           VIEW 1: ADMIN SETUP, STUDENT ROSTER & CONTROL PANEL
-           ========================================== -->
+      <!-- VIEW 1: ADMIN SETUP, STUDENT ROSTER & CONTROL PANEL -->
       <section id="adminSetupView" class="hidden flex-1 overflow-y-auto p-3 sm:p-6 chess-chat-bg">
         <div class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 my-auto py-2">
           
@@ -319,9 +313,7 @@
         </div>
       </section>
 
-      <!-- ==========================================
-           VIEW 2: STUDENT STEP 1 - ENTER 4-DIGIT PIN
-           ========================================== -->
+      <!-- VIEW 2: STUDENT STEP 1 - ENTER 4-DIGIT PIN -->
       <section id="studentPinView" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 chess-chat-bg flex items-center justify-center">
         <div class="w-full max-w-sm sm:max-w-md bg-white rounded-2xl shadow-xl border-2 border-[#FF2B00] overflow-hidden card-anim my-auto">
           <div class="bg-[#FF2B00] text-white p-5 text-center">
@@ -349,9 +341,7 @@
         </div>
       </section>
 
-      <!-- ==========================================
-           VIEW 3: STUDENT STEP 2 - ENTER STUDENT NAME
-           ========================================== -->
+      <!-- VIEW 3: STUDENT STEP 2 - ENTER STUDENT NAME -->
       <section id="studentNameView" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 chess-chat-bg flex items-center justify-center">
         <div class="w-full max-w-sm sm:max-w-md bg-white rounded-2xl shadow-xl border-2 border-[#FF2B00] overflow-hidden card-anim my-auto">
           <div class="bg-[#FF2B00] text-white p-5 text-center">
@@ -381,9 +371,7 @@
         </div>
       </section>
 
-      <!-- ==========================================
-           VIEW 4: WHATSAPP STYLE LIVE CHAT BOX
-           ========================================== -->
+      <!-- VIEW 4: WHATSAPP STYLE LIVE CHAT BOX -->
       <section id="chatBoxView" class="hidden flex-1 flex flex-col overflow-hidden chess-chat-bg">
         
         <!-- Sub-bar 1: User Profile & Quick Actions -->
@@ -497,7 +485,7 @@
             <!-- Text Message Input -->
             <input id="messageInput" type="text" placeholder="Type a Group message, link, or chess move..."
               oninput="handleUserTyping()"
-              onkeydown="if(event.key==='Enter') sendChatMessage()"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); sendChatMessage(); }"
               class="flex-1 min-w-0 bg-orange-50/50 border-2 border-orange-200 focus:border-[#FF2B00] focus:bg-white rounded-full py-2 sm:py-2.5 px-4 sm:px-5 text-sm sm:text-base font-medium outline-none transition" />
 
             <!-- Send Button -->
@@ -514,9 +502,7 @@
 
   </div>
 
-  <!-- ==========================================
-       COMPULSORY NOTIFICATION PERMISSION GATE MODAL
-       ========================================== -->
+  <!-- COMPULSORY NOTIFICATION PERMISSION GATE MODAL -->
   <div id="compulsoryNotificationModal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border-4 border-[#FF2B00] card-anim">
       <div class="bg-[#FF2B00] text-white p-5 text-center">
@@ -532,7 +518,6 @@
           To receive live messages from <strong class="text-[#FF2B00]">CHESS TITANS ACADEMY</strong> instantly like WhatsApp, you <strong>must permit browser notifications</strong> before entering the Chat Box.
         </p>
 
-        <!-- Shown if user accidentally blocked notifications in browser -->
         <div id="notifBlockedHelpBox" class="hidden bg-red-50 border-2 border-red-200 rounded-xl p-3 text-left text-xs text-red-700 space-y-1">
           <p class="font-extrabold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Notifications are Blocked in your Browser!</p>
           <p>1. Click the <strong>Lock / Tune icon</strong> <i class="fa-solid fa-sliders"></i> on the left side of your browser address bar.</p>
@@ -578,34 +563,35 @@
   </div>
 
   <script>
-    /********************************************************************
-     * CONFIGURATION
-     ********************************************************************/
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCdZ_x40zlk1wbIxz_6FQiKiTQL6UDWT6M-I1Mu323FHiioPW2ib6-B2el1dqN08-k/exec";
+    // --- CONFIGURATION ---
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxItAh8ZZO--KNFtQUDdtvwBho0borIwOaKxLHGSRWJfRQroAngAU5tR3aMcP15gAG6Zw/exec";
 
     // Session duration: 1 Hour 20 Minutes = 80 Minutes = 4,800,000 ms
     const SESSION_DURATION_MS = 80 * 60 * 1000;
     const STORAGE_KEY = "CHESS_TITANS_CHAT_SESSION_V4";
     const ADMIN_AUTH_KEY = "CHESS_TITANS_ADMIN_AUTH_V4";
+    const POLL_INTERVAL_MS = 1200; // Ultra-fast 1.2s real-time sync
 
     // App State
     let appState = {
       isStudentLink: false,
       isAdminAuthenticated: false,
-      isLoggedIn: false,          // Strict flag: Notifications ONLY fire when true
+      isLoggedIn: false,
+      isFetching: false,          // Prevents overlapping poll requests
+      pendingSends: 0,            // Tracks optimistic in-flight messages
       adminPassword: "",
-      role: "student",            // 'student' or 'admin'
+      role: "student",
       senderName: "",
       pinVersion: "",
       loginTimestamp: 0,
-      chatMode: "GROUP",          // 'GROUP' or 'PERSONAL'
+      chatMode: "GROUP",
       adminSelectedStudent: "ALL_PERSONAL",
       activeStudents: [],
       allMessagesCache: [],
       knownMessageIds: new Set(),
       notifiedMessageIds: new Set(),
-      activeNotifications: [],    // Track open system notifications to close them on logout
-      pendingNotifCallback: null, // Callback after user grants compulsory notification permission
+      activeNotifications: [],
+      pendingNotifCallback: null,
       pollingInterval: null,
       timerInterval: null,
       typingTimeout: null,
@@ -616,10 +602,8 @@
       selectedMediaKind: ""
     };
 
-    // Web Audio API Context for WhatsApp-style Notification Chime
     let audioCtx = null;
 
-    // Initialize on load
     window.addEventListener("DOMContentLoaded", () => {
       const urlParams = new URLSearchParams(window.location.search);
       const mode = urlParams.get("mode");
@@ -657,17 +641,22 @@
           showView("adminAuthView");
         }
       }
+
+      // Instant sync when user switches back to tab
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && appState.isLoggedIn) {
+          fetchMessages(false);
+        }
+      });
     });
 
-    /********************************************************************
-     * COMPULSORY NOTIFICATION PERMISSION & REAL-TIME ALERT ENGINE
-     ********************************************************************/
+    // --- COMPULSORY NOTIFICATION PERMISSION & REAL-TIME ALERT ENGINE ---
     function isNotificationSupported() {
       return "Notification" in window;
     }
 
     function hasNotificationPermission() {
-      if (!isNotificationSupported()) return true; // Fallback if browser lacks Notification API
+      if (!isNotificationSupported()) return true;
       return Notification.permission === "granted";
     }
 
@@ -681,7 +670,6 @@
       }
     }
 
-    // Enforces compulsory notification permission before proceeding to callback
     function ensureCompulsoryNotification(callback) {
       if (hasNotificationPermission()) {
         callback();
@@ -702,7 +690,6 @@
     }
 
     async function requestCompulsoryNotificationPermission() {
-      // Unlock Web Audio Context on user gesture
       initAudioContext();
 
       if (!isNotificationSupported()) {
@@ -719,7 +706,6 @@
           updateNotificationBadgeUI();
           showToast("Notifications Enabled!");
 
-          // Send welcome test notification
           try {
             const welcomeNotif = new Notification("CHESS TITANS ACADEMY", {
               body: "Live Chat Notifications are now active!",
@@ -734,7 +720,6 @@
             cb();
           }
         } else {
-          // User denied or dismissed -> Keep modal open and show instructions
           document.getElementById("notifBlockedHelpBox").classList.remove("hidden");
           showToast("Permission is compulsory! Please allow notifications.");
         }
@@ -766,8 +751,8 @@
         const gain = audioCtx.createGain();
 
         osc.type = "sine";
-        osc.frequency.setValueAtTime(587.33, now);       // D5
-        osc.frequency.setValueAtTime(880.00, now + 0.11); // A5 chime
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.setValueAtTime(880.00, now + 0.11);
 
         gain.gain.setValueAtTime(0.18, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
@@ -780,9 +765,7 @@
       } catch (e) {}
     }
 
-    // Fires native browser notification + sound ONLY if user is currently logged in
     function triggerIncomingMessageNotification(msg) {
-      // STRICT RULE: Never notify if logged out or if the message was sent by me
       if (!appState.isLoggedIn || !appState.senderName) return;
 
       const isMe = (msg.sender.toLowerCase() === appState.senderName.toLowerCase()) && (msg.role === appState.role);
@@ -791,7 +774,6 @@
       if (appState.notifiedMessageIds.has(msg.id)) return;
       appState.notifiedMessageIds.add(msg.id);
 
-      // Play crisp WhatsApp-style chime
       playNotificationSound();
 
       const rolePrefix = msg.role === "admin" ? "👑 Coach " : "♟️ ";
@@ -806,10 +788,8 @@
         bodyText = (msg.mediaType === "video" ? "📹 " : "📷 ") + bodyText;
       }
 
-      // Show in-app toast alert if user is looking at the page
       showToast(`New message from ${msg.sender}`);
 
-      // Trigger Native System/Mobile Notification
       if (isNotificationSupported() && Notification.permission === "granted") {
         try {
           const notif = new Notification(notifTitle, {
@@ -853,9 +833,7 @@
       }
     }
 
-    /********************************************************************
-     * ADMIN MASTER PASSWORD & ACTIVE STUDENT ROSTER MANAGEMENT
-     ********************************************************************/
+    // --- ADMIN MASTER PASSWORD & ACTIVE STUDENT ROSTER MANAGEMENT ---
     async function verifyAdminMasterPassword() {
       const pwdInput = document.getElementById("adminMasterPwdInput");
       const pwd = pwdInput.value.trim();
@@ -879,7 +857,6 @@
         });
 
         if (res.success) {
-          // Enforce Compulsory Notification Permission for Admin
           ensureCompulsoryNotification(() => {
             appState.isAdminAuthenticated = true;
             appState.adminPassword = pwd;
@@ -952,7 +929,7 @@
               <i class="fa-solid fa-paper-plane"></i>
             </button>
             <button onclick="kickStudentFromAdmin('${escapeHtml(stu.name).replace(/'/g, "\\'")}')"
-              title="Delete / Kick Student"
+              title="Delete / Kick Student Permanently"
               class="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 text-xs font-bold px-2.5 py-1.5 rounded-lg transition flex items-center space-x-1">
               <i class="fa-solid fa-user-xmark"></i>
               <span>Delete</span>
@@ -1001,7 +978,20 @@
     }
 
     async function kickStudentFromAdmin(studentName) {
-      if (!confirm(`Remove "${studentName}" from the Chat Box? They will be logged out immediately and stop receiving notifications.`)) return;
+      if (!confirm(`Delete "${studentName}" from the Chat Box & Backend Database? They will be removed immediately and logged out.`)) return;
+
+      const cleanTarget = studentName.trim().toLowerCase();
+
+      // Optimistic Instant UI Removal (0ms wait)
+      appState.activeStudents = (appState.activeStudents || []).filter(
+        s => String(s.name).trim().toLowerCase() !== cleanTarget
+      );
+      appState.allMessagesCache = (appState.allMessagesCache || []).filter(
+        m => String(m.sender).trim().toLowerCase() !== cleanTarget && String(m.target || "").trim().toLowerCase() !== cleanTarget
+      );
+      renderAdminStudentList();
+      rerenderFilteredMessages();
+      showToast(`Deleting ${studentName} from backend...`);
 
       try {
         const res = await apiCall({
@@ -1013,12 +1003,12 @@
         if (res.success) {
           appState.activeStudents = res.activeStudents || [];
           renderAdminStudentList();
-          showToast(`${studentName} was removed from chat.`);
+          showToast(`${studentName} permanently deleted from chat & backend.`);
         } else {
           showToast(res.error || "Could not remove student.");
         }
       } catch (e) {
-        showToast("Error removing student.");
+        showToast("Error removing student from backend.");
       }
     }
 
@@ -1041,9 +1031,7 @@
       showView("studentPinView");
     }
 
-    /********************************************************************
-     * GROUP CHAT vs PERSONAL MESSAGE TABS
-     ********************************************************************/
+    // --- GROUP CHAT vs PERSONAL MESSAGE TABS ---
     function setChatMode(mode) {
       appState.chatMode = mode;
       const tabGroup = document.getElementById("tabGroupBtn");
@@ -1127,12 +1115,10 @@
         appState.knownMessageIds.add(msg.id);
         appendMessageBubble(msg);
       });
-      scrollToBottom();
+      scrollToBottom(false);
     }
 
-    /********************************************************************
-     * SESSION MANAGEMENT & STRICT LOGOUT NOTIFICATION STOPPER
-     ********************************************************************/
+    // --- SESSION MANAGEMENT & STRICT LOGOUT NOTIFICATION STOPPER ---
     function saveSessionToStorage() {
       const data = {
         role: appState.role,
@@ -1160,7 +1146,6 @@
       }
     }
 
-    // Completely stops polling, closes notifications, and marks user logged out
     function clearStudentSession() {
       localStorage.removeItem(STORAGE_KEY);
       appState.isLoggedIn = false;
@@ -1233,9 +1218,7 @@
       appState.timerInterval = setInterval(updateTimer, 1000);
     }
 
-    /********************************************************************
-     * NAVIGATION & VIEWS
-     ********************************************************************/
+    // --- NAVIGATION & VIEWS ---
     function showView(viewId) {
       ["adminAuthView", "adminSetupView", "studentPinView", "studentNameView", "chatBoxView"].forEach(id => {
         document.getElementById(id).classList.add("hidden");
@@ -1260,9 +1243,7 @@
       }
     }
 
-    /********************************************************************
-     * ADMIN PANEL FUNCTIONS
-     ********************************************************************/
+    // --- ADMIN PANEL FUNCTIONS ---
     async function openAdminPanel() {
       if (appState.isStudentLink) return;
       if (!appState.isAdminAuthenticated) {
@@ -1352,6 +1333,13 @@
       if (!appState.isAdminAuthenticated) return;
       if (!confirm("Are you sure you want to delete ALL chat messages & media for everyone?")) return;
 
+      // Optimistic instant clear
+      appState.allMessagesCache = [];
+      appState.knownMessageIds.clear();
+      appState.notifiedMessageIds.clear();
+      document.getElementById("messagesContainer").innerHTML = "";
+      renderEmptyState();
+
       try {
         const res = await apiCall({
           action: "clearAllMessages",
@@ -1359,11 +1347,6 @@
           deleteDriveFiles: true
         });
         if (res.success) {
-          appState.allMessagesCache = [];
-          appState.knownMessageIds.clear();
-          appState.notifiedMessageIds.clear();
-          document.getElementById("messagesContainer").innerHTML = "";
-          renderEmptyState();
           showToast("All messages & media deleted!");
         } else {
           showToast(res.error || "Delete failed.");
@@ -1373,9 +1356,7 @@
       }
     }
 
-    /********************************************************************
-     * STUDENT FLOW: PIN -> COMPULSORY NOTIFICATION -> NAME -> CHAT BOX
-     ********************************************************************/
+    // --- STUDENT FLOW: PIN -> COMPULSORY NOTIFICATION -> NAME -> CHAT BOX ---
     async function verifyStudentPin() {
       const pin = document.getElementById("studentPinInput").value.trim();
       const errEl = document.getElementById("pinErrorMsg");
@@ -1402,7 +1383,6 @@
           appState.pinVersion = res.pinVersion;
           document.getElementById("studentPinInput").value = "";
 
-          // Require Compulsory Notification Permission before entering Student Name
           ensureCompulsoryNotification(() => {
             showView("studentNameView");
             setTimeout(() => document.getElementById("studentNameInput").focus(), 100);
@@ -1427,7 +1407,6 @@
         return;
       }
 
-      // Double-check Compulsory Notification Permission before launching Chat
       ensureCompulsoryNotification(async () => {
         const btn = document.getElementById("enterChatBtn");
         btn.disabled = true;
@@ -1466,7 +1445,6 @@
         openAdminPanel();
         return;
       }
-      // Student Logout: Immediately stop polling & notifications
       clearStudentSession();
       showToast("Logged out. Notifications stopped.");
       showView("studentPinView");
@@ -1482,9 +1460,7 @@
       document.getElementById("kickedModal").classList.add("hidden");
     }
 
-    /********************************************************************
-     * LIVE TYPING INDICATOR
-     ********************************************************************/
+    // --- LIVE TYPING INDICATOR ---
     function handleUserTyping() {
       if (!appState.senderName || !appState.isLoggedIn) return;
       const now = Date.now();
@@ -1494,7 +1470,7 @@
         currentTarget = appState.role === "student" ? "ADMIN" : appState.adminSelectedStudent;
       }
 
-      if (now - appState.lastTypingSent > 2000) {
+      if (now - appState.lastTypingSent > 2200) {
         appState.lastTypingSent = now;
         apiCall({
           action: "setTyping",
@@ -1514,7 +1490,7 @@
           target: currentTarget,
           isTyping: false
         }).catch(() => {});
-      }, 2800);
+      }, 2600);
     }
 
     function renderTypingIndicator(typingUsers) {
@@ -1531,7 +1507,7 @@
         const t = u.target || "GROUP";
         if (appState.chatMode === "GROUP") return t === "GROUP";
         if (appState.role === "admin") return t !== "GROUP";
-        return t.toLowerCase() === appState.senderName.toLowerCase();
+        return t.toLowerCase() === appState.senderName.toLowerCase() || (u.role === "admin" && t.toLowerCase() === appState.senderName.toLowerCase());
       });
 
       if (others.length === 0) {
@@ -1546,9 +1522,7 @@
       bar.classList.remove("hidden");
     }
 
-    /********************************************************************
-     * REAL-TIME WHATSAPP CHAT ENGINE + NOTIFICATION DISPATCHER
-     ********************************************************************/
+    // --- REAL-TIME WHATSAPP CHAT ENGINE + OPTIMISTIC INSTANT SEND ---
     function launchChatBox() {
       initAudioContext();
       appState.isLoggedIn = true;
@@ -1583,7 +1557,7 @@
       fetchMessages(true);
 
       if (appState.pollingInterval) clearInterval(appState.pollingInterval);
-      appState.pollingInterval = setInterval(() => fetchMessages(false), 2200);
+      appState.pollingInterval = setInterval(() => fetchMessages(false), POLL_INTERVAL_MS);
     }
 
     function stopPolling() {
@@ -1594,11 +1568,13 @@
     }
 
     async function fetchMessages(isInitialLoad = false) {
-      // Do not poll or notify if user is logged out
       if (!appState.isLoggedIn) {
         stopPolling();
         return;
       }
+      // Prevent overlapping requests for maximum speed
+      if (appState.isFetching && !isInitialLoad) return;
+      appState.isFetching = true;
 
       try {
         const res = await apiCall({
@@ -1608,7 +1584,6 @@
           pinVersion: appState.pinVersion
         });
 
-        // Re-verify user didn't click Exit while request was in flight
         if (!appState.isLoggedIn) return;
 
         // 1. Check if Admin KICKED / DELETED this Student
@@ -1637,32 +1612,38 @@
 
         renderTypingIndicator(res.typingUsers || []);
 
-        const messages = res.messages || [];
+        const serverMessages = res.messages || [];
 
-        // Check for brand-new messages across BOTH Group & Personal to trigger Notifications
-        messages.forEach(msg => {
+        // Trigger notifications for any brand new messages
+        serverMessages.forEach(msg => {
           if (isInitialLoad) {
-            // Seed existing message IDs on initial load so old history doesn't spam notifications
             appState.notifiedMessageIds.add(msg.id);
           } else if (!appState.notifiedMessageIds.has(msg.id)) {
             triggerIncomingMessageNotification(msg);
           }
         });
 
-        appState.allMessagesCache = messages;
+        // Preserve any optimistic in-flight messages that haven't finished uploading yet
+        const optimisticMsgs = appState.allMessagesCache.filter(m => m.isOptimistic);
+        appState.allMessagesCache = [...serverMessages, ...optimisticMsgs];
 
         const container = document.getElementById("messagesContainer");
-        const visibleMessages = messages.filter(m => doesMessageMatchCurrentTab(m));
+        const visibleMessages = appState.allMessagesCache.filter(m => doesMessageMatchCurrentTab(m));
+        const visibleIdsSet = new Set(visibleMessages.map(m => m.id));
 
-        if (visibleMessages.length === 0 && appState.knownMessageIds.size > 0) {
-          appState.knownMessageIds.clear();
-          container.innerHTML = "";
-          renderEmptyState();
-          return;
-        }
+        // Remove any deleted messages from DOM (e.g. when Admin deletes a student or clears chat)
+        let removedAny = false;
+        appState.knownMessageIds.forEach(knownId => {
+          if (!visibleIdsSet.has(knownId)) {
+            const el = document.getElementById(`msg_wrap_${knownId}`);
+            if (el) el.remove();
+            appState.knownMessageIds.delete(knownId);
+            removedAny = true;
+          }
+        });
 
-        if (visibleMessages.length === 0 && isInitialLoad) {
-          renderEmptyState();
+        if (visibleMessages.length === 0) {
+          if (removedAny || isInitialLoad) renderEmptyState();
           return;
         }
 
@@ -1681,10 +1662,12 @@
         });
 
         if (hasNewMessage || isInitialLoad) {
-          scrollToBottom();
+          scrollToBottom(isInitialLoad ? false : true);
         }
       } catch (e) {
         console.error("Polling error:", e);
+      } finally {
+        appState.isFetching = false;
       }
     }
 
@@ -1710,6 +1693,9 @@
     }
 
     function getTickHtml(msg) {
+      if (msg.isOptimistic) {
+        return `<i id="tick_${msg.id}" title="Sending..." class="fa-regular fa-clock text-[10px] text-white/80"></i>`;
+      }
       const readers = Array.isArray(msg.readBy) ? msg.readBy : [];
       const isRead = readers.length > 0;
       const tooltip = isRead ? `Read by: ${readers.join(", ")}` : "Delivered";
@@ -1719,7 +1705,7 @@
 
     function updateMessageReadTick(msg) {
       const tickEl = document.getElementById(`tick_${msg.id}`);
-      if (!tickEl) return;
+      if (!tickEl || msg.isOptimistic) return;
       const readers = Array.isArray(msg.readBy) ? msg.readBy : [];
       const isRead = readers.length > 0;
       if (isRead) {
@@ -1738,6 +1724,7 @@
       const isPersonal = msg.target && msg.target !== "GROUP";
 
       const wrapper = document.createElement("div");
+      wrapper.id = `msg_wrap_${msg.id}`;
       wrapper.className = `flex w-full ${isMe ? "justify-end msg-anim-right" : "justify-start msg-anim-left"}`;
 
       const timeStr = formatTime(msg.timestamp);
@@ -1763,19 +1750,28 @@
       let mediaHtml = "";
       if (msg.mediaUrl) {
         if (msg.mediaType === "video") {
-          mediaHtml = `
-            <div class="mb-2 mt-1 overflow-hidden rounded-xl border border-white/20 bg-black">
-              <iframe src="${msg.mediaUrl}" class="w-full h-52 sm:h-64" allow="autoplay; fullscreen" allowfullscreen></iframe>
-              <a href="${msg.mediaUrl.replace('/preview', '/view')}" target="_blank" rel="noopener noreferrer"
-                class="block text-center text-[11px] font-bold py-1.5 bg-black/80 text-orange-300 hover:text-white transition">
-                <i class="fa-solid fa-up-right-from-square mr-1"></i> Open Full Video in New Tab
-              </a>
-            </div>
-          `;
+          if (msg.isOptimistic) {
+            mediaHtml = `
+              <div class="mb-2 mt-1 p-4 rounded-xl border border-white/20 bg-black/40 flex items-center space-x-2.5 text-xs font-bold text-white">
+                <i class="fa-solid fa-spinner fa-spin text-base"></i>
+                <span>Uploading Chess Video...</span>
+              </div>
+            `;
+          } else {
+            mediaHtml = `
+              <div class="mb-2 mt-1 overflow-hidden rounded-xl border border-white/20 bg-black">
+                <iframe src="${msg.mediaUrl}" class="w-full h-52 sm:h-64" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                <a href="${msg.mediaUrl.replace('/preview', '/view')}" target="_blank" rel="noopener noreferrer"
+                  class="block text-center text-[11px] font-bold py-1.5 bg-black/80 text-orange-300 hover:text-white transition">
+                  <i class="fa-solid fa-up-right-from-square mr-1"></i> Open Full Video in New Tab
+                </a>
+              </div>
+            `;
+          }
         } else {
           mediaHtml = `
             <div class="mb-2 mt-1 overflow-hidden rounded-xl border border-white/20 bg-black/5">
-              <img src="${msg.mediaUrl}" alt="Uploaded Media" onclick="openLightbox('${msg.mediaUrl}')"
+              <img id="img_${msg.id}" src="${msg.mediaUrl}" alt="Uploaded Media" onclick="openLightbox(this.src)"
                 class="max-h-60 sm:max-h-72 w-auto object-cover cursor-pointer hover:opacity-95 transition" loading="lazy" />
             </div>
           `;
@@ -1784,7 +1780,6 @@
 
       wrapper.innerHTML = `
         <div class="max-w-[85%] sm:max-w-[75%] md:max-w-[65%] px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-md ${bubbleColors}">
-          <!-- Top Sender Name Header -->
           <div class="text-[11px] sm:text-xs font-extrabold tracking-wide uppercase mb-1 flex flex-wrap items-center justify-between gap-2 ${nameBadgeColor}">
             <span class="truncate">${roleIcon}${escapeHtml(msg.sender)}</span>
             <div class="flex items-center space-x-1 shrink-0">
@@ -1793,12 +1788,10 @@
             </div>
           </div>
 
-          ${mediaHtml}
+          <div id="media_slot_${msg.id}">${mediaHtml}</div>
 
-          <!-- Message Text with Auto-Clickable Links -->
           ${msg.text ? `<p class="text-sm sm:text-[15px] leading-relaxed break-words font-medium">${formatMessageTextWithLinks(msg.text, isMe)}</p>` : ""}
 
-          <!-- Timestamp & Delivered/Read Double Tick -->
           <div class="text-[10px] mt-1 flex items-center justify-end space-x-1.5 ${isMe ? "text-orange-100" : "text-gray-400"}">
             <span>${timeStr}</span>
             ${isMe ? getTickHtml(msg) : ""}
@@ -1809,9 +1802,7 @@
       container.appendChild(wrapper);
     }
 
-    /********************************************************************
-     * SENDING MESSAGES & UPLOADING IMAGES / VIDEOS
-     ********************************************************************/
+    // --- SENDING MESSAGES & UPLOADING IMAGES / VIDEOS (INSTANT OPTIMISTIC UI) ---
     function handleMediaSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1849,7 +1840,7 @@
           const img = new Image();
           img.onload = function() {
             const canvas = document.createElement("canvas");
-            const MAX_WIDTH = 1000;
+            const MAX_WIDTH = 900;
             let width = img.width;
             let height = img.height;
 
@@ -1863,7 +1854,7 @@
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, width, height);
 
-            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.78);
             appState.selectedMediaBase64 = compressedDataUrl;
             appState.selectedMediaMime = "image/jpeg";
             appState.selectedMediaName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
@@ -1911,12 +1902,39 @@
         }
       }
 
-      const sendBtn = document.getElementById("sendMsgBtn");
-      sendBtn.disabled = true;
-      sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+      // Capture media & text before clearing input immediately
+      const mediaBase64ToSend = appState.selectedMediaBase64;
+      const mediaMimeToSend = appState.selectedMediaMime;
+      const mediaNameToSend = appState.selectedMediaName;
+      const mediaKindToSend = appState.selectedMediaKind;
 
-      if (appState.selectedMediaKind === "video") {
-        showToast("Uploading video to Google Drive... Please wait.");
+      // Clear input & refocus in 0ms so user can type next message immediately like WhatsApp
+      inputEl.value = "";
+      clearSelectedMedia();
+      inputEl.focus();
+
+      // Create Optimistic Message Bubble in 0ms
+      const tempId = "TEMP_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+      const optimisticMsg = {
+        id: tempId,
+        timestamp: new Date().toISOString(),
+        sender: appState.senderName,
+        role: appState.role,
+        text: text,
+        mediaUrl: hasMedia ? (mediaKindToSend === "image" ? mediaBase64ToSend : "optimistic_video") : "",
+        mediaType: hasMedia ? mediaKindToSend : "none",
+        readBy: [],
+        target: target,
+        isOptimistic: true
+      };
+
+      appState.allMessagesCache.push(optimisticMsg);
+      if (doesMessageMatchCurrentTab(optimisticMsg)) {
+        const emptyEl = document.getElementById("emptyChatPlaceholder");
+        if (emptyEl) emptyEl.remove();
+        appState.knownMessageIds.add(tempId);
+        appendMessageBubble(optimisticMsg);
+        scrollToBottom(true);
       }
 
       const payload = {
@@ -1926,13 +1944,10 @@
         text: text,
         target: target,
         pinVersion: appState.pinVersion,
-        mediaBase64: appState.selectedMediaBase64,
-        mimeType: appState.selectedMediaMime,
-        fileName: appState.selectedMediaName
+        mediaBase64: mediaBase64ToSend,
+        mimeType: mediaMimeToSend,
+        fileName: mediaNameToSend
       };
-
-      inputEl.value = "";
-      clearSelectedMedia();
 
       try {
         const res = await apiCall(payload);
@@ -1951,30 +1966,70 @@
         }
 
         if (res.success && res.message) {
-          appState.notifiedMessageIds.add(res.message.id);
-          appState.allMessagesCache.push(res.message);
-          if (doesMessageMatchCurrentTab(res.message) && !appState.knownMessageIds.has(res.message.id)) {
-            const emptyEl = document.getElementById("emptyChatPlaceholder");
-            if (emptyEl) emptyEl.remove();
-            appState.knownMessageIds.add(res.message.id);
-            appendMessageBubble(res.message);
-            scrollToBottom();
+          const realMsg = res.message;
+          appState.notifiedMessageIds.add(realMsg.id);
+
+          // Replace optimistic entry in cache with real server message
+          const idx = appState.allMessagesCache.findIndex(m => m.id === tempId);
+          if (idx !== -1) {
+            appState.allMessagesCache[idx] = realMsg;
+          } else {
+            appState.allMessagesCache.push(realMsg);
+          }
+
+          appState.knownMessageIds.delete(tempId);
+          appState.knownMessageIds.add(realMsg.id);
+
+          // Seamlessly upgrade DOM elements from tempId -> realMsg.id without re-rendering bubble
+          const wrapEl = document.getElementById(`msg_wrap_${tempId}`);
+          if (wrapEl) {
+            // If polling already inserted realMsg, remove temp duplicate
+            const existingRealWrap = document.getElementById(`msg_wrap_${realMsg.id}`);
+            if (existingRealWrap && existingRealWrap !== wrapEl) {
+              wrapEl.remove();
+            } else {
+              wrapEl.id = `msg_wrap_${realMsg.id}`;
+              const tickEl = document.getElementById(`tick_${tempId}`);
+              if (tickEl) {
+                tickEl.id = `tick_${realMsg.id}`;
+                tickEl.className = "fa-solid fa-check-double text-[11px] transition-colors duration-300 text-white/65";
+                tickEl.title = "Delivered";
+              }
+              if (realMsg.mediaType === "video" && realMsg.mediaUrl) {
+                const mediaSlot = document.getElementById(`media_slot_${tempId}`);
+                if (mediaSlot) {
+                  mediaSlot.id = `media_slot_${realMsg.id}`;
+                  mediaSlot.innerHTML = `
+                    <div class="mb-2 mt-1 overflow-hidden rounded-xl border border-white/20 bg-black">
+                      <iframe src="${realMsg.mediaUrl}" class="w-full h-52 sm:h-64" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                      <a href="${realMsg.mediaUrl.replace('/preview', '/view')}" target="_blank" rel="noopener noreferrer"
+                        class="block text-center text-[11px] font-bold py-1.5 bg-black/80 text-orange-300 hover:text-white transition">
+                        <i class="fa-solid fa-up-right-from-square mr-1"></i> Open Full Video in New Tab
+                      </a>
+                    </div>
+                  `;
+                }
+              }
+            }
           }
         } else {
+          removeOptimisticBubble(tempId);
           showToast(res.error || "Could not send message.");
         }
       } catch (err) {
+        removeOptimisticBubble(tempId);
         showToast("Network error while sending message.");
-      } finally {
-        sendBtn.disabled = false;
-        sendBtn.innerHTML = `<i class="fa-solid fa-paper-plane text-sm sm:text-base"></i>`;
-        inputEl.focus();
       }
     }
 
-    /********************************************************************
-     * UTILITIES & CLICKABLE URL DETECTOR
-     ********************************************************************/
+    function removeOptimisticBubble(tempId) {
+      appState.allMessagesCache = appState.allMessagesCache.filter(m => m.id !== tempId);
+      appState.knownMessageIds.delete(tempId);
+      const wrapEl = document.getElementById(`msg_wrap_${tempId}`);
+      if (wrapEl) wrapEl.remove();
+    }
+
+    // --- UTILITIES & CLICKABLE URL DETECTOR ---
     function formatMessageTextWithLinks(rawText, isMe) {
       const escaped = escapeHtml(rawText);
       const urlRegex = /((https?:\/\/|www\.)[^\s<]+)/gi;
@@ -2000,11 +2055,11 @@
       return await response.json();
     }
 
-    function scrollToBottom() {
+    function scrollToBottom(smooth = true) {
       const container = document.getElementById("messagesContainer");
       container.scrollTo({
         top: container.scrollHeight,
-        behavior: "smooth"
+        behavior: smooth ? "smooth" : "auto"
       });
     }
 
@@ -2016,15 +2071,15 @@
         return "";
       }
     }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "\x26amp;")
+        .replace(/</g, "\x26lt;")
+        .replace(/>/g, "\x26gt;")
+        .replace(/"/g, "\x26quot;")
+        .replace(/'/g, "\x26#039;");
     }
+  
 
     function openLightbox(url) {
       document.getElementById("lightboxImg").src = url;
