@@ -1,390 +1,2402 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en" class="scroll-smooth">
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Google Ads -->
-  <meta name="google-adsense-account" content="ca-pub-9085445837513717">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9085445837513717"
-     crossorigin="anonymous"></script>
-  <!-- Site Metas -->
-  <link rel="icon" href="images/logo.png">
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Titans Academy | Master the Game</title>
+    
+    <!-- Fonts: Plus Jakarta Sans -->
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: '#FF2B00',
+                    }
+                }
+            }
+        }
+    </script>
 
-  <title>Chess Titans Academy</title>
+    <style>
+        html, body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: transparent;
+            color: #111827;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
 
-  <!-- slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+        /* Fixed Full-Screen Responsive Background Video */
+        #bg-video-wrapper {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background-color: #0b0b0c; /* Fallback color while video loads */
+        }
 
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+        #bg-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            min-width: 100%;
+            min-height: 100%;
+            transform: translate(-50%, -50%);
+            object-fit: cover; /* Auto-adjusts ratio for desktop, tablet, and mobile */
+            object-position: center;
+        }
 
-  <!-- fonts style -->
-  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
+        /* Subtle transparent tint over video for crisp readability */
+        .video-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.534);
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Tab System */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Navigation Links */
+        .nav-link {
+            position: relative;
+            color: #374151; 
+            transition: color 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            color: #111827; 
+        }
+        .nav-link.active {
+            color: #FF2B00;
+            font-weight: 700;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #FF2B00;
+            border-radius: 2px;
+        }
+
+        /* Scroll Trigger Animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s cubic-bezier(0.1, 0, 0.1, 1);
+        }
+        .scroll-reveal.show {
+            opacity: 2;
+            transform: translateY(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF2B00;
+        }
+    </style>
 </head>
+<body class="antialiased selection:bg-brand selection:text-white relative">
 
-<body>
-  
-  <div class="hero_area">
-    <!-- header section strats -->
-    <header class="header_section">
-      <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="index.html">
-            <span>
-              Chess Titans Academy
-            </span>
-          </a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+    <!-- Fixed Background Video (Stays locked while scrolling) -->
+    <div id="bg-video-wrapper" aria-hidden="true">
+        <video id="bg-video" autoplay loop muted playsinline preload="auto" disablePictureInPicture>
+            <!-- Replace with your own video file path or URL -->
+            <source src="video.mp4" type="video/mp4">
+            <!-- Optional WebM format for extra browser support: -->
+            <!-- <source src="background-video.webm" type="video/webm"> -->
+        </video>
+        <div class="video-overlay"></div>
+    </div>
 
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <div class="d-flex ml-auto flex-column flex-lg-row align-items-center">
-              <ul class="navbar-nav  ">
-                <li class="nav-item active">
-                  <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item ">
-                  <a class="nav-link" href="why.html"> Learning </a>
-                </li>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="trainer.html"> trainers</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="gallary.html"> Gallery</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="Tournament.html"> Tournament</a>
-                </li>
-
-                  
-                <li class="nav-item">
-                  <a class="nav-link" href="contact.html"> Contact Us</a>
-                </li>
-              </ul>
-              <div class="user_option">
-                <form class="form-inline my-2 my-lg-0 ml-0 ml-lg-4 mb-3 mb-lg-0">
-                <div class="user_option d-flex align-items-center ml-lg-4">
-            <a href="login page.html" class="btn btn-outline-light btn-sm" style="border-radius: 20px; padding: 5px 15px;">
-              <i class="fa fa-user"></i> Students Login
-            </a>
-          </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <!-- end header section -->
-    <!-- slider section -->
-    <section class=" slider_section position-relative">
-      <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="container">
-              <div class="col-lg-10 col-md-11 mx-auto">
-                <div class="detail-box">
-                  <div>
-                    <h3>
-                      
-                    </h3>
-                    <h2>
-                      
-                    </h2>
-                    <h1>
-                      Chess Titans Academy
-                    </h1>
-                    <p>
-                      At Chess Titans Academy, we provide an interactive platform for chess enthusiasts of all levels. Our dedicated instructors guide you through the strategies and intricacies of the game, ensuring a rewarding learning experience.
-                    <div class="">
-                      <a href="contact.html">
-                        Contact Us
-                      </a>
+    <!-- Navigation -->
+    <nav class="fixed w-full top-0 z-50 glass-panel transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                
+                <!-- Logo -->
+                <a href="#home" onclick="openTab('home', event)" class="flex items-center gap-3 cursor-pointer group">
+                    <div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center text-brand text-2xl group-hover:scale-110 transition-transform">
+                        <img src="logo.jpg" alt="Chess Titans Academy Logo" class="w-full h-full object-contain">
                     </div>
-                  </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight text-gray-900 leading-none">Chess Titans</h1>
+                        <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mt-1">Academy</p>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden xl:flex space-x-6 items-center">
+                    <a href="#home" onclick="openTab('home', event)" class="nav-link active text-sm font-medium" data-target="home">Home</a>
+                    <a href="#team" onclick="openTab('team', event)" class="nav-link text-sm font-medium" data-target="team">Coaching Team</a>
+                    <a href="#achievements" onclick="openTab('achievements', event)" class="nav-link text-sm font-medium" data-target="achievements">Trophy Room</a>
+                    <a href="#branches" onclick="openTab('branches', event)" class="nav-link text-sm font-medium" data-target="branches">Branches</a>
+                    <a href="#enquire" onclick="openTab('enquire', event)" class="nav-link text-sm font-medium" data-target="enquire">Enquire</a>
+                    <a href="#franchise" onclick="openFranchiseModal(event)" class="nav-link text-sm font-medium text-brand hover:text-orange-700" data-target="franchise">Franchise</a>
+                    
+                    <a href="https://chesstitansacademy.vercel.app/Login/index.html" target="_blank" class="px-5 py-2.5 bg-brand text-white font-bold rounded-lg shadow-lg shadow-brand/30 hover:bg-orange-700 transition-all text-sm flex items-center gap-2 ml-2">
+                        Students Login <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </a>
                 </div>
-              </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="xl:hidden flex items-center gap-4">
+                    <a href="https://chesstitansacademy.vercel.app/login%20page.html" target="_blank" class="px-4 py-2 bg-brand text-white font-bold rounded-lg shadow-lg shadow-brand/30 text-xs">Login</a>
+                    <button id="mobile-menu-btn" class="text-gray-900 hover:text-brand focus:outline-none text-2xl">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-          
-
-        </ol>
-      </div>
-    </section>
-    <!-- end slider section -->
-  </div>
-
-
-  <!-- Us section -->
-
-  <section class="us_section layout_padding">
-    <div class="container">
-      <div class="heading_container">
-        <h2>
-          Digital Chess Learning
-        </h2>
-      </div>
-
-      <div class="us_container ">
-        <div class="row">
-          <div class="col-lg-3 col-md-6">
-            <div class="box">
-              <div class="img-box">
-                <img src="images/h.png" alt="" style="width: 200px; height: 200px;">
-              </div>
-              <div class="detail-box">
-                <h5>
-                  BEGINNER COURSES
-                </h5>
-                <p>
-                  Start your chess journey with our beginner-friendly courses that cover the basics of the game.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6">
-            <div class="box">
-              <div class="img-box">
-                <img src="images/g.png" alt="" style="width: 200px; height: 200px;">
-              </div>
-              <div class="detail-box">
-                <h5>
-                ADVANCED STRATEGIES
-                </h5>
-                <p>
-                  Master advanced techniques to enhance your gameplay.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6">
-            <div class="box">
-              <div class="img-box">
-                <img src="images/f.png" alt="" style="width: 200px; height: 200px;">
-              </div>
-              <div class="detail-box">
-                <h5>
-                  INTERACTIVE LEARNING 
-                </h5>
-                <p>
-                  Engage in workshops, tournaments, and personalized lessons designed to sharpen your skills and enhance your game.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6">
-            <div class="box">
-              <div class="img-box">
-                <img src="images/l.png" alt="" style="width: 200px; height: 200px;">
-              </div>
-              <div class="detail-box">
-                <h5>
-                  TOURNAMENTS 
-                </h5>
-                <p>
-                  Compete and showcase your skills against other players.
-                </p>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- end us section -->
-
-
-  <!-- heathy section -->
-
-  <section class="heathy_section layout_padding">
-    <div class="container">
-
-      <div class="row">
-        <div class="col-md-12 mx-auto">
-          <div class="detail-box">
-            <h2>
-              OUR TIE UP PARTNER'S
-            </h2>
-            <p>
-              <li>Shining Star Activity Center, Iyyappanthangal, Chennai</li>
-              <li>Fly High Achiever's Sports Club, Mangadu, Chennai</li>
-              <li>Crea's Activity Center, Mugalivakkam, Chennai</li>
-            </p>
-
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- end heathy section -->
-
-  <!-- trainer section -->
-
-  <section class="trainer_section layout_padding">
-    <div class="container">
-      <div class="heading_container">
-        <h2>
-          Meet Our Coach
-        </h2>
-      </div>
-
-        <div class="col-lg-4 col-md-6 mx-auto">
-          <div class="box">
-            <div class="name">
-              <h3>
-               <b> Mr. M J STEVE</b> <small>B.com..,M.C.A</small>
-              </h3>
-              <h5><b>Founder of Chess Titans Academy</b></h5>
-            </div>
-            <div class="img-box">
-              <img src="images/17.png" alt="">
-            </div>
-            <div class="social_box">
-
-              <a href="https://www.instagram.com/steve._.rogerss_/">
-                <img src="images/instagram-logo.png" ><p><b>steve_rogerss__ </b></p>
-              </a>
-              
-            </div>
-          </div>
         </div>
 
-              </a>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden xl:hidden bg-white/85 backdrop-blur-xl border-t border-white/40 absolute w-full shadow-2xl">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="#home" onclick="openTab('home', event)" class="block w-full text-left px-3 py-3 text-base font-medium text-gray-900 hover:bg-white/60 hover:text-brand rounded-md">Home</a>
+                <a href="#team" onclick="openTab('team', event)" class="block w-full text-left px-3 py-3 text-base font-medium text-gray-900 hover:bg-white/60 hover:text-brand rounded-md">Coaching Team</a>
+                <a href="#achievements" onclick="openTab('achievements', event)" class="block w-full text-left px-3 py-3 text-base font-medium text-gray-900 hover:bg-white/60 hover:text-brand rounded-md">Trophy Room</a>
+                <a href="#branches" onclick="openTab('branches', event)" class="block w-full text-left px-3 py-3 text-base font-medium text-gray-900 hover:bg-white/60 hover:text-brand rounded-md">Branches & Programs</a>
+                <a href="#enquire" onclick="openTab('enquire', event)" class="block w-full text-left px-3 py-3 text-base font-medium text-gray-900 hover:bg-white/60 hover:text-brand rounded-md">Enquire / Join</a>
+                <a href="#franchise" onclick="openFranchiseModal(event); document.getElementById('mobile-menu').classList.add('hidden');" class="block w-full text-left px-3 py-3 text-base font-bold text-brand bg-orange-50/90 hover:bg-orange-100 rounded-md">Franchise Partner <i class="fa-solid fa-handshake ml-1"></i></a>
             </div>
-          </div>
         </div>
-        <p class="centered-text">Welcome to Chess Titans Academy, where passion for chess meets expert guidance!
+    </nav>
 
-Our founder has 5+ years of teaching experience and has trained many students successfully. His achievements include securing 8th Rank in the Madras University Chess Tournament 2023, becoming Tamil Nadu State Champion (2018), and being an Official TNSCA Recognized Coach (Coach ID: C108032026).
-
-Join Chess Titans Academy to learn from an experienced coach, improve your skills, and become part of a growing community of future chess champions.</p>
-  </section>
-
-  <!-- end trainer section -->
-
-  <!-- contact section -->
-
-  <section class="contact_section ">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-6 px-0">
-          <div class="img-box">
-            <img src="images/contact.jpg" alt="">
-          </div>
-        </div>
-        <div class="col-lg-5 col-md-6">
-          <div class="form_container pr-0 pr-lg-5 mr-0 mr-lg-2">
-            <div class="heading_container">
-              <h2>
-                Contact Us
-              </h2>
+    <!-- Main Content Area -->
+    <main class="pt-28 min-h-[85vh] relative z-10 w-full overflow-hidden">
+        
+        <!-- ==================== TAB: HOME ==================== -->
+        <div id="tab-home" class="tab-content active max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            
+            <!-- Hero Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[60vh] py-12">
+                <div class="space-y-8 bg-white/65 backdrop-blur-xl p-8 sm:p-12 rounded-3xl border border-white/50 shadow-2xl">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-50/90 border border-brand/20">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand animate-pulse shadow-[0_0_8px_#FF2B00]"></span>
+                        <span class="text-xs font-bold text-brand uppercase tracking-widest">TNSCA Recognized Coaching</span>
+                    </div>
+                    
+                    <h2 class="text-5xl sm:text-7xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
+                        Master the Game, <br>
+                        <span class="text-brand">Conquer the Mind.</span>
+                    </h2>
+                    
+                    <p class="text-lg text-gray-800 leading-relaxed max-w-lg font-medium">
+                        Premium chess coaching led by certified arbiters. Elevate your tactical fundamentals to elite FIDE Swiss-system tournament preparation.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                        <button onclick="openTab('branches')" class="px-8 py-4 bg-brand text-white font-bold rounded-xl shadow-[0_0_20px_rgba(255,43,0,0.3)] hover:bg-orange-700 hover:-translate-y-1 transition-all flex justify-center items-center gap-2">
+                            Explore Branches <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button onclick="openTab('enquire')" class="px-8 py-4 bg-white/80 backdrop-blur-md border-2 border-white/70 text-gray-900 font-bold rounded-xl hover:bg-white hover:border-brand transition-all flex justify-center items-center gap-2 shadow-sm">
+                            Join Now <i class="fa-solid fa-bolt text-brand"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <form action="https://api.web3forms.com/submit" method="POST">
-              <div>
+
+            <!-- Animated Counters -->
+            <div id="stats-section" class="my-16 py-12 bg-white/75 backdrop-blur-xl border border-white/50 rounded-3xl shadow-xl scroll-reveal relative overflow-hidden">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10 px-8">
+                    <div class="p-4">
+                        <div class="text-4xl sm:text-6xl font-extrabold text-brand mb-2"><span class="counter" data-target="2000">0</span>+</div>
+                        <p class="text-gray-900 font-bold uppercase tracking-wide text-xs sm:text-sm">Students Trained</p>
+                    </div>
+                    <div class="p-4 border-l border-gray-300/50">
+                        <div class="text-4xl sm:text-6xl font-extrabold text-brand mb-2"><span class="counter" data-target="4">0</span></div>
+                        <p class="text-gray-900 font-bold uppercase tracking-wide text-xs sm:text-sm">Branches</p>
+                    </div>
+                    <div class="p-4 border-l border-gray-300/50">
+                        <div class="text-4xl sm:text-6xl font-extrabold text-brand mb-2"><span class="counter" data-target="50">0</span></div>
+                        <p class="text-gray-900 font-bold uppercase tracking-wide text-xs sm:text-sm">National Champions</p>
+                    </div>
+                    <div class="p-4 border-l border-gray-300/50">
+                        <div class="text-4xl sm:text-6xl font-extrabold text-brand mb-2"><span class="counter" data-target="500">0</span>+</div>
+                        <p class="text-gray-900 font-bold uppercase tracking-wide text-xs sm:text-sm">State Champions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Training / Lesson Plan -->
+            <div class="my-24 scroll-reveal">
+                <div class="text-center mb-12 bg-white/70 backdrop-blur-xl p-6 rounded-2xl border border-white/50 max-w-3xl mx-auto shadow-sm">
+                    <h3 class="text-3xl font-extrabold text-gray-900">Curriculum & Lesson Plan</h3>
+                    <div class="w-20 h-1 bg-brand mx-auto mt-4 rounded-full"></div>
+                    <p class="mt-4 text-gray-800 font-medium">Structured curriculum designed to take students from absolute beginners to tournament-ready masters.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Phase 1 -->
+                    <div class="bg-white/75 backdrop-blur-xl border border-white/50 shadow-lg rounded-2xl p-6 relative overflow-hidden group hover:border-brand/50 transition-all hover:-translate-y-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Phase 01</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200/70 pb-2">Initial Level</h4>
+                        <ul class="space-y-3 relative z-10">
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Board setup & orientation</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Piece movement logic</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Special moves (Castling)</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Simple checkmate patterns</li>
+                        </ul>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="bg-white/75 backdrop-blur-xl border border-white/50 shadow-lg rounded-2xl p-6 relative overflow-hidden group hover:border-brand/50 transition-all hover:-translate-y-1">
+                        <span class="text-xs font-bold text-brand uppercase tracking-widest block mb-2">Phase 02</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200/70 pb-2">Beginner Level</h4>
+                        <ul class="space-y-3 relative z-10">
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Opening principles</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Tactical motifs: Forks, Pins</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Algebraic notation</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Basic endgame play</li>
+                        </ul>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="bg-white/75 backdrop-blur-xl border border-white/50 shadow-lg rounded-2xl p-6 relative overflow-hidden group hover:border-brand/50 transition-all hover:-translate-y-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Phase 03</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200/70 pb-2">Intermediate Level</h4>
+                        <ul class="space-y-3 relative z-10">
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Positional play concepts</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Pawn structure evaluation</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Advanced combinations</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> FIDE Swiss tournament prep</li>
+                        </ul>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="bg-white/80 backdrop-blur-xl border-2 border-brand shadow-[0_8px_30px_rgba(255,43,0,0.15)] rounded-2xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-brand"><i class="fa-solid fa-chess-king text-6xl"></i></div>
+                        <span class="text-xs font-bold text-brand uppercase tracking-widest block mb-2">Phase 04</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200/70 pb-2">Advance Pro Level</h4>
+                        <ul class="space-y-3 relative z-10">
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Deep engine evaluation</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Blindfold chess & viz</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Master game preparation</li>
+                            <li class="text-sm text-gray-800 font-medium flex items-start gap-2"><i class="fa-solid fa-check text-brand mt-1 text-[10px]"></i> Complex endgame theory</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Achievements Preview (3 Cards) -->
+            <div class="my-24 scroll-reveal">
+                <div class="flex flex-col sm:flex-row justify-between items-end mb-10 bg-white/70 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-sm">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight"><i class="fa-solid fa-trophy text-brand mr-2"></i> Recent Triumphs</h2>
+                        <p class="mt-2 text-gray-800 font-medium">Spotlight on our top performing students.</p>
+                    </div>
+                    <button onclick="openTab('achievements')" class="mt-4 sm:mt-0 text-brand font-bold hover:underline flex items-center gap-1">View Trophy Room <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Preview Card 1 -->
+                    <div onclick="openPhotoDetailModal({ imageUrl: 'image/1.png', badge: 'State Winner', name: 'Karthika Sri', description: 'Secured district championship and top positions in rigorous state selection rounds.' })" class="bg-white/75 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-white/50 hover:border-brand/50 transition-colors cursor-pointer">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden relative mb-4">
+                            <img src="image/1.png" alt="Student" class="w-full h-full object-cover">
+                        </div>
+                        <span class="inline-block px-2 py-1 bg-brand/10 text-brand text-[10px] font-bold uppercase rounded mb-2">State Winner</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Karthika Sri</h4>
+                        <p class="text-gray-700 text-sm">Secured district championship and top positions in rigorous state selection rounds.</p>
+                    </div>
+                    <!-- Preview Card 2 -->
+                    <div onclick="openPhotoDetailModal({ imageUrl: 'image/2.png', badge: 'Online Champion', name: 'Suhas S.K.', description: 'Achieved top ranking FIDE Tournament Rating:- 1473  Online Tournament Student with unbeaten streak.' })" class="bg-white/75 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-white/50 hover:border-brand/50 transition-colors cursor-pointer">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden relative mb-4">
+                            <img src="image/2.png" alt="Student" class="w-full h-full object-cover">
+                        </div>
+                        <span class="inline-block px-2 py-1 bg-brand/10 text-brand text-[10px] font-bold uppercase rounded mb-2">Online Champion</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Suhas S.K.</h4>
+                        <p class="text-gray-700 text-sm">Achieved top ranking FIDE Tournament Rating:- 1473  Online Tournament Student with unbeaten streak.</p>
+                    </div>
+                    <!-- Preview Card 3 -->
+                    <div onclick="openPhotoDetailModal({ imageUrl: 'image/3.jpeg', badge: 'District Qualifier', name: 'Rahul V.', description: 'Top qualifier in the Under-14 Girls category Inter-Institute, showcasing phenomenal tactical precision.' })" class="bg-white/75 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-white/50 hover:border-brand/50 transition-colors cursor-pointer">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden relative mb-4">
+                            <img src="image/3.jpeg" alt="Student" class="w-full h-full object-cover">
+                        </div>
+                        <span class="inline-block px-2 py-1 bg-brand/10 text-brand text-[10px] font-bold uppercase rounded mb-2">District Qualifier</span>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Rahul V.</h4>
+                        <p class="text-gray-700 text-sm">Top qualifier in the Under-14 Girls category Inter-Institute, showcasing phenomenal tactical precision.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Reviews (5-Star Student Reviews Auto-Sliding Carousel) -->
+            <div class="my-24 scroll-reveal">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 bg-white/70 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-sm">
+                    <div>
+                        <div class="inline-flex items-center gap-2 mb-2">
+                            <i class="fa-brands fa-google text-brand text-xl"></i>
+                            <span class="text-xs font-extrabold text-gray-600 uppercase tracking-widest">Google Reviews</span>
+                        </div>
+                        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">What Our Students Say</h2>
+                        <p class="mt-1 text-gray-800 font-medium">Verified 5-star ratings from our chess students and parents.</p>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white/85 px-5 py-3 rounded-2xl border border-white/60 shadow-sm">
+                        <div class="text-3xl font-extrabold text-gray-900 leading-none">5.0</div>
+                        <div>
+                            <div class="flex items-center gap-1 text-amber-400 text-sm">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-600 mt-0.5">Rated 5/5 on Google</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto-Sliding Carousel Viewport (Moves Right to Left every 3 seconds, one by one) -->
+                <div id="google-reviews-viewport" class="overflow-hidden -mx-3">
+                    <div id="google-reviews-track" class="flex will-change-transform">
+                        <!-- Rendered dynamically by JS for seamless right-to-left infinite looping -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Franchise Call to Action on Home Page -->
+            <div class="my-24 scroll-reveal">
+                <div class="relative rounded-3xl overflow-hidden shadow-2xl border border-white/50 bg-white/75 backdrop-blur-xl group">
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 text-gray-900/10 transform rotate-12 transition-transform duration-700 group-hover:rotate-6">
+                        <i class="fa-solid fa-chess-knight text-[250px]"></i>
+                    </div>
+                    <div class="relative z-10 p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10">
+                        <div class="max-w-2xl">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-brand/10 text-brand text-xs font-bold uppercase mb-4 tracking-wider">
+                                <i class="fa-solid fa-handshake"></i> Partner With Us
+                            </div>
+                            <h2 class="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
+                                Chess Titans Academy <span class="text-brand">Franchise</span>
+                            </h2>
+                            <p class="text-lg text-gray-800 font-medium leading-relaxed mb-8">
+                                Transform your passion for chess into a thriving enterprise. Partner with Chennai's premier TNSCA-recognized institution. We provide our proven curriculum, brand authority, elite training frameworks, and complete operational blueprint to help you launch a successful academy in your region.
+                            </p>
+                            <button onclick="openFranchiseModal()" class="px-8 py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-brand transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Apply for Franchise <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- END TAB HOME -->
+
+        <!-- ==================== TAB: TEAM ==================== -->
+        <div id="tab-team" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            <div class="text-center mb-16 bg-white/75 backdrop-blur-xl border border-white/50 shadow-lg p-10 rounded-3xl max-w-4xl mx-auto">
+                <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">Our Leadership & Team</h2>
+                <p class="mt-4 text-gray-800 text-lg font-medium">Guided by elite recognized arbiters, master coaches, and expert technologists.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div onclick="openPhotoDetailModal({ imageUrl: 'image/Headcoach.png', badge: 'Head Coach', name: 'Steve Rogers (M.J. Steve)', subtitle: 'Founder, TNSCA Recognized Coach & Arbiter', description: 'Spearheads academy leadership with official TNSCA credentials, specializing in advanced FIDE tournament preparation and elite blindfold visualization training. Also works as a Software Developer, specializing in web development, software solutions, and digital technology integration.', linkUrl: 'https://mjsteveportfolio.vercel.app/', linkText: 'View Portfolio' })" class="bg-white/75 backdrop-blur-xl rounded-2xl overflow-hidden group shadow-xl border border-white/50 cursor-pointer">
+                    <div class="h-72 overflow-hidden relative bg-gray-100/60">
+                        <img src="image/Headcoach.png" alt="Steve Rogers" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute top-4 right-4 bg-brand text-white text-[10px] uppercase font-bold px-3 py-1.5 rounded-full shadow-md">Head Coach</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1">Steve Rogers (M.J. Steve)</h3>
+                        <p class="text-brand font-bold text-sm mb-4">Founder, TNSCA Recognized Coach & Arbiter</p>
+                        <p class="text-gray-800 text-sm leading-relaxed mb-6 font-medium">
+                            Spearheads academy leadership with official TNSCA credentials, specializing in advanced FIDE tournament preparation and elite blindfold visualization training. Also works as a Software Developer, specializing in web development, software solutions, and digital technology integration.
+                        </p>
+                        <a href="https://mjsteveportfolio.vercel.app/" target="_blank" onclick="event.stopPropagation()" class="inline-block text-xs font-bold text-gray-900 bg-white/80 hover:bg-brand hover:text-white px-4 py-2 rounded-lg transition-colors border border-gray-200">
+                            View Portfolio <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div onclick="openPhotoDetailModal({ imageUrl: 'https://placehold.co/600x600/f8fafc/FF2B00?text=S.+Dharmeshkumar', badge: 'Senior Coach', name: 'S. Dharmeshkumar', subtitle: 'Senior Staff Coach', description: 'Master of grass-roots tactical training and endgame instruction. Leads active coaching schedules across our physical hubs including Iyyappanthangal, Mangadu, and Poonamallee.' })" class="bg-white/75 backdrop-blur-xl rounded-2xl overflow-hidden group shadow-xl border border-white/50 cursor-pointer">
+                    <div class="h-72 overflow-hidden relative bg-gray-100/60">
+                        <img src="https://placehold.co/600x600/f8fafc/FF2B00?text=S.+Dharmeshkumar" alt="S. Dharmeshkumar" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute top-4 right-4 bg-gray-900 text-white text-[10px] uppercase font-bold px-3 py-1.5 rounded-full shadow-md">Senior Coach</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1">S. Dharmeshkumar</h3>
+                        <p class="text-brand font-bold text-sm mb-4">Senior Staff Coach</p>
+                        <p class="text-gray-800 text-sm leading-relaxed mb-6 font-medium">
+                            Master of grass-roots tactical training and endgame instruction. Leads active coaching schedules across our physical hubs including Iyyappanthangal, Mangadu, and Poonamallee.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div onclick="openPhotoDetailModal({ imageUrl: 'https://placehold.co/600x600/f8fafc/FF2B00?text=M.R.Kamali', badge: 'Admin & Tech Lead', name: 'M.R. Kamali', subtitle: 'ADMIN and Tester', description: 'Architects and develops the custom engineering behind the Chess Titans digital ecosystem, including the secure LMS portal, real-time Swiss pairing engines, AI-powered tools, and overall administrative operations, ensuring smooth management of academy activities, student records, tournament coordination, and daily administration.' })" class="bg-white/75 backdrop-blur-xl rounded-2xl overflow-hidden group shadow-xl border border-white/50 cursor-pointer">
+                    <div class="h-72 overflow-hidden relative bg-gray-100/60">
+                        <img src="https://placehold.co/600x600/f8fafc/FF2B00?text=M.R.Kamali" alt="M.R.Kamali" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute top-4 right-4 bg-gray-900 text-white text-[10px] uppercase font-bold px-3 py-1.5 rounded-full shadow-md">Admin & Tech Lead</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1">M.R. Kamali</h3>
+                        <p class="text-brand font-bold text-sm mb-4">ADMIN and Tester</p>
+                        <p class="text-gray-800 text-sm leading-relaxed mb-6 font-medium">
+                           Architects and develops the custom engineering behind the Chess Titans digital ecosystem, including the secure LMS portal, real-time Swiss pairing engines, AI-powered tools, and overall administrative operations, ensuring smooth management of academy activities, student records, tournament coordination, and daily administration.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: ACHIEVEMENTS (DYNAMIC TROPHY ROOM) ==================== -->
+        <div id="tab-achievements" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            <div class="text-center mb-16 bg-white/75 backdrop-blur-xl border border-white/50 shadow-lg p-10 rounded-3xl max-w-4xl mx-auto">
+                <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">
+                    <i class="fa-solid fa-trophy text-brand mr-3"></i> Trophy Room
+                </h2>
+                <p class="mt-4 text-gray-800 text-lg font-medium">A dedicated gallery celebrating the milestones and victories of our chess prodigies.</p>
+            </div>
+
+            <div id="trophy-room-grid" class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <div class="col-span-full bg-white/75 backdrop-blur-xl rounded-2xl p-10 text-center border border-white/50 shadow-lg text-gray-700 font-semibold">
+                    <i class="fa-solid fa-spinner fa-spin text-brand mr-2"></i> Loading Trophy Room achievements...
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: BRANCHES ==================== -->
+        <div id="tab-branches" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            <div class="mb-20">
+                <div class="text-center mb-16 bg-white/75 backdrop-blur-xl border border-white/50 shadow-lg p-10 rounded-3xl max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">Physical Hubs & Online Batches</h2>
+                    <p class="mt-4 text-gray-800 text-lg font-medium">Find a training center near you or join our global online community.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Branches -->
+                    <div class="bg-white/75 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/50 hover:border-brand transition-colors">
+                        <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand"></i> Iyyappanthangal</h4>
+                        <p class="text-sm font-bold text-gray-600 mb-4 mt-2">Near Bus Depo</p>
+                        <p class="text-sm text-gray-800 font-medium"><i class="fa-solid fa-user-tie mr-2 text-brand"></i> Coach M.J Steve & S. Dharmeshkumar</p>
+                    </div>
+                    <div class="bg-white/75 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/50 hover:border-brand transition-colors">
+                        <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand"></i> Mangadu</h4>
+                        <p class="text-sm font-bold text-gray-600 mb-4 mt-2">Central Institute Hub</p>
+                        <p class="text-sm text-gray-800 font-medium"><i class="fa-solid fa-user-tie mr-2 text-brand"></i> Coach M.J Steve & S. Dharmeshkumar</p>
+                    </div>
+                    <div class="bg-white/75 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/50 hover:border-brand transition-colors">
+                        <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand"></i> Noombal</h4>
+                        <p class="text-sm font-bold text-gray-600 mb-4 mt-2">Residential Zone Hub</p>
+                        <p class="text-sm text-gray-800 font-medium"><i class="fa-solid fa-user-tie mr-2 text-brand"></i>Coach M.J Steve </p>
+                    </div>
+                    <div class="bg-white/75 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/50 hover:border-brand transition-colors">
+                        <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand"></i> Poonamallee</h4>
+                        <p class="text-sm font-bold text-gray-600 mb-4 mt-2">Pro Training Center</p>
+                        <p class="text-sm text-gray-800 font-medium"><i class="fa-solid fa-user-tie mr-2 text-brand"></i> Coach M.J Steve & S. Dharmeshkumar</p>
+                    </div>
+                    
+                    <!-- Online Hub -->
+                    <div class="bg-white/80 backdrop-blur-xl p-8 rounded-2xl border-2 border-brand shadow-2xl lg:col-span-2 relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 opacity-5 text-brand text-9xl"><i class="fa-solid fa-globe"></i></div>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative z-10">
+                            <div>
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-brand text-white text-[10px] font-bold uppercase mb-3">Live Interactive</div>
+                                <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-desktop text-brand"></i> Digital Online Pan-India Batches</h4>
+                                <p class="text-base text-gray-800 font-medium mt-3 max-w-lg">Dedicated remote batches hosting active students from <strong>worldwide</strong>. Learn via smart-Chess boards & AI analysis tools.</p>
+                            </div>
+                            <button onclick="openTab('enquire')" class="px-8 py-3 bg-brand text-white font-bold rounded-xl hover:bg-orange-700 transition-colors shadow-lg">Join Online</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: ENQUIRE ==================== -->
+        <div id="tab-enquire" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-xl p-8 sm:p-12 rounded-3xl border border-white/50 shadow-2xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold text-gray-900">Enquire for Admission / Free Trial</h2>
+                    <p class="text-gray-700 font-medium mt-2">Fill out the form below and our team will get back to you.</p>
+                </div>
+
+                <form action="https://api.web3forms.com/submit" method="POST" onsubmit="handleEnquiry(event)" class="space-y-6">
+                    <input type="hidden" name="access_key" value="97018661-d9cb-4a85-99b3-090bdfcb297f">
+                    <input type="hidden" name="subject" value="New Student Admission Enquiry - Chess Titans Academy">
+                    <input type="hidden" name="from_name" value="Chess Titans Academy Website">
+                    <input type="hidden" name="form_type" value="Admission / Free Trial Enquiry">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2">Student's Full Name</label>
+                            <input type="text" name="name" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" placeholder="e.g. John Doe">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2">Phone Number</label>
+                            <input type="tel" name="phone" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" placeholder="+91 xxxxx xxxxx">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-800 mb-2">Email ID</label>
+                        <input type="email" name="email" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" placeholder="email@example.com">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-3">Class Mode Preference</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="mode" value="online" required class="w-4 h-4 text-brand bg-white border-gray-300 focus:ring-brand accent-brand">
+                                    <span class="text-gray-800 font-medium">Online Class</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="mode" value="offline" class="w-4 h-4 text-brand bg-white border-gray-300 focus:ring-brand accent-brand">
+                                    <span class="text-gray-800 font-medium">Offline Class</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-3">Gender</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="gender" value="male" required class="w-4 h-4 text-brand bg-white border-gray-300 focus:ring-brand accent-brand">
+                                    <span class="text-gray-800 font-medium">Male</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="gender" value="female" class="w-4 h-4 text-brand bg-white border-gray-300 focus:ring-brand accent-brand">
+                                    <span class="text-gray-800 font-medium">Female</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-800 mb-2">Message / Additional Feedback (Optional)</label>
+                        <textarea name="message" rows="4" class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" placeholder="Any specific requirements?"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-brand text-white font-bold rounded-xl shadow-[0_0_20px_rgba(255,43,0,0.3)] hover:bg-orange-700 hover:scale-[1.02] transition-all flex justify-center items-center gap-2 text-lg">
+                        Submit Enquiry <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Fixed WhatsApp Button -->
+    <a href="https://wa.me/918072305696" target="_blank" class="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl z-50 text-3xl hover:scale-110 hover:-translate-y-2 transition-transform flex items-center justify-center border-4 border-white">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Franchise Modal -->
+    <div id="franchise-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white/90 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl p-8 sm:p-10 max-w-md w-full mx-4 relative transform scale-95 transition-transform duration-300" id="franchise-modal-content">
+            <button onclick="closeFranchiseModal()" class="absolute top-5 right-5 text-gray-500 hover:text-brand transition-colors text-2xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-extrabold text-gray-900">Franchise Partner</h3>
+                <p class="text-gray-700 font-medium text-sm mt-2">Join our network of elite chess academies.</p>
+            </div>
+            <form action="https://api.web3forms.com/submit" method="POST" onsubmit="handleFranchiseSubmit(event)" class="space-y-4">
                 <input type="hidden" name="access_key" value="97018661-d9cb-4a85-99b3-090bdfcb297f">
-                <input type="text" name="name" placeholder="Name" class="contact-inputs" required>
-                <input type="Phone Number" name="Phone Number" placeholder="Phone Number"class="contact-inputs"required>
-                <input type="email" name="email" placeholder="email"class="contact-inputs"required>
-                <br>
-                <br>
-                <b><u>CLASS MODES</u></b><br>
-                <label><input type="radio" name="Class" value="Online Class"><b>Online Class</b></label>
-                <label><input type="radio" name="Class" value="Offline Class"> <b>Offline Class</b></label>
-                <br>
-                <br>
-                <b><u>GENDER</u></b><br>
-                <label><input type="radio" name="Gender" value="MALE"><b>MALE</b></label>
-                <label><input type="radio" name="Gender" value="FEMALE"> <b>FEMALE</b></label>
-                <input type="message" placeholder="Message" class="contact-input" />
-                <button type="submit">Submit</button>
-                <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
-              <div class="d-flex ">
+                <input type="hidden" name="subject" value="New Franchise Partner Application - Chess Titans Academy">
+                <input type="hidden" name="from_name" value="Chess Titans Academy Website">
+                <input type="hidden" name="form_type" value="Franchise Partner Application">
 
-        </div>
-              </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Name</label>
+                    <input type="text" name="name" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:border-brand" placeholder="Your Name">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Phone Number</label>
+                    <input type="tel" name="phone" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:border-brand" placeholder="Your Phone Number">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Email ID</label>
+                    <input type="email" name="email" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:border-brand" placeholder="Your Email Address">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Location for Franchise</label>
+                    <input type="text" name="franchise_location" required class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:border-brand" placeholder="City or Area">
+                </div>
+                <button type="submit" class="w-full mt-4 py-3 bg-brand text-white font-bold rounded-xl shadow-[0_0_15px_rgba(255,43,0,0.3)] hover:bg-orange-700 transition-colors flex justify-center items-center gap-2">
+                    Submit Application <i class="fa-solid fa-paper-plane"></i>
+                </button>
             </form>
-          </div>
         </div>
-      </div>
     </div>
-  </section>
 
-  <!-- end contact section -->
+    <!-- ==================== PHOTO DETAIL LIGHTBOX MODAL (TROPHY ROOM / COACHES / RECENT TRIUMPHS) ==================== -->
+    <div id="photo-detail-modal" onclick="if(event.target === this) closePhotoDetailModal()" style="display: none; z-index: 9998;" class="fixed inset-0 flex-col items-center justify-center bg-gray-900/75 backdrop-blur-md p-4 transition-opacity">
+        <div id="photo-detail-content" class="bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto relative transform scale-95 transition-transform duration-300">
+            <!-- Top Close Button -->
+            <button type="button" onclick="closePhotoDetailModal()" aria-label="Close Photo View" class="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-gray-900/80 text-white hover:bg-brand transition-colors flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
 
-  <!-- info section -->
-  <section class="info_section layout_padding2">
-    <div class="container">
-      <div class="info_items">
-        <a href="https://maps.app.goo.gl/ZPAxCJYdnp6FBZrs9">
-          <div class="item ">
-            <div class="img-box box-1">
-              <img src="" alt="">
+            <!-- Badge -->
+            <div id="photo-detail-badge" class="hidden absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand text-white text-[10px] font-bold uppercase tracking-wider shadow-md"></div>
+
+            <!-- Big Photo Display -->
+            <div id="photo-detail-image-wrap" class="w-full bg-gray-900/5 hidden">
+                <img id="photo-detail-image" src="" alt="Full View" class="w-full max-h-[60vh] object-contain mx-auto">
             </div>
-            <div class="detail-box">
-              <p>
-                Location
-              </p>
+
+            <!-- Name, Role & Description -->
+            <div class="p-6 sm:p-8 space-y-3">
+                <h3 id="photo-detail-name" class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight"></h3>
+                <p id="photo-detail-subtitle" class="text-brand font-bold text-sm hidden"></p>
+                <p id="photo-detail-description" class="text-sm sm:text-base text-gray-800 font-medium leading-relaxed whitespace-pre-line break-words"></p>
+
+                <!-- Optional Link Button (e.g. Coach Portfolio) -->
+                <div id="photo-detail-link-wrap" class="pt-2 hidden">
+                    <a id="photo-detail-link" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-5 bg-brand text-white font-bold rounded-xl shadow-[0_0_15px_rgba(255,43,0,0.3)] hover:bg-orange-700 transition-all flex items-center justify-center gap-2 text-sm">
+                        <span id="photo-detail-link-text">Open Link</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+
+                <!-- Close Button -->
+                <div class="pt-2">
+                    <button type="button" onclick="closePhotoDetailModal()" class="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-brand transition-colors text-sm flex items-center justify-center gap-2">
+                        Close <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-        </a>
-        <a href="https://www.instagram.com/steve._.rogerss_/">
-          <div class="item ">
-            <div class="img-box box-2">
-              <img src="" alt="">
-            </div>
-            <div class="detail-box">
-              <p>
-                steve_rogerss__
-              </p>
-            </div>
-          </div>
-        </a>
-        <a href="https://gmail.com">
-          <div class="item ">
-            <div class="img-box box-3">
-              <img src="" alt="">
-            </div>
-            <div class="detail-box">
-              <p>
-                m.j.steve678@gmail.com
-              </p>
-            </div>
-          </div>
-        </a>
-      </div>
+        </div>
     </div>
-  </section>
 
-  <!-- end info_section -->
+    <!-- ==================== STUDENT NOTIFICATION POPUP MODAL ==================== -->
+    <div id="student-notification-modal" onclick="if(event.target === this) closeStudentNotification()" style="display: none; z-index: 9999;" class="fixed inset-0 flex-col items-center justify-center bg-gray-900/75 backdrop-blur-md p-4 transition-opacity">
+        <div id="student-notification-content" class="bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative transform scale-95 transition-transform duration-300">
+            <!-- Top Cancel Button -->
+            <button type="button" onclick="closeStudentNotification()" aria-label="Close Notification" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-gray-900/80 text-white hover:bg-brand transition-colors flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
 
-  <!-- footer section -->
-  <footer class="container-fluid footer_section">
-    <p>
-      &copy; 2025 Chess Titans Academy. All rights reserved. Website Developed by <a href="https://mjsteveportfolio.vercel.app/"><span class="fw-bold text-warning">Steve Rogers</span></a>
-    </p>
-  </footer>
-  <!-- footer section -->
+            <!-- Notification Badge -->
+            <div class="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
+                <i class="fa-solid fa-bullhorn"></i> Announcement
+            </div>
 
-  <script src="js/jquery-3.4.1.min.js"></script>
-  <script src="js/bootstrap.js"></script>
+            <!-- Image Display -->
+            <div id="notif-popup-image-wrap" class="w-full bg-gray-100 hidden">
+                <img id="notif-popup-image" src="" alt="Academy Notification" class="w-full max-h-[55vh] object-contain bg-gray-900/5">
+            </div>
 
+            <!-- Content Body -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <h3 id="notif-popup-title" class="text-2xl font-extrabold text-gray-900 leading-tight hidden"></h3>
+                <div id="notif-popup-description" class="text-sm sm:text-base text-gray-800 font-medium leading-relaxed whitespace-pre-line break-words hidden"></div>
+
+                <!-- Optional Attached Link (Opens in Next Tab) -->
+                <div id="notif-popup-link-wrap" class="pt-1 hidden">
+                    <a id="notif-popup-link" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-5 bg-brand text-white font-bold rounded-xl shadow-[0_0_15px_rgba(255,43,0,0.3)] hover:bg-orange-700 transition-all flex items-center justify-center gap-2 text-sm">
+                        <span id="notif-popup-link-text">Open Link</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+
+                <!-- Multi-notification Navigation -->
+                <div id="notif-popup-pager" class="hidden flex items-center justify-between pt-2 border-t border-gray-200/80">
+                    <button type="button" onclick="stepNotification(-1)" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                    </button>
+                    <span id="notif-popup-counter" class="text-xs font-bold text-gray-600">1 / 1</span>
+                    <button type="button" onclick="stepNotification(1)" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold">
+                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- Cancel & Move to Website Button -->
+                <button type="button" onclick="closeStudentNotification()" class="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2">
+                    Cancel & Move to Website <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ADMIN LOGIN MODAL ==================== -->
+    <div id="admin-login-modal" onclick="if(event.target === this) closeAdminLoginModal()" style="display: none; z-index: 9995;" class="fixed inset-0 flex-col items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 transition-opacity">
+        <div id="admin-login-content" class="bg-white/95 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl p-8 sm:p-10 max-w-md w-full relative transform scale-95 transition-transform duration-300">
+            <button type="button" onclick="closeAdminLoginModal()" class="absolute top-5 right-5 text-gray-500 hover:text-brand transition-colors text-2xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-gray-900">Admin Access</h3>
+                <p class="text-gray-700 font-medium text-sm mt-1">Sign in to manage website notifications & Trophy Room.</p>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Username</label>
+                    <input id="admin-username" type="text" required autocomplete="username" class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:border-brand" placeholder="Enter admin username">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Password</label>
+                    <input id="admin-password" type="password" required autocomplete="current-password" class="w-full bg-white/85 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:border-brand" placeholder="Enter admin password">
+                </div>
+                <p id="admin-login-error" class="text-xs font-bold text-red-600 hidden"></p>
+                <button id="admin-login-submit-btn" type="submit" class="w-full mt-2 py-3 bg-brand text-white font-bold rounded-xl shadow-[0_0_15px_rgba(255,43,0,0.3)] hover:bg-orange-700 transition-colors flex justify-center items-center gap-2">
+                    Login to Dashboard <i class="fa-solid fa-right-to-bracket"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== ADMIN CONTROL DASHBOARD MODAL ==================== -->
+    <div id="admin-dashboard-modal" style="display: none; z-index: 9996;" class="fixed inset-0 flex-col items-center justify-center bg-gray-900/70 backdrop-blur-md p-3 sm:p-6 transition-opacity">
+        <div id="admin-dashboard-content" class="bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300">
+            
+            <!-- Dashboard Header -->
+            <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-b border-gray-200/80 bg-white/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center text-lg shadow-md">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-gray-900 leading-none">Notification & Trophy Room Dashboard</h3>
+                        <p class="text-xs font-semibold text-gray-600 mt-1">Manage website popup notices and Trophy Room student achievements</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="loadAdminNotifications(); loadAdminAchievements();" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-rotate"></i> Refresh
+                    </button>
+                    <button type="button" onclick="adminLogout()" class="px-3 py-2 bg-gray-900 hover:bg-brand text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Body -->
+            <div class="p-6 overflow-y-auto space-y-8">
+                
+                <!-- SECTION 1: NOTIFICATIONS -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Left Column: Write / Edit Notification Form -->
+                    <div class="lg:col-span-5 bg-white/80 border border-gray-200/80 rounded-2xl p-5 shadow-sm h-fit">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 id="notif-form-heading" class="text-base font-extrabold text-gray-900">
+                                <i class="fa-solid fa-plus-circle text-brand mr-1.5"></i> Add New Notification
+                            </h4>
+                            <button id="notif-cancel-edit-btn" type="button" onclick="resetNotificationForm()" class="hidden text-xs font-bold text-gray-600 hover:text-brand underline">
+                                Cancel Edit
+                            </button>
+                        </div>
+
+                        <form id="admin-notif-form" onsubmit="handleSaveNotification(event)" class="space-y-4">
+                            <input type="hidden" id="notif-edit-id" value="">
+
+                            <!-- Show on Website ON/OFF Switch -->
+                            <div class="flex items-center justify-between p-3 bg-orange-50/80 border border-brand/20 rounded-xl">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">Show on Website</p>
+                                    <p class="text-[11px] font-medium text-gray-600">Turn ON to display popup to visitors</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="notif-active-toggle" type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                                </label>
+                            </div>
+
+                            <!-- Title (Optional) -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-800 mb-1">Heading / Title (Optional)</label>
+                                <input id="notif-title" type="text" class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand" placeholder="e.g. State Tournament Registration Open">
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-800 mb-1">Notification Image (Saved to Google Drive)</label>
+                                <input id="notif-image-input" type="file" accept="image/*" onchange="handleImageFileSelect(event)" class="w-full text-xs text-gray-700 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand/10 file:text-brand hover:file:bg-brand hover:file:text-white cursor-pointer border border-gray-300 rounded-xl p-1.5 bg-white">
+                                <p id="notif-image-hint" class="text-[11px] text-gray-500 mt-1">JPG, PNG, or WebP. Uploaded directly to Google Drive.</p>
+                                <div id="notif-image-preview-wrap" class="hidden mt-3 relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                    <img id="notif-image-preview" src="" alt="Preview" class="w-full max-h-40 object-contain">
+                                    <button type="button" onclick="clearSelectedImage()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-gray-900/80 text-white hover:bg-brand text-xs flex items-center justify-center" title="Remove selected image">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Description (Optional) -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-800 mb-1">Description (Optional)</label>
+                                <textarea id="notif-description" rows="3" class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand" placeholder="Write announcement details... URLs typed here also open in a new tab."></textarea>
+                            </div>
+
+                            <!-- Attached Link (Optional - Renders in Next Tab) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-800 mb-1">Attach Link URL (Optional)</label>
+                                    <input id="notif-link-url" type="url" class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand" placeholder="https://example.com">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-800 mb-1">Link Button Label (Optional)</label>
+                                    <input id="notif-link-text" type="text" class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand" placeholder="e.g. Register Now">
+                                </div>
+                            </div>
+
+                            <button id="notif-save-btn" type="submit" class="w-full py-3 bg-brand text-white font-bold rounded-xl shadow-[0_0_15px_rgba(255,43,0,0.3)] hover:bg-orange-700 transition-colors flex justify-center items-center gap-2 text-sm">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Save Notification
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Read / Toggle / Edit / Delete List -->
+                    <div class="lg:col-span-7 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-base font-extrabold text-gray-900">
+                                <i class="fa-solid fa-list-check text-brand mr-1.5"></i> Saved Notifications
+                            </h4>
+                            <span id="notif-count-badge" class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">0 items</span>
+                        </div>
+
+                        <div id="admin-notif-list" class="space-y-3">
+                            <div class="p-8 text-center text-gray-500 text-sm font-medium bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                                Loading notifications...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIVIDER -->
+                <hr class="border-gray-200/80">
+
+                <!-- SECTION 2: STUDENTS ACHIEVEMENTS (TROPHY ROOM) -->
+                <div>
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-extrabold text-gray-900 leading-none">Students Achievements (Trophy Room)</h4>
+                            <p class="text-xs font-semibold text-gray-600 mt-1">Upload student photos individually with name and description to display in the Trophy Room</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Left Column: Upload / Edit Student Achievement Form -->
+                        <div class="lg:col-span-5 bg-white/80 border border-gray-200/80 rounded-2xl p-5 shadow-sm h-fit">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 id="ach-form-heading" class="text-base font-extrabold text-gray-900">
+                                    <i class="fa-solid fa-plus-circle text-brand mr-1.5"></i> Add Student Achievement
+                                </h5>
+                                <button id="ach-cancel-edit-btn" type="button" onclick="resetAchievementForm()" class="hidden text-xs font-bold text-gray-600 hover:text-brand underline">
+                                    Cancel Edit
+                                </button>
+                            </div>
+
+                            <form id="admin-ach-form" onsubmit="handleSaveAchievement(event)" class="space-y-4">
+                                <input type="hidden" id="ach-edit-id" value="">
+
+                                <!-- Student Photo Upload -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-800 mb-1">Student Photo (Saved to Google Drive)</label>
+                                    <input id="ach-image-input" type="file" accept="image/*" onchange="handleAchievementImageSelect(event)" class="w-full text-xs text-gray-700 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand/10 file:text-brand hover:file:bg-brand hover:file:text-white cursor-pointer border border-gray-300 rounded-xl p-1.5 bg-white">
+                                    <p class="text-[11px] text-gray-500 mt-1">Upload each student's photo individually. JPG, PNG, or WebP.</p>
+                                    <div id="ach-image-preview-wrap" class="hidden mt-3 relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                        <img id="ach-image-preview" src="" alt="Student Preview" class="w-full max-h-40 object-contain">
+                                        <button type="button" onclick="clearSelectedAchievementImage()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-gray-900/80 text-white hover:bg-brand text-xs flex items-center justify-center" title="Remove selected image">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Student Name -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-800 mb-1">Student Name</label>
+                                    <input id="ach-name" type="text" required class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand" placeholder="e.g. Karthika Sri">
+                                </div>
+
+                                <!-- Achievement Description -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-800 mb-1">Achievement Description</label>
+                                    <textarea id="ach-description" rows="3" required class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand" placeholder="Enter tournament details, rank, or milestone..."></textarea>
+                                </div>
+
+                                <button id="ach-save-btn" type="submit" class="w-full py-3 bg-brand text-white font-bold rounded-xl shadow-[0_0_15px_rgba(255,43,0,0.3)] hover:bg-orange-700 transition-colors flex justify-center items-center gap-2 text-sm">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Student Achievement
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Right Column: Uploaded Trophy Room Students List -->
+                        <div class="lg:col-span-7 flex flex-col">
+                            <div class="flex items-center justify-between mb-3">
+                                <h5 class="text-base font-extrabold text-gray-900">
+                                    <i class="fa-solid fa-award text-brand mr-1.5"></i> Uploaded Trophy Room Achievements
+                                </h5>
+                                <span id="ach-count-badge" class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">0 items</span>
+                            </div>
+
+                            <div id="admin-ach-list" class="space-y-3">
+                                <div class="p-8 text-center text-gray-500 text-sm font-medium bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                                    Loading student achievements...
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 4-COLUMN FOOTER (Translucent Glass) -->
+    <footer class="bg-white/75 backdrop-blur-xl border-t border-white/50 mt-auto pt-16 pb-8 relative z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                
+                <!-- Column 1: Branding / Logo -->
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center text-brand text-2xl">
+                            <img src="logo.jpg" alt="Chess Titans Academy Logo" class="w-full h-full object-contain">
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-extrabold text-gray-900 leading-none">Chess Titans</h2>
+                            <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mt-1">Academy</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-800 font-medium leading-relaxed">
+                        Chennai's premier TNSCA-recognized chess training institution. Cultivating tournament champions, strategic clarity, and lifelong discipline.
+                    </p>
+                    <div class="flex gap-4">
+                    <a href="mailto:your-chesstitansacademy@gmail.com" class="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-brand hover:text-white transition-colors"><i class="fa-solid fa-envelope"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-brand hover:text-white transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                        <!-- <a href="#" class="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-brand hover:text-white transition-colors"><i class="fa-brands fa-youtube"></i></a> -->
+                    </div>
+                </div>
+
+                <!-- Column 2: Navigation -->
+                <div>
+                    <h4 class="font-extrabold text-gray-900 text-lg mb-6">Navigation</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#home" onclick="openTab('home', event)" class="text-gray-800 hover:text-brand font-medium transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[10px] text-brand"></i> Home</a></li>
+                        <li><a href="#team" onclick="openTab('team', event)" class="text-gray-800 hover:text-brand font-medium transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[10px] text-brand"></i> Coaching Team</a></li>
+                        <li><a href="#achievements" onclick="openTab('achievements', event)" class="text-gray-800 hover:text-brand font-medium transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[10px] text-brand"></i> Trophy Room</a></li>
+                        <li><a href="#branches" onclick="openTab('branches', event)" class="text-gray-800 hover:text-brand font-medium transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[10px] text-brand"></i> Branches & Programs</a></li>
+                        <li><a href="#enquire" onclick="openTab('enquire', event)" class="text-gray-800 hover:text-brand font-medium transition-colors text-sm flex items-center gap-2"><i class="fa-solid fa-chevron-right text-[10px] text-brand"></i> Enquire / Join</a></li>
+                        <li><a href="https://chesstitansacademy.vercel.app/Login/index.html" target="_blank" class="text-gray-900 hover:text-brand font-bold transition-colors text-sm flex items-center gap-2 mt-2"><i class="fa-solid fa-lock text-brand"></i> Students Login</a></li>
+                        <!-- Admin Logo Button at Bottom of Navigation -->
+                        <li class="pt-3 border-t border-gray-300/60">
+                            <button id="footer-admin-btn" type="button" onclick="window.openAdminPortal(event)" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/85 border border-gray-300/80 hover:border-brand hover:text-brand text-gray-800 font-bold text-xs transition-all shadow-sm cursor-pointer">
+                                <span class="w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center">
+                                    <i class="fa-solid fa-user-shield text-[11px]"></i>
+                                </span>
+                                Admin
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Locations -->
+                <div>
+                    <h4 class="font-extrabold text-gray-900 text-lg mb-6">Our Locations</h4>
+                    <ul class="space-y-3 text-sm font-medium text-gray-800">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand/80"></i> Iyyappanthangal</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand/80"></i> Mangadu</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand/80"></i> Noombal</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand/80"></i> Poonamallee</li>
+                        <li class="flex items-center gap-2 pt-2 text-gray-900 font-bold"><i class="fa-solid fa-globe text-brand"></i> Online Pan-India</li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Contact & Action -->
+                <div>
+                    <h4 class="font-extrabold text-gray-900 text-lg mb-6">Contact Us</h4>
+                    <ul class="space-y-4 mb-6">
+                        <li class="flex items-start gap-3 text-sm text-gray-800 font-medium">
+                            <span class="text-brand text-lg mt-0.5"><i class="fa-solid fa-phone-volume"></i></span> 
+                            <div>
+                                <p class="text-xs text-gray-600 uppercase font-bold tracking-wider mb-0.5">Admissions</p>
+                                <a href="tel:+918072305696" class="hover:text-brand text-gray-900 font-bold text-base transition-colors">+91 8072305696</a>
+                            </div>
+                        </li>
+                    </ul>
+                    <button onclick="openFranchiseModal()" class="w-full px-4 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-brand transition-colors text-sm flex items-center justify-center gap-2 shadow-md">
+                        Become a Franchise Partner <i class="fa-solid fa-handshake"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright Bar -->
+            <div class="mt-8 pt-8 border-t border-gray-300/60 text-center flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-gray-800 font-bold">
+                    © 2026 Chess Titans Academy. All Rights Reserved.
+                </p>
+                <p class="text-sm text-gray-800 font-medium">
+                    Designed & Developed by <a href="https://mjsteveportfolio.vercel.app/" target="_blank" class="text-brand hover:underline font-extrabold">Steve Rogers</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Logic & Continuous Background Video Safeguard -->
+    <script>
+        const bgVideo = document.getElementById('bg-video');
+        function ensureVideoPlaying() {
+            if (!bgVideo) return;
+            bgVideo.muted = true;
+            bgVideo.loop = true;
+            if (bgVideo.paused) {
+                const playPromise = bgVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        const resumeOnInteraction = () => {
+                            bgVideo.play().catch(() => {});
+                            document.removeEventListener('touchstart', resumeOnInteraction);
+                            document.removeEventListener('click', resumeOnInteraction);
+                        };
+                        document.addEventListener('touchstart', resumeOnInteraction, { once: true });
+                        document.addEventListener('click', resumeOnInteraction, { once: true });
+                    });
+                }
+            }
+        }
+
+        window.addEventListener('load', ensureVideoPlaying);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) ensureVideoPlaying();
+        });
+        if (bgVideo) {
+            bgVideo.addEventListener('ended', () => {
+                bgVideo.currentTime = 0;
+                bgVideo.play().catch(() => {});
+            });
+        }
+
+        function showMessage(msg) {
+            const box = document.createElement('div');
+            box.style.position = 'fixed';
+            box.style.bottom = '100px'; 
+            box.style.right = '20px';
+            box.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            box.style.backdropFilter = 'blur(12px)';
+            box.style.color = '#111827';
+            box.style.padding = '16px 24px';
+            box.style.borderRadius = '12px';
+            box.style.border = '2px solid #FF2B00';
+            box.style.boxShadow = '0 10px 40px rgba(0,0,0,0.15)';
+            box.style.zIndex = '99999';
+            box.style.fontFamily = '"Plus Jakarta Sans", sans-serif';
+            box.style.fontSize = '14px';
+            box.style.fontWeight = '700';
+            box.innerHTML = `<i class="fa-solid fa-circle-check text-brand mr-2 text-lg"></i> ${msg}`;
+            document.body.appendChild(box);
+            
+            setTimeout(() => {
+                box.style.opacity = '0';
+                box.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => box.remove(), 500);
+            }, 3000);
+        }
+
+        async function handleEnquiry(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage("Enquiry Submitted successfully! Our team will contact you shortly.");
+                    form.reset();
+                } else {
+                    showMessage(result.message || "Submission failed. Please try again.");
+                }
+            } catch (err) {
+                showMessage("Network error. Please check your connection and try again.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        const validTabs = ['home', 'team', 'achievements', 'branches', 'enquire'];
+        let currentActiveTab = 'home';
+
+        function openFranchiseModal(event, updateUrl = true) {
+            if (event) event.preventDefault();
+            const modal = document.getElementById('franchise-modal');
+            const content = document.getElementById('franchise-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+
+            if (updateUrl && window.location.hash !== '#franchise') {
+                history.pushState(null, '', '#franchise');
+            }
+        }
+
+        function closeFranchiseModal(updateUrl = true) {
+            const modal = document.getElementById('franchise-modal');
+            const content = document.getElementById('franchise-modal-content');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+
+            if (updateUrl && window.location.hash === '#franchise') {
+                history.replaceState(null, '', `#${currentActiveTab}`);
+            }
+        }
+
+        // ==================== PHOTO DETAIL LIGHTBOX MODAL CONTROLS ====================
+        function openPhotoDetailModal({ imageUrl = '', fallbackUrl = '', badge = '', name = '', subtitle = '', description = '', linkUrl = '', linkText = '' }) {
+            const modal = document.getElementById('photo-detail-modal');
+            const content = document.getElementById('photo-detail-content');
+            const imgWrap = document.getElementById('photo-detail-image-wrap');
+            const imgEl = document.getElementById('photo-detail-image');
+            const badgeEl = document.getElementById('photo-detail-badge');
+            const nameEl = document.getElementById('photo-detail-name');
+            const subtitleEl = document.getElementById('photo-detail-subtitle');
+            const descEl = document.getElementById('photo-detail-description');
+            const linkWrap = document.getElementById('photo-detail-link-wrap');
+            const linkEl = document.getElementById('photo-detail-link');
+            const linkTextEl = document.getElementById('photo-detail-link-text');
+
+            if (!modal || !content) return;
+
+            if (imageUrl) {
+                imgEl.dataset.retried = '';
+                imgEl.src = imageUrl;
+                imgEl.alt = name || 'Photo';
+                imgEl.onerror = function() {
+                    if (fallbackUrl && !this.dataset.retried) {
+                        this.dataset.retried = '1';
+                        this.src = fallbackUrl;
+                    } else {
+                        imgWrap.classList.add('hidden');
+                    }
+                };
+                imgWrap.classList.remove('hidden');
+            } else {
+                imgWrap.classList.add('hidden');
+            }
+
+            if (badge && badge.trim()) {
+                badgeEl.textContent = badge;
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+
+            nameEl.textContent = name || '';
+
+            if (subtitle && subtitle.trim()) {
+                subtitleEl.textContent = subtitle;
+                subtitleEl.classList.remove('hidden');
+            } else {
+                subtitleEl.classList.add('hidden');
+            }
+
+            descEl.textContent = description || '';
+
+            if (linkUrl && linkUrl.trim()) {
+                linkEl.href = linkUrl;
+                linkTextEl.textContent = (linkText && linkText.trim()) ? linkText : 'Open Link';
+                linkWrap.classList.remove('hidden');
+            } else {
+                linkWrap.classList.add('hidden');
+            }
+
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closePhotoDetailModal() {
+            const modal = document.getElementById('photo-detail-modal');
+            const content = document.getElementById('photo-detail-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 220);
+        }
+
+        async function handleFranchiseSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    closeFranchiseModal();
+                    form.reset();
+                    setTimeout(() => {
+                        showMessage("Franchise Application Submitted! We will contact you soon.");
+                    }, 400);
+                } else {
+                    showMessage(result.message || "Submission failed. Please try again.");
+                }
+            } catch (err) {
+                showMessage("Network error. Please check your connection and try again.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                    observer.unobserve(entry.target); 
+                }
+            });
+        }, observerOptions);
+
+        function initScrollAnimations() {
+            document.querySelectorAll('.scroll-reveal').forEach(el => {
+                el.classList.remove('show'); 
+                observer.observe(el);
+            });
+        }
+        initScrollAnimations();
+
+        const counters = document.querySelectorAll('.counter');
+        let hasCounted = false;
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !hasCounted) {
+                    hasCounted = true;
+                    counters.forEach(counter => {
+                        counter.innerText = '0';
+                        const updateCounter = () => {
+                            const target = +counter.getAttribute('data-target');
+                            const c = +counter.innerText;
+                            const increment = Math.max(1, Math.ceil((target - c) / 15)); 
+                            
+                            if (c < target) {
+                                counter.innerText = `${c + increment}`;
+                                setTimeout(updateCounter, 40);
+                            } else {
+                                counter.innerText = target; 
+                            }
+                        };
+                        updateCounter();
+                    });
+                }
+            });
+        }, { threshold: 0.2 }); 
+
+        const statsSection = document.getElementById('stats-section');
+        if (statsSection) counterObserver.observe(statsSection);
+
+        function openTab(tabId, event, updateUrl = true) {
+            if (event) event.preventDefault();
+            if (!validTabs.includes(tabId)) tabId = 'home';
+            currentActiveTab = tabId;
+
+            const modal = document.getElementById('franchise-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeFranchiseModal(false);
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.querySelectorAll(`.nav-link[data-target="${tabId}"]`).forEach(el => el.classList.add('active'));
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(initScrollAnimations, 100);
+
+            if (updateUrl && window.location.hash !== `#${tabId}`) {
+                history.pushState(null, '', `#${tabId}`);
+            }
+        }
+
+        function handleRouteFromUrl() {
+            const hash = window.location.hash.replace('#', '').toLowerCase().trim();
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramTab = (urlParams.get('tab') || '').toLowerCase().trim();
+            const target = hash || paramTab;
+
+            if (target === 'franchise') {
+                openTab(currentActiveTab, null, false);
+                openFranchiseModal(null, false);
+            } else if (validTabs.includes(target)) {
+                openTab(target, null, false);
+            } else {
+                openTab('home', null, false);
+            }
+        }
+
+        handleRouteFromUrl();
+        window.addEventListener('hashchange', handleRouteFromUrl);
+        window.addEventListener('popstate', handleRouteFromUrl);
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // ==================== GOOGLE REVIEWS 3-SECOND RIGHT-TO-LEFT CAROUSEL ====================
+        (function initGoogleReviewsCarousel() {
+            const reviews = [
+                {
+                    name: "Karthika Sri",
+                    branch: "Iyyappanthangal Branch",
+                    text: "Joining Chess Titans Academy transformed my tactical vision. Coach Steve's tournament drills and endgame sessions helped me win district titles and qualify for state rounds."
+                },
+                {
+                    name: "Suhas S.K.",
+                    branch: "Online Batch",
+                    text: "Even from Tiruvannamalai, the live online classes feel just like sitting across the board. The structured puzzles and blindfold practice boosted my confidence hugely."
+                },
+                {
+                    name: "Rahul V.",
+                    branch: "Mangadu Branch",
+                    text: "Best chess coaching in Chennai! Coach Dharmeshkumar explains every opening trap and positional idea so clearly that even complex middlegames become easy to play."
+                },
+                {
+                    name: "Ananya Krishnan",
+                    branch: "Poonamallee Branch",
+                    text: "My calculation speed improved within just three months. Weekly practice tournaments with FIDE Swiss pairings prepared me perfectly for real state-level competitions."
+                },
+                {
+                    name: "Praveen Kumar",
+                    branch: "Noombal Branch",
+                    text: "Very disciplined and friendly environment. The coaches analyze every single tournament game with us and point out exact mistakes so we never repeat them."
+                },
+                {
+                    name: "Divya Natarajan",
+                    branch: "Online Batch",
+                    text: "The student LMS portal, daily puzzle assignments, and blindfold chess sessions are unique. My child looks forward to every class with total excitement."
+                },
+                {
+                    name: "Aarav Menon",
+                    branch: "Iyyappanthangal Branch",
+                    text: "Started as a complete beginner who barely knew piece movements, and now I am playing competitive Under-12 tournaments. Truly the most dedicated coaches."
+                },
+                {
+                    name: "Harini S.",
+                    branch: "Mangadu Branch",
+                    text: "Personal attention to each student makes Chess Titans stand out. Every class balances openings, tactical combinations, and practical endgame exercises."
+                },
+                {
+                    name: "Vikramaditya R.",
+                    branch: "Poonamallee Branch",
+                    text: "Learning directly under a TNSCA recognized coach and arbiter gave me complete clarity on tournament rules, clock handling, and sharp competitive strategy."
+                },
+                {
+                    name: "Kavya Subramanian",
+                    branch: "Noombal Branch",
+                    text: "Amazing coaching quality and consistent follow-up from the coaches. My rating and board awareness jumped noticeably after joining the intermediate batch."
+                }
+            ];
+
+            const track = document.getElementById('google-reviews-track');
+            if (!track) return;
+
+            const buildCardHtml = (rev) => {
+                const initial = rev.name.charAt(0).toUpperCase();
+                return `
+                    <div class="shrink-0 w-full md:w-1/2 lg:w-1/3 px-3 box-border">
+                        <div class="h-full bg-white/75 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-white/50 hover:border-brand/50 transition-colors flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-11 h-11 rounded-full bg-brand/10 border border-brand/20 text-brand font-extrabold text-lg flex items-center justify-center shrink-0">
+                                            ${initial}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-base font-extrabold text-gray-900 truncate">${rev.name}</h4>
+                                            <p class="text-[11px] font-bold text-gray-600 truncate">${rev.branch}</p>
+                                        </div>
+                                    </div>
+                                    <span class="w-8 h-8 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-brand shrink-0 shadow-sm" title="Google Review">
+                                        <i class="fa-brands fa-google text-sm"></i>
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <span class="ml-1.5 text-[11px] font-extrabold text-gray-700">5.0</span>
+                                </div>
+                                <p class="text-gray-800 text-sm font-medium leading-relaxed">"${rev.text}"</p>
+                            </div>
+                            <div class="mt-5 pt-3 border-t border-gray-200/70 flex items-center justify-between text-[11px] font-bold text-gray-500">
+                                <span><i class="fa-solid fa-circle-check text-brand mr-1"></i> Verified Student</span>
+                                <span>Google Review</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            // Clone first 3 slides at the end for seamless infinite right-to-left loop
+            const clonesCount = 3;
+            const renderedSlides = reviews.concat(reviews.slice(0, clonesCount));
+            track.innerHTML = renderedSlides.map(buildCardHtml).join('');
+
+            let currentIndex = 0;
+            let isTransitioning = false;
+
+            function getSlideWidth() {
+                const firstSlide = track.children[0];
+                return firstSlide ? firstSlide.getBoundingClientRect().width : 0;
+            }
+
+            function setTrackPosition(withTransition) {
+                const slideWidth = getSlideWidth();
+                if (!slideWidth) return;
+                track.style.transition = withTransition ? 'transform 650ms ease-in-out' : 'none';
+                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            }
+
+            function slideNextReview() {
+                const slideWidth = getSlideWidth();
+                if (!slideWidth || isTransitioning) return;
+
+                isTransitioning = true;
+                currentIndex += 1;
+                setTrackPosition(true);
+            }
+
+            track.addEventListener('transitionend', () => {
+                isTransitioning = false;
+                if (currentIndex >= reviews.length) {
+                    currentIndex = 0;
+                    setTrackPosition(false);
+                    void track.offsetWidth;
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                setTrackPosition(false);
+            });
+
+            // Move right-to-left one by one every 3 seconds
+            setInterval(slideNextReview, 3000);
+        })();
+    </script>
+
+    <!-- ==================== ISOLATED NOTIFICATION, TROPHY ROOM & ADMIN PORTAL SCRIPT ==================== -->
+    <script>
+        // KEEP THE SINGLE QUOTES around your deployed Apps Script Web App URL:
+        const NOTIFICATION_API_URL = 'https://script.google.com/macros/s/AKfycbyOpPI6CqYnXhjcJa8sVTgSdMQowPxhobCi0tnvoEyLSLcJPjGPRdQ5UPZ3T-rlz0w0/exec';
+
+        let publicNotifications = [];
+        let currentNotifIndex = 0;
+        let adminNotificationsCache = [];
+        let adminAuth = null;
+        let selectedImagePayload = null;
+        let removeExistingImageFlag = false;
+
+        // Trophy Room / Student Achievements State
+        let publicAchievements = [];
+        let adminAchievementsCache = [];
+        let selectedAchievementImagePayload = null;
+        let removeExistingAchievementImageFlag = false;
+
+        function isApiConfigured() {
+            return typeof NOTIFICATION_API_URL === 'string' && NOTIFICATION_API_URL.startsWith('https://script.google.com/');
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&' + 'amp;')
+                .replace(/</g, '&' + 'lt;')
+                .replace(/>/g, '&' + 'gt;')
+                .replace(/"/g, '&' + 'quot;')
+                .replace(/'/g, '&' + '#39;');
+        }
+
+        function formatDescriptionWithLinks(text) {
+            const safe = escapeHtml(text);
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return safe.replace(urlRegex, (url) => {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-brand underline font-bold hover:text-orange-700 break-all">${url}</a>`;
+            });
+        }
+
+        function normalizeUrl(url) {
+            const trimmed = (url || '').trim();
+            if (!trimmed) return '';
+            if (/^https?:\/\//i.test(trimmed)) return trimmed;
+            return 'https://' + trimmed;
+        }
+
+        async function apiPost(payload) {
+            if (!isApiConfigured()) {
+                throw new Error('Please paste your Google Apps Script Web App URL into NOTIFICATION_API_URL.');
+            }
+            const res = await fetch(NOTIFICATION_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!data.ok) {
+                throw new Error(data.error || 'Request failed');
+            }
+            return data;
+        }
+
+        // Shared image compression helper for Google Drive upload
+        function compressImageFile(file, callback) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1600;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const outputMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+                    const dataUrl = canvas.toDataURL(outputMime, 0.85);
+                    const base64 = dataUrl.split(',')[1];
+
+                    callback({
+                        dataUrl,
+                        payload: {
+                            base64,
+                            mimeType: outputMime,
+                            fileName: file.name
+                        }
+                    });
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ---------- 1. STUDENT FRONT POPUP ----------
+        async function fetchAndShowStudentNotification() {
+            if (!isApiConfigured()) return;
+            try {
+                const res = await fetch(`${NOTIFICATION_API_URL}?action=getActive&t=${Date.now()}`);
+                const data = await res.json();
+                if (data.ok && Array.isArray(data.notifications) && data.notifications.length > 0) {
+                    publicNotifications = data.notifications;
+                    currentNotifIndex = 0;
+                    renderStudentNotification(currentNotifIndex);
+                    openStudentNotificationModal();
+                }
+            } catch (err) {
+                console.warn('Notification fetch skipped:', err.message);
+            }
+        }
+
+        function renderStudentNotification(index) {
+            const item = publicNotifications[index];
+            if (!item) return;
+
+            const imgWrap = document.getElementById('notif-popup-image-wrap');
+            const imgEl = document.getElementById('notif-popup-image');
+            const titleEl = document.getElementById('notif-popup-title');
+            const descEl = document.getElementById('notif-popup-description');
+            const linkWrap = document.getElementById('notif-popup-link-wrap');
+            const linkEl = document.getElementById('notif-popup-link');
+            const linkTextEl = document.getElementById('notif-popup-link-text');
+            const pagerEl = document.getElementById('notif-popup-pager');
+            const counterEl = document.getElementById('notif-popup-counter');
+
+            if (item.imageUrl) {
+                imgEl.dataset.retried = '';
+                imgEl.src = item.imageUrl;
+                imgEl.onerror = function() {
+                    if (item.driveFileId && !this.dataset.retried) {
+                        this.dataset.retried = '1';
+                        this.src = `https://drive.google.com/thumbnail?id=${item.driveFileId}&sz=w1600`;
+                    } else {
+                        imgWrap.classList.add('hidden');
+                    }
+                };
+                imgWrap.classList.remove('hidden');
+            } else {
+                imgWrap.classList.add('hidden');
+            }
+
+            if (item.title && item.title.trim()) {
+                titleEl.textContent = item.title;
+                titleEl.classList.remove('hidden');
+            } else {
+                titleEl.classList.add('hidden');
+            }
+
+            if (item.description && item.description.trim()) {
+                descEl.innerHTML = formatDescriptionWithLinks(item.description);
+                descEl.classList.remove('hidden');
+            } else {
+                descEl.classList.add('hidden');
+            }
+
+            if (item.linkUrl && item.linkUrl.trim()) {
+                linkEl.href = normalizeUrl(item.linkUrl);
+                linkTextEl.textContent = (item.linkText && item.linkText.trim()) ? item.linkText : 'Open Link';
+                linkWrap.classList.remove('hidden');
+            } else {
+                linkWrap.classList.add('hidden');
+            }
+
+            if (publicNotifications.length > 1) {
+                pagerEl.classList.remove('hidden');
+                counterEl.textContent = `${index + 1} / ${publicNotifications.length}`;
+            } else {
+                pagerEl.classList.add('hidden');
+            }
+        }
+
+        function stepNotification(delta) {
+            if (publicNotifications.length <= 1) return;
+            currentNotifIndex = (currentNotifIndex + delta + publicNotifications.length) % publicNotifications.length;
+            renderStudentNotification(currentNotifIndex);
+        }
+
+        function openStudentNotificationModal() {
+            const modal = document.getElementById('student-notification-modal');
+            const content = document.getElementById('student-notification-content');
+            if (!modal || !content) return;
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeStudentNotification() {
+            const modal = document.getElementById('student-notification-modal');
+            const content = document.getElementById('student-notification-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 220);
+        }
+
+        // ---------- 1B. PUBLIC TROPHY ROOM (DYNAMIC FROM GOOGLE SHEET & DRIVE) ----------
+        async function fetchAndRenderTrophyRoom() {
+            const gridEl = document.getElementById('trophy-room-grid');
+            if (!gridEl || !isApiConfigured()) return;
+
+            try {
+                const res = await fetch(`${NOTIFICATION_API_URL}?action=getAchievements&t=${Date.now()}`);
+                const data = await res.json();
+                if (data.ok && Array.isArray(data.achievements)) {
+                    publicAchievements = data.achievements;
+                    renderTrophyRoomGrid();
+                } else {
+                    gridEl.innerHTML = `
+                        <div class="col-span-full bg-white/75 backdrop-blur-xl rounded-2xl p-10 text-center border border-white/50 shadow-lg text-gray-700 font-semibold">
+                            No student achievements uploaded yet.
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.warn('Trophy Room fetch skipped:', err.message);
+                gridEl.innerHTML = `
+                    <div class="col-span-full bg-white/75 backdrop-blur-xl rounded-2xl p-10 text-center border border-white/50 shadow-lg text-gray-700 font-semibold">
+                        Unable to load Trophy Room achievements right now.
+                    </div>
+                `;
+            }
+        }
+
+        function openTrophyRoomDetail(index) {
+            const item = publicAchievements[index];
+            if (!item) return;
+            const fallbackUrl = item.driveFileId
+                ? `https://drive.google.com/thumbnail?id=${item.driveFileId}&sz=w1600`
+                : '';
+            openPhotoDetailModal({
+                imageUrl: item.imageUrl || fallbackUrl,
+                fallbackUrl,
+                badge: 'Chess Titans Achiever',
+                name: item.name || '',
+                description: item.description || ''
+            });
+        }
+
+        function renderTrophyRoomGrid() {
+            const gridEl = document.getElementById('trophy-room-grid');
+            if (!gridEl) return;
+
+            if (publicAchievements.length === 0) {
+                gridEl.innerHTML = `
+                    <div class="col-span-full bg-white/75 backdrop-blur-xl rounded-2xl p-10 text-center border border-white/50 shadow-lg text-gray-700 font-semibold">
+                        <i class="fa-solid fa-trophy text-brand text-3xl mb-3 block"></i>
+                        No student achievements uploaded yet. Check back soon!
+                    </div>
+                `;
+                return;
+            }
+
+            gridEl.innerHTML = publicAchievements.map((item, index) => {
+                const fallbackUrl = item.driveFileId
+                    ? `https://drive.google.com/thumbnail?id=${escapeHtml(item.driveFileId)}&sz=w1600`
+                    : '';
+                const imgTag = item.imageUrl
+                    ? `<img src="${escapeHtml(item.imageUrl)}" onerror="if('${fallbackUrl}' && !this.dataset.retried){this.dataset.retried='1';this.src='${fallbackUrl}';}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">`
+                    : `<div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400"><i class="fa-solid fa-trophy text-5xl"></i></div>`;
+
+                return `
+                    <div onclick="openTrophyRoomDetail(${index})" class="bg-white/75 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50 hover:border-brand/50 transition-all duration-300 group cursor-pointer">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden relative mb-6 border-4 border-white/60 group-hover:border-brand/40 transition-all">
+                            ${imgTag}
+                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="inline-block px-3 py-1 bg-brand text-white text-[10px] font-bold uppercase tracking-wider rounded-md shadow-lg mb-2">Chess Titans Achiever</span>
+                                <h4 class="text-2xl font-extrabold text-white tracking-tight">${escapeHtml(item.name)}</h4>
+                            </div>
+                        </div>
+                        <p class="text-gray-800 font-medium text-sm leading-relaxed whitespace-pre-line break-words">
+                            ${escapeHtml(item.description)}
+                        </p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Trigger notification popup & Trophy Room fetch immediately on load
+        fetchAndShowStudentNotification();
+        fetchAndRenderTrophyRoom();
+
+        // ---------- 2. ADMIN LOGIN & DASHBOARD CONTROLS ----------
+        window.openAdminPortal = function(event) {
+            if (event) event.preventDefault();
+            if (adminAuth) {
+                openAdminDashboardModal();
+                loadAdminNotifications();
+                loadAdminAchievements();
+                return;
+            }
+            const modal = document.getElementById('admin-login-modal');
+            const content = document.getElementById('admin-login-content');
+            const errEl = document.getElementById('admin-login-error');
+            if (!modal || !content) return;
+
+            if (errEl) errEl.classList.add('hidden');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+                const userInput = document.getElementById('admin-username');
+                if (userInput) userInput.focus();
+            }, 10);
+        };
+
+        window.closeAdminLoginModal = function() {
+            const modal = document.getElementById('admin-login-modal');
+            const content = document.getElementById('admin-login-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 220);
+        };
+
+        function openAdminDashboardModal() {
+            const modal = document.getElementById('admin-dashboard-modal');
+            const content = document.getElementById('admin-dashboard-content');
+            if (!modal || !content) return;
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeAdminDashboardModal() {
+            const modal = document.getElementById('admin-dashboard-modal');
+            const content = document.getElementById('admin-dashboard-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 220);
+        }
+
+        function adminLogout() {
+            adminAuth = null;
+            resetNotificationForm();
+            resetAchievementForm();
+            closeAdminDashboardModal();
+            showMessage('Logged out from Admin Dashboard.');
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const errEl = document.getElementById('admin-login-error');
+            const btn = document.getElementById('admin-login-submit-btn');
+
+            errEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+
+            try {
+                await apiPost({ action: 'login', username, password });
+                adminAuth = { username, password };
+                e.target.reset();
+                closeAdminLoginModal();
+                setTimeout(() => {
+                    openAdminDashboardModal();
+                    loadAdminNotifications();
+                    loadAdminAchievements();
+                }, 240);
+            } catch (err) {
+                errEl.textContent = err.message || 'Invalid username or password.';
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Login to Dashboard <i class="fa-solid fa-right-to-bracket"></i>';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const photoModal = document.getElementById('photo-detail-modal');
+                if (photoModal && photoModal.style.display === 'flex') closePhotoDetailModal();
+                const notifModal = document.getElementById('student-notification-modal');
+                if (notifModal && notifModal.style.display === 'flex') closeStudentNotification();
+                const loginModal = document.getElementById('admin-login-modal');
+                if (loginModal && loginModal.style.display === 'flex') closeAdminLoginModal();
+            }
+        });
+
+        // ---------- 3. NOTIFICATION IMAGE UPLOAD HELPER ----------
+        function handleImageFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showMessage('Please choose a valid image file.');
+                e.target.value = '';
+                return;
+            }
+
+            compressImageFile(file, ({ dataUrl, payload }) => {
+                selectedImagePayload = payload;
+                removeExistingImageFlag = false;
+                document.getElementById('notif-image-preview').src = dataUrl;
+                document.getElementById('notif-image-preview-wrap').classList.remove('hidden');
+            });
+        }
+
+        function clearSelectedImage() {
+            selectedImagePayload = null;
+            removeExistingImageFlag = true;
+            document.getElementById('notif-image-input').value = '';
+            document.getElementById('notif-image-preview').src = '';
+            document.getElementById('notif-image-preview-wrap').classList.add('hidden');
+        }
+
+        function resetNotificationForm() {
+            document.getElementById('admin-notif-form').reset();
+            document.getElementById('notif-edit-id').value = '';
+            document.getElementById('notif-active-toggle').checked = true;
+            document.getElementById('notif-form-heading').innerHTML = '<i class="fa-solid fa-plus-circle text-brand mr-1.5"></i> Add New Notification';
+            document.getElementById('notif-save-btn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save Notification';
+            document.getElementById('notif-cancel-edit-btn').classList.add('hidden');
+            selectedImagePayload = null;
+            removeExistingImageFlag = false;
+            document.getElementById('notif-image-preview').src = '';
+            document.getElementById('notif-image-preview-wrap').classList.add('hidden');
+        }
+
+        // ---------- 4. NOTIFICATION CRUD ----------
+        async function loadAdminNotifications() {
+            if (!adminAuth) return;
+            const listEl = document.getElementById('admin-notif-list');
+            listEl.innerHTML = `<div class="p-8 text-center text-gray-600 text-sm font-semibold bg-gray-50 rounded-2xl border border-gray-200"><i class="fa-solid fa-spinner fa-spin text-brand mr-2"></i> Syncing with Google Sheets...</div>`;
+
+            try {
+                const data = await apiPost({
+                    action: 'list',
+                    username: adminAuth.username,
+                    password: adminAuth.password
+                });
+                adminNotificationsCache = data.notifications || [];
+                renderAdminNotificationsList();
+            } catch (err) {
+                listEl.innerHTML = `<div class="p-6 text-center text-red-600 text-sm font-bold bg-red-50 rounded-2xl border border-red-200">${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function renderAdminNotificationsList() {
+            const listEl = document.getElementById('admin-notif-list');
+            const badgeEl = document.getElementById('notif-count-badge');
+            badgeEl.textContent = `${adminNotificationsCache.length} ${adminNotificationsCache.length === 1 ? 'item' : 'items'}`;
+
+            if (adminNotificationsCache.length === 0) {
+                listEl.innerHTML = `
+                    <div class="p-8 text-center text-gray-500 text-sm font-medium bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                        No notifications saved yet. Use the form on the left to add one.
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = adminNotificationsCache.map((item) => {
+                const isOn = item.active === true || String(item.active).toUpperCase() === 'ON';
+                const statusBadge = isOn
+                    ? '<span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-extrabold uppercase">ON - Live</span>'
+                    : '<span class="px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-extrabold uppercase">OFF - Hidden</span>';
+
+                const thumbHtml = item.imageUrl
+                    ? `<img src="${escapeHtml(item.imageUrl)}" onerror="this.src='https://drive.google.com/thumbnail?id=${escapeHtml(item.driveFileId)}&sz=w400'" alt="Thumb" class="w-20 h-20 rounded-xl object-cover border border-gray-200 shrink-0 bg-gray-100">`
+                    : `<div class="w-20 h-20 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 shrink-0"><i class="fa-regular fa-image text-2xl"></i></div>`;
+
+                const linkHtml = item.linkUrl
+                    ? `<a href="${escapeHtml(normalizeUrl(item.linkUrl))}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline mt-1"><i class="fa-solid fa-link"></i> ${escapeHtml(item.linkText || item.linkUrl)}</a>`
+                    : '';
+
+                return `
+                    <div class="p-4 bg-white border ${isOn ? 'border-brand/40 shadow-md' : 'border-gray-200'} rounded-2xl flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between transition-all">
+                        <div class="flex gap-3.5 items-start min-w-0 flex-1">
+                            ${thumbHtml}
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    ${statusBadge}
+                                    <span class="text-[10px] font-semibold text-gray-400">${escapeHtml(item.updatedAt || '')}</span>
+                                </div>
+                                <h5 class="text-sm font-extrabold text-gray-900 truncate">${escapeHtml(item.title || 'Untitled Notification')}</h5>
+                                <p class="text-xs text-gray-600 font-medium line-clamp-2 mt-0.5">${escapeHtml(item.description || 'No description')}</p>
+                                ${linkHtml}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <button type="button" onclick="handleToggleNotification('${escapeHtml(item.id)}', ${!isOn})" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${isOn ? 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200' : 'bg-brand text-white border-brand hover:bg-orange-700'}">
+                                ${isOn ? 'Turn OFF' : 'Turn ON'}
+                            </button>
+                            <button type="button" onclick="startEditNotification('${escapeHtml(item.id)}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors flex items-center justify-center" title="Edit">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button type="button" onclick="handleDeleteNotification('${escapeHtml(item.id)}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center" title="Delete">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startEditNotification(id) {
+            const item = adminNotificationsCache.find((n) => String(n.id) === String(id));
+            if (!item) return;
+
+            document.getElementById('notif-edit-id').value = item.id;
+            document.getElementById('notif-active-toggle').checked = (item.active === true || String(item.active).toUpperCase() === 'ON');
+            document.getElementById('notif-title').value = item.title || '';
+            document.getElementById('notif-description').value = item.description || '';
+            document.getElementById('notif-link-url').value = item.linkUrl || '';
+            document.getElementById('notif-link-text').value = item.linkText || '';
+            document.getElementById('notif-image-input').value = '';
+
+            selectedImagePayload = null;
+            removeExistingImageFlag = false;
+
+            if (item.imageUrl) {
+                document.getElementById('notif-image-preview').src = item.imageUrl;
+                document.getElementById('notif-image-preview-wrap').classList.remove('hidden');
+            } else {
+                document.getElementById('notif-image-preview').src = '';
+                document.getElementById('notif-image-preview-wrap').classList.add('hidden');
+            }
+
+            document.getElementById('notif-form-heading').innerHTML = '<i class="fa-solid fa-pen-to-square text-brand mr-1.5"></i> Edit Notification';
+            document.getElementById('notif-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Notification';
+            document.getElementById('notif-cancel-edit-btn').classList.remove('hidden');
+        }
+
+        async function handleSaveNotification(e) {
+            e.preventDefault();
+            if (!adminAuth) return;
+
+            const editId = document.getElementById('notif-edit-id').value.trim();
+            const active = document.getElementById('notif-active-toggle').checked;
+            const title = document.getElementById('notif-title').value.trim();
+            const description = document.getElementById('notif-description').value.trim();
+            const linkUrl = document.getElementById('notif-link-url').value.trim();
+            const linkText = document.getElementById('notif-link-text').value.trim();
+
+            if (!editId && !selectedImagePayload && !title && !description) {
+                showMessage('Please upload an image or enter a notification description.');
+                return;
+            }
+
+            const saveBtn = document.getElementById('notif-save-btn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving to Sheet & Drive...';
+
+            try {
+                await apiPost({
+                    action: editId ? 'update' : 'create',
+                    username: adminAuth.username,
+                    password: adminAuth.password,
+                    id: editId || undefined,
+                    active,
+                    title,
+                    description,
+                    linkUrl,
+                    linkText,
+                    image: selectedImagePayload,
+                    removeImage: removeExistingImageFlag
+                });
+
+                showMessage(editId ? 'Notification updated!' : 'Notification saved!');
+                resetNotificationForm();
+                await loadAdminNotifications();
+            } catch (err) {
+                showMessage(`Error: ${err.message}`);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = document.getElementById('notif-edit-id').value
+                    ? '<i class="fa-solid fa-floppy-disk"></i> Update Notification'
+                    : '<i class="fa-solid fa-cloud-arrow-up"></i> Save Notification';
+            }
+        }
+
+        async function handleToggleNotification(id, newActiveState) {
+            if (!adminAuth) return;
+            try {
+                await apiPost({
+                    action: 'toggle',
+                    username: adminAuth.username,
+                    password: adminAuth.password,
+                    id,
+                    active: newActiveState
+                });
+                showMessage(`Notification turned ${newActiveState ? 'ON' : 'OFF'}.`);
+                await loadAdminNotifications();
+            } catch (err) {
+                showMessage(`Error: ${err.message}`);
+            }
+        }
+
+        async function handleDeleteNotification(id) {
+            if (!adminAuth) return;
+            if (!confirm('Delete this notification from Google Sheets and remove its image from Google Drive?')) return;
+
+            try {
+                await apiPost({
+                    action: 'delete',
+                    username: adminAuth.username,
+                    password: adminAuth.password,
+                    id
+                });
+                if (document.getElementById('notif-edit-id').value === String(id)) {
+                    resetNotificationForm();
+                }
+                showMessage('Notification deleted successfully.');
+                await loadAdminNotifications();
+            } catch (err) {
+                showMessage(`Error: ${err.message}`);
+            }
+        }
+
+        // ---------- 5. STUDENT ACHIEVEMENTS (TROPHY ROOM) IMAGE & CRUD ----------
+        function handleAchievementImageSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showMessage('Please choose a valid image file.');
+                e.target.value = '';
+                return;
+            }
+
+            compressImageFile(file, ({ dataUrl, payload }) => {
+                selectedAchievementImagePayload = payload;
+                removeExistingAchievementImageFlag = false;
+                document.getElementById('ach-image-preview').src = dataUrl;
+                document.getElementById('ach-image-preview-wrap').classList.remove('hidden');
+            });
+        }
+
+        function clearSelectedAchievementImage() {
+            selectedAchievementImagePayload = null;
+            removeExistingAchievementImageFlag = true;
+            document.getElementById('ach-image-input').value = '';
+            document.getElementById('ach-image-preview').src = '';
+            document.getElementById('ach-image-preview-wrap').classList.add('hidden');
+        }
+
+        function resetAchievementForm() {
+            const form = document.getElementById('admin-ach-form');
+            if (form) form.reset();
+            document.getElementById('ach-edit-id').value = '';
+            document.getElementById('ach-form-heading').innerHTML = '<i class="fa-solid fa-plus-circle text-brand mr-1.5"></i> Add Student Achievement';
+            document.getElementById('ach-save-btn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save Student Achievement';
+            document.getElementById('ach-cancel-edit-btn').classList.add('hidden');
+            selectedAchievementImagePayload = null;
+            removeExistingAchievementImageFlag = false;
+            document.getElementById('ach-image-preview').src = '';
+            document.getElementById('ach-image-preview-wrap').classList.add('hidden');
+        }
+
+        async function loadAdminAchievements() {
+            if (!adminAuth) return;
+            const listEl = document.getElementById('admin-ach-list');
+            listEl.innerHTML = `<div class="p-8 text-center text-gray-600 text-sm font-semibold bg-gray-50 rounded-2xl border border-gray-200"><i class="fa-solid fa-spinner fa-spin text-brand mr-2"></i> Syncing Trophy Room with Google Sheets...</div>`;
+
+            try {
+                const data = await apiPost({
+                    action: 'listAchievements',
+                    username: adminAuth.username,
+                    password: adminAuth.password
+                });
+                adminAchievementsCache = data.achievements || [];
+                renderAdminAchievementsList();
+            } catch (err) {
+                listEl.innerHTML = `<div class="p-6 text-center text-red-600 text-sm font-bold bg-red-50 rounded-2xl border border-red-200">${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function renderAdminAchievementsList() {
+            const listEl = document.getElementById('admin-ach-list');
+            const badgeEl = document.getElementById('ach-count-badge');
+            badgeEl.textContent = `${adminAchievementsCache.length} ${adminAchievementsCache.length === 1 ? 'item' : 'items'}`;
+
+            if (adminAchievementsCache.length === 0) {
+                listEl.innerHTML = `
+                    <div class="p-8 text-center text-gray-500 text-sm font-medium bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                        No student achievements uploaded yet. Use the form on the left to add one.
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = adminAchievementsCache.map((item) => {
+                const thumbHtml = item.imageUrl
+                    ? `<img src="${escapeHtml(item.imageUrl)}" onerror="this.src='https://drive.google.com/thumbnail?id=${escapeHtml(item.driveFileId)}&sz=w400'" alt="${escapeHtml(item.name)}" class="w-20 h-20 rounded-xl object-cover border border-gray-200 shrink-0 bg-gray-100">`
+                    : `<div class="w-20 h-20 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 shrink-0"><i class="fa-solid fa-trophy text-2xl"></i></div>`;
+
+                return `
+                    <div class="p-4 bg-white border border-gray-200 hover:border-brand/40 rounded-2xl flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between transition-all shadow-sm">
+                        <div class="flex gap-3.5 items-start min-w-0 flex-1">
+                            ${thumbHtml}
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 rounded-full bg-brand/10 text-brand text-[10px] font-extrabold uppercase">Trophy Room</span>
+                                    <span class="text-[10px] font-semibold text-gray-400">${escapeHtml(item.updatedAt || '')}</span>
+                                </div>
+                                <h5 class="text-sm font-extrabold text-gray-900 truncate">${escapeHtml(item.name || 'Unnamed Student')}</h5>
+                                <p class="text-xs text-gray-600 font-medium line-clamp-2 mt-0.5">${escapeHtml(item.description || '')}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <button type="button" onclick="startEditAchievement('${escapeHtml(item.id)}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors flex items-center justify-center" title="Edit">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button type="button" onclick="handleDeleteAchievement('${escapeHtml(item.id)}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center" title="Delete">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startEditAchievement(id) {
+            const item = adminAchievementsCache.find((a) => String(a.id) === String(id));
+            if (!item) return;
+
+            document.getElementById('ach-edit-id').value = item.id;
+            document.getElementById('ach-name').value = item.name || '';
+            document.getElementById('ach-description').value = item.description || '';
+            document.getElementById('ach-image-input').value = '';
+
+            selectedAchievementImagePayload = null;
+            removeExistingAchievementImageFlag = false;
+
+            if (item.imageUrl) {
+                document.getElementById('ach-image-preview').src = item.imageUrl;
+                document.getElementById('ach-image-preview-wrap').classList.remove('hidden');
+            } else {
+                document.getElementById('ach-image-preview').src = '';
+                document.getElementById('ach-image-preview-wrap').classList.add('hidden');
+            }
+
+            document.getElementById('ach-form-heading').innerHTML = '<i class="fa-solid fa-pen-to-square text-brand mr-1.5"></i> Edit Student Achievement';
+            document.getElementById('ach-save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Student Achievement';
+            document.getElementById('ach-cancel-edit-btn').classList.remove('hidden');
+        }
+
+        async function handleSaveAchievement(e) {
+            e.preventDefault();
+            if (!adminAuth) return;
+
+            const editId = document.getElementById('ach-edit-id').value.trim();
+            const name = document.getElementById('ach-name').value.trim();
+            const description = document.getElementById('ach-description').value.trim();
+
+            if (!name || !description) {
+                showMessage('Please enter both student name and description.');
+                return;
+            }
+            if (!editId && !selectedAchievementImagePayload) {
+                showMessage('Please select a student photo to upload.');
+                return;
+            }
+
+            const saveBtn = document.getElementById('ach-save-btn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving to Sheet & Drive...';
+
+            try {
+                await apiPost({
+                    action: editId ? 'updateAchievement' : 'createAchievement',
+                    username: adminAuth.username,
+                    password: adminAuth.password,
+                    id: editId || undefined,
+                    name,
+                    description,
+                    image: selectedAchievementImagePayload,
+                    removeImage: removeExistingAchievementImageFlag
+                });
+
+                showMessage(editId ? 'Student achievement updated!' : 'Student achievement added to Trophy Room!');
+                resetAchievementForm();
+                await loadAdminAchievements();
+                fetchAndRenderTrophyRoom();
+            } catch (err) {
+                showMessage(`Error: ${err.message}`);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = document.getElementById('ach-edit-id').value
+                    ? '<i class="fa-solid fa-floppy-disk"></i> Update Student Achievement'
+                    : '<i class="fa-solid fa-cloud-arrow-up"></i> Save Student Achievement';
+            }
+        }
+
+        async function handleDeleteAchievement(id) {
+            if (!adminAuth) return;
+            if (!confirm('Delete this student achievement from Google Sheets and remove its photo from Google Drive?')) return;
+
+            try {
+                await apiPost({
+                    action: 'deleteAchievement',
+                    username: adminAuth.username,
+                    password: adminAuth.password,
+                    id
+                });
+                if (document.getElementById('ach-edit-id').value === String(id)) {
+                    resetAchievementForm();
+                }
+                showMessage('Student achievement deleted.');
+                await loadAdminAchievements();
+                fetchAndRenderTrophyRoom();
+            } catch (err) {
+                showMessage(`Error: ${err.message}`);
+            }
+        }
+    </script>
 </body>
-
 </html>
