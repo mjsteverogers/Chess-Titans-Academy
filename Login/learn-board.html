@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chess Titans Academy - Learn Board Rank</title>
+    <link rel="icon" href="images/logo.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], },
+                    colors: {
+                        brand: { 50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 500: '#f97316', 600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12', },
+                        secondary: { 900: '#1a1a1a', 800: '#262626', }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fff7ed;
+            background-image: linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            height: 100vh; height: 100dvh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border: 1px solid rgba(249, 115, 22, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.1), 0 8px 10px -6px rgba(234, 88, 12, 0.1);
+        }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loader {
+            border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #ea580c;
+            width: 20px; height: 20px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        .snap-x-mandatory { scroll-snap-type: x mandatory; }
+        .snap-center { scroll-snap-align: center; }
+    </style>
+</head>
+<body class="antialiased text-slate-800 flex flex-col overflow-hidden">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none w-full max-w-xs px-4 md:px-0 ml-auto"></div>
+
+    <div id="app" class="flex-grow flex items-center justify-center p-4 w-full h-full relative">
+        <div class="text-brand-600 font-bold flex flex-col items-center">
+            <div class="loader mb-2 w-8 h-8 border-4"></div>
+            Connecting to Academy Server...
+        </div>
+    </div>
+
+    <div id="global-modals"></div>
+
+    <script>
+        // --- API & ROUTE CONFIGURATION ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwFFMkEm3KEeq21bZkuw6nbrJu0WEXeNzoNyEn1grdH3WsSXe-WlrB5jsUjUQW49eaHhA/exec';
+
+        const ROUTES = {
+            login: 'index.html',
+            student: 'student.html',
+            adminDashboard: 'admin.html',
+            unrankedStudents: 'unranked.html',
+            expiredStudents: 'expired.html',
+            pendingStudents: 'pending.html',
+            adminAttendance: 'attendance.html',
+            initialStudents: 'initial.html',
+            attendanceApproval: 'attendance-approval.html',
+            learnBoardRank: 'learn-board.html',
+            adminExams: 'exams.html',
+            puzzleBooks: 'puzzle-books.html',
+            academyTieup: 'tieup.html',
+            activityLogs: 'activity-logs.html'
+        };
+
+        const ACADEMY_BRANCHES = [
+            'Noombal Branch',
+            'Iyyappanthangal Branch',
+            'Poonamallee Branch',
+            'Mangadu Branch',
+            'Online Batch'
+        ];
+
+        function escapeJs(str) {
+            return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        function escapeHtml(str) {
+            const amp = String.fromCharCode(38);
+            return String(str || '')
+                .replace(/&/g, amp + 'amp;')
+                .replace(/</g, amp + 'lt;')
+                .replace(/>/g, amp + 'gt;')
+                .replace(/"/g, amp + 'quot;')
+                .replace(/'/g, amp + '#39;');
+        }
+
+        window.currentUser = null;
+        window.cachedData = null;
+        window.lbActiveView = 'overall'; // 'overall' | 'branch'
+        window.lbSelectedBranch = 'all';
+        window.lbSearchTerm = '';
+        window.lbStatusFilter = 'all'; // 'all' | 'paid' | 'nonpaid'
+
+        // --- DATA MANAGEMENT ---
+        async function fetchUsers() { try { return await (await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`)).json(); } catch (e) { return null; } }
+        async function fetchAttendance() { try { return await (await fetch(`${API_URL}?action=getAttendance&t=${Date.now()}`)).json(); } catch (e) { return []; } }
+        async function fetchLearnBoard() { try { return await (await fetch(`${API_URL}?action=getLearnBoard&t=${Date.now()}`)).json(); } catch (e) { return []; } }
+
+        async function saveLearnBoardPointsAPI(username, points, mode = 'set') {
+            return await sendPostRequest({
+                action: 'saveLearnBoardPoints',
+                username: username,
+                points: Number(points),
+                mode: mode
+            });
+        }
+
+        async function deleteLearnBoardUserAPI(username) {
+            return await sendPostRequest({
+                action: 'deleteLearnBoardUser',
+                username: username
+            });
+        }
+
+        async function deleteAllLearnBoardAPI() {
+            return await sendPostRequest({
+                action: 'deleteAllLearnBoard'
+            });
+        }
+
+        async function sendPostRequest(data) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data)
+                });
+                const text = await response.text();
+                try {
+                    return JSON.parse(text);
+                } catch (err) {
+                    return { success: false, message: "Server response was invalid or timed out." };
+                }
+            } catch (error) {
+                return { success: false, message: error.message };
+            }
+        }
+
+        // --- UI UTILITIES ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-emerald-600 text-white border-l-4 border-emerald-800',
+                error: 'bg-red-500 text-white border-l-4 border-red-800',
+                info: 'bg-brand-600 text-white border-l-4 border-brand-800'
+            };
+            const icons = {
+                success: '<i class="fas fa-check-circle mr-2"></i>',
+                error: '<i class="fas fa-exclamation-triangle mr-2"></i>',
+                info: '<i class="fas fa-info-circle mr-2"></i>'
+            };
+            toast.className = `${colors[type]} px-4 py-3 md:px-6 md:py-4 rounded shadow-2xl transform transition-all duration-300 translate-x-full pointer-events-auto flex items-center font-medium text-sm md:text-base`;
+            toast.innerHTML = `${icons[type]} <span>${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full'));
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function setButtonLoading(btn, isLoading, text = "") {
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = `<div class="loader inline-block mr-2 border-white border-t-transparent w-4 h-4"></div> Processing...`;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = text;
+            }
+        }
+
+        // --- LEARN BOARD ELIGIBILITY & RANKING LOGIC ---
+        function isExcludedLevel(level) {
+            const lv = String(level || '').trim().toLowerCase();
+            return lv === 'initial' || lv === 'tournament puzzles';
+        }
+
+        function isPaidActiveStudent(u) {
+            if (!u) return false;
+            const st = String(u.status || '').trim().toLowerCase();
+            const rl = String(u.role || '').trim().toLowerCase();
+            const lv = String(u.level || '').trim().toLowerCase();
+            return rl !== 'admin' && st === 'approved' && lv !== '' && lv !== 'unranked' && !isExcludedLevel(lv);
+        }
+
+        function getAdminStudentCategory(u) {
+            const st = String(u.status || '').trim().toLowerCase();
+            const lv = String(u.level || '').trim().toLowerCase();
+            if (isPaidActiveStudent(u)) {
+                return { key: 'paid', label: 'Paid Active', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+            }
+            if (st === 'expired') {
+                return { key: 'nonpaid', label: 'Expired ', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200' };
+            }
+            if (!lv || lv === 'unranked') {
+                return { key: 'nonpaid', label: 'Unranked ', badgeClass: 'bg-slate-100 text-slate-600 border-slate-300' };
+            }
+            if (st === 'pending') {
+                return { key: 'nonpaid', label: 'Unpaid / Pending', badgeClass: 'bg-orange-50 text-orange-700 border-orange-200' };
+            }
+            if (st === 'blocked' || st === 'tieup' || st === 'tieup_blocked') {
+                return { key: 'nonpaid', label: 'Blocked / Tie-up ', badgeClass: 'bg-red-50 text-red-600 border-red-200' };
+            }
+            return { key: 'nonpaid', label: 'Unpaid ', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200' };
+        }
+
+        function buildAdminRankRows(users, learnBoard) {
+            const lbMap = {};
+            (learnBoard || []).forEach(r => {
+                if (r && r.username) {
+                    lbMap[String(r.username).trim().toLowerCase()] = {
+                        points: Number(r.points) || 0,
+                        lastUpdated: r.lastUpdated || '',
+                        hasRecord: true
+                    };
+                }
+            });
+
+            // Exclude admins, Initial Grade, and Tournament Puzzles students
+            const candidates = (users || []).filter(u => {
+                if (!u || !u.username) return false;
+                if (String(u.role || '').trim().toLowerCase() === 'admin') return false;
+                if (isExcludedLevel(u.level)) return false;
+                return true;
+            }).map(u => {
+                const key = String(u.username).trim().toLowerCase();
+                const rec = lbMap[key] || { points: 0, lastUpdated: '', hasRecord: false };
+                const cat = getAdminStudentCategory(u);
+                return {
+                    username: u.username,
+                    phone: u.phone || '',
+                    status: u.status || '',
+                    level: u.level || 'Unranked',
+                    branch: u.branch || '',
+                    points: rec.points,
+                    lastUpdated: rec.lastUpdated,
+                    hasRecord: rec.hasRecord,
+                    isPaid: cat.key === 'paid',
+                    categoryLabel: cat.label,
+                    categoryBadgeClass: cat.badgeClass
+                };
+            });
+
+            // Compute official overall CTA rank among Paid Active students (matches student.html)
+            const paidSorted = candidates.filter(c => c.isPaid).sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                return String(a.username).localeCompare(String(b.username));
+            });
+
+            const overallRankMap = {};
+            let lastPts = null;
+            let lastRank = 0;
+            paidSorted.forEach((item, idx) => {
+                const rank = (lastPts !== null && item.points === lastPts) ? lastRank : (idx + 1);
+                lastPts = item.points;
+                lastRank = rank;
+                overallRankMap[String(item.username).trim().toLowerCase()] = rank;
+            });
+
+            // Compute official branch rank among Paid Active students in each branch
+            const branchRankMap = {};
+            const branchesSet = new Set(ACADEMY_BRANCHES);
+            candidates.forEach(c => { if (c.branch) branchesSet.add(c.branch); });
+
+            branchesSet.forEach(branchName => {
+                const branchPaid = candidates
+                    .filter(c => c.isPaid && String(c.branch || '').trim().toLowerCase() === branchName.toLowerCase())
+                    .sort((a, b) => {
+                        if (b.points !== a.points) return b.points - a.points;
+                        return String(a.username).localeCompare(String(b.username));
+                    });
+
+                let bLastPts = null;
+                let bLastRank = 0;
+                branchPaid.forEach((item, idx) => {
+                    const rank = (bLastPts !== null && item.points === bLastPts) ? bLastRank : (idx + 1);
+                    bLastPts = item.points;
+                    bLastRank = rank;
+                    branchRankMap[String(item.username).trim().toLowerCase()] = rank;
+                });
+            });
+
+            // Sort final list: Paid students first by rank/points, then Admin-only (unpaid/expired/unranked) by points
+            const enriched = candidates.map(c => {
+                const key = String(c.username).trim().toLowerCase();
+                return {
+                    ...c,
+                    overallRank: overallRankMap[key] || null,
+                    branchRank: branchRankMap[key] || null
+                };
+            });
+
+            enriched.sort((a, b) => {
+                if (a.isPaid !== b.isPaid) return a.isPaid ? -1 : 1;
+                if (b.points !== a.points) return b.points - a.points;
+                return String(a.username).localeCompare(String(b.username));
+            });
+
+            return enriched;
+        }
+
+        // --- SIDEBAR GENERATOR ---
+        function getAdminSidebar(activeTab, unrankedCount, expiredCount, pendingCount, pendingAttCount = 0, initialCount = 0, tieupCount = 0) {
+            const expiredBadge = expiredCount > 0 ? `<span class="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${expiredCount}</span>` : '';
+            const pendingBadge = pendingCount > 0 ? `<span class="ml-auto bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingCount}</span>` : '';
+            const unrankedBadge = unrankedCount > 0 ? `<span class="ml-auto bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${unrankedCount}</span>` : '';
+            const initialBadge = initialCount > 0 ? `<span class="ml-auto bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${initialCount}</span>` : '';
+            const attBadge = pendingAttCount > 0 ? `<span class="ml-auto bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${pendingAttCount}</span>` : '';
+            const tieupBadge = tieupCount > 0 ? `<span class="ml-auto bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">${tieupCount}</span>` : '';
+
+            const tabs = [
+                { id: 'adminDashboard', icon: 'fa-users-cog', label: 'Dashboard', badge: '' },
+                { id: 'unrankedStudents', icon: 'fa-user-tag', label: 'Unranked Students', badge: unrankedBadge },
+                { id: 'expiredStudents', icon: 'fa-clock', label: 'Plan Expired Students', badge: expiredBadge },
+                { id: 'pendingStudents', icon: 'fa-user-clock', label: 'Pending Students', badge: pendingBadge },
+                { id: 'adminAttendance', icon: 'fa-calendar-check', label: 'Student Attendance', badge: '' },
+                { id: 'initialStudents', icon: 'fa-chess-pawn', label: 'Initial Grade Students', badge: initialBadge },
+                { id: 'attendanceApproval', icon: 'fa-check-double', label: 'Attendance Approval', badge: attBadge },
+                { id: 'learnBoardRank', icon: 'fa-trophy', label: 'Learn Board Rank', badge: '' },
+                { id: 'adminExams', icon: 'fa-file-signature', label: 'Manage Exams', badge: '' },
+                { id: 'puzzleBooks', icon: 'fa-book-open', label: 'Puzzle Book Upload', badge: '' },
+                { id: 'academyTieup', icon: 'fa-handshake', label: 'Academy Tie-up', badge: tieupBadge },
+                { id: 'activityLogs', icon: 'fa-history', label: 'Activity Logs', badge: '' }
+            ];
+
+            const navItems = tabs.map(t => {
+                const isActive = activeTab === t.id;
+                const baseClass = "w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors mt-1";
+                if (isActive) return `<div class="${baseClass} bg-brand-600 text-white shadow-lg"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</div>`;
+                return `<button onclick="navigateTo('${t.id}')" class="${baseClass} text-slate-400 hover:bg-white/5 hover:text-white"><i class="fas ${t.icon} w-5 text-center"></i> <span>${t.label}</span> ${t.badge}</button>`;
+            }).join('');
+
+            return `
+                <div id="adminSidebar" class="w-64 bg-secondary-900 text-slate-300 flex-shrink-0 flex flex-col absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-50 sidebar-transition h-full border-r border-slate-800">
+                    <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                    <div class="p-6 border-b border-white/10 relative z-10 flex justify-between items-center">
+                        <div class="flex items-center gap-3 text-white">
+                            <div class="bg-brand-500 w-8 h-8 rounded flex items-center justify-center text-secondary-900"><i class="fas fa-chess-queen"></i></div>
+                            <span class="font-bold text-lg tracking-wide">TitansAdmin</span>
+                        </div>
+                        <button onclick="toggleSidebar()" class="md:hidden text-white p-2"><i class="fas fa-times text-xl"></i></button>
+                    </div>
+                    <nav class="flex-grow p-4 space-y-1 relative z-10 overflow-y-auto">
+                        <div class="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Management</div>
+                        ${navItems}
+                    </nav>
+                    <div class="p-4 border-t border-white/10 relative z-10">
+                        <button onclick="handleLogout()" class="w-full px-4 py-2 border border-slate-700 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-slate-400 rounded-lg transition-all flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- RANK BADGE HELPER ---
+        function renderRankBadge(rank, isPaid) {
+            if (!isPaid || !rank) {
+                return `<span class="inline-block bg-slate-100 text-slate-400 text-[10px] px-2 py-0.5 rounded font-bold border border-slate-200"></span>`;
+            }
+            if (rank === 1) {
+                return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs border border-yellow-300 shadow-sm"><i class="fas fa-crown text-[10px] mr-0.5"></i>1</span>`;
+            }
+            if (rank === 2) {
+                return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300">2</span>`;
+            }
+            if (rank === 3) {
+                return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 font-bold text-xs border border-orange-300">3</span>`;
+            }
+            return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-600 font-bold text-xs border border-slate-200">#${rank}</span>`;
+        }
+
+        // --- ROW GENERATOR ---
+        function renderStudentRankRow(item, mode = 'overall') {
+            const safeName = escapeJs(item.username);
+            const rowKey = encodeURIComponent(item.username).replace(/%/g, '_');
+            const inputId = `pts-${mode}-${rowKey}`;
+            const rankDisplay = mode === 'branch'
+                ? renderRankBadge(item.branchRank, item.isPaid)
+                : renderRankBadge(item.overallRank, item.isPaid);
+
+            const secondaryRank = mode === 'branch'
+                ? (item.overallRank ? `<span class="text-[10px] font-bold text-slate-500">CTA #${item.overallRank}</span>` : `<span class="text-[10px] text-slate-400">-</span>`)
+                : (item.branchRank ? `<span class="text-[10px] font-bold text-indigo-600">Branch #${item.branchRank}</span>` : `<span class="text-[10px] text-slate-400">-</span>`);
+
+            return `
+            <tr class="hover:bg-slate-50 transition-colors ${!item.isPaid ? 'bg-slate-50/70' : ''}">
+                <td class="px-5 py-3.5 whitespace-nowrap">
+                    <div class="flex flex-col items-start gap-1">
+                        ${rankDisplay}
+                        ${secondaryRank}
+                    </div>
+                </td>
+                <td class="px-5 py-3.5">
+                    <div class="font-bold text-slate-800">${escapeHtml(item.username)}</div>
+                    <div class="font-mono text-[11px] text-slate-400">${escapeHtml(item.phone)}</div>
+                </td>
+                <td class="px-5 py-3.5">
+                    <span class="inline-block bg-slate-100 text-slate-700 text-[11px] px-2 py-0.5 rounded border border-slate-200 font-medium">${escapeHtml(item.level)}</span>
+                </td>
+                <td class="px-5 py-3.5">
+                    <div class="text-xs font-medium text-slate-600">${item.branch ? `<i class="fas fa-map-marker-alt text-indigo-400 mr-1"></i>${escapeHtml(item.branch)}` : '<span class="text-slate-400 italic">Not Assigned</span>'}</div>
+                </td>
+                <td class="px-5 py-3.5">
+                    <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${item.categoryBadgeClass}">${item.categoryLabel}</span>
+                </td>
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" id="${inputId}" value="${item.points}" class="w-20 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-brand-500 bg-white">
+                        <button type="button" onclick="handleInlinePointsSave('${safeName}', '${inputId}', this)" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-2.5 py-1 rounded-lg transition-colors shadow-sm" title="Save Points">
+                            Save
+                        </button>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <button type="button" onclick="handleDeleteStudentRank('${safeName}', this)" class="text-slate-400 hover:text-red-500 p-1.5 rounded hover:bg-red-50 transition-colors" title="Delete Student Rank Data">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+            `;
+        }
+
+        // --- DYNAMIC CONTENT RENDERER (FILTERS & VIEW SWITCHER) ---
+        function renderLearnBoardContent() {
+            const container = document.getElementById('learnBoardContent');
+            if (!container || !window.cachedData) return;
+
+            const allRows = buildAdminRankRows(window.cachedData.users, window.cachedData.learnBoard);
+            const search = String(window.lbSearchTerm || '').trim().toLowerCase();
+            const branchFilter = window.lbSelectedBranch || 'all';
+            const statusFilter = window.lbStatusFilter || 'all';
+
+            const filtered = allRows.filter(item => {
+                if (search) {
+                    const matchName = String(item.username || '').toLowerCase().includes(search);
+                    const matchPhone = String(item.phone || '').toLowerCase().includes(search);
+                    const matchLevel = String(item.level || '').toLowerCase().includes(search);
+                    if (!matchName && !matchPhone && !matchLevel) return false;
+                }
+                if (branchFilter !== 'all') {
+                    if (branchFilter === '__unassigned__') {
+                        if (item.branch) return false;
+                    } else if (String(item.branch || '').trim().toLowerCase() !== branchFilter.toLowerCase()) {
+                        return false;
+                    }
+                }
+                if (statusFilter === 'paid' && !item.isPaid) return false;
+                if (statusFilter === 'nonpaid' && item.isPaid) return false;
+                return true;
+            });
+
+            if (window.lbActiveView === 'overall') {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in">
+                        <div class="p-4 border-b border-slate-100 bg-brand-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h3 class="font-bold text-brand-900 flex items-center gap-2 text-sm md:text-base">
+                                    <i class="fas fa-globe text-brand-600"></i> Overall Chess Titans Academy Rank
+                                </h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Showing ${filtered.length} student(s). Unpaid, expired & unranked students.</p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-slate-600 min-w-[900px]">
+                                <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-5 py-3.5">Overall CTA Rank</th>
+                                        <th class="px-5 py-3.5">Student</th>
+                                        <th class="px-5 py-3.5">Level</th>
+                                        <th class="px-5 py-3.5">Branch</th>
+                                        <th class="px-5 py-3.5">Visibility</th>
+                                        <th class="px-5 py-3.5">Points (Edit)</th>
+                                        <th class="px-5 py-3.5 text-right">Delete Rank</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${filtered.length === 0
+                                        ? `<tr><td colspan="7" class="px-6 py-10 text-center text-slate-400 italic">No students match the current search/filter.</td></tr>`
+                                        : filtered.map(item => renderStudentRankRow(item, 'overall')).join('')
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Separate Branch-Wise Rank Sections
+                const branchListToRender = branchFilter === 'all'
+                    ? [...ACADEMY_BRANCHES, '__unassigned__']
+                    : [branchFilter];
+
+                const sectionsHtml = branchListToRender.map(br => {
+                    const isUnassigned = br === '__unassigned__';
+                    const branchRows = filtered.filter(item =>
+                        isUnassigned ? !item.branch : String(item.branch || '').trim().toLowerCase() === br.toLowerCase()
+                    );
+
+                    if (isUnassigned && branchRows.length === 0) return '';
+
+                    const branchTitle = isUnassigned ? 'No Branch Assigned' : br;
+                    const paidCountInBranch = branchRows.filter(r => r.isPaid).length;
+
+                    return `
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6 fade-in">
+                            <div class="p-4 border-b border-slate-100 bg-indigo-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-slate-800 text-sm md:text-base">${escapeHtml(branchTitle)}</h3>
+                                        <p class="text-[11px] text-slate-500">${paidCountInBranch} Paid Ranked • ${branchRows.length} Total Shown</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-slate-600 min-w-[900px]">
+                                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-5 py-3">Branch Rank</th>
+                                            <th class="px-5 py-3">Student</th>
+                                            <th class="px-5 py-3">Level</th>
+                                            <th class="px-5 py-3">Branch</th>
+                                            <th class="px-5 py-3">Visibility</th>
+                                            <th class="px-5 py-3">Points (Edit)</th>
+                                            <th class="px-5 py-3 text-right">Delete Rank</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${branchRows.length === 0
+                                            ? `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400 italic">No students found in ${escapeHtml(branchTitle)}.</td></tr>`
+                                            : branchRows.map(item => renderStudentRankRow(item, 'branch')).join('')
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = sectionsHtml || `<div class="bg-white rounded-xl p-10 text-center text-slate-400 italic border border-slate-200">No branch rank data matches the current filters.</div>`;
+            }
+        }
+
+        // --- MAIN PAGE RENDERER ---
+        function renderLearnBoardPage(data) {
+            const users = data.users || [];
+            const attendanceData = data.attendance || [];
+            const learnBoard = data.learnBoard || [];
+
+            const pendingUsers = users.filter(u => u.status === 'pending');
+            const allStudents = users.filter(u => ['approved', 'blocked', 'expired', 'tieup', 'tieup_blocked'].includes(u.status) && u.role !== 'admin');
+            const tieupCount = allStudents.filter(u => u.status === 'tieup' || u.status === 'tieup_blocked').length;
+            const unrankedCount = allStudents.filter(u => (!u.level || u.level === 'Unranked') && u.status !== 'tieup' && u.status !== 'tieup_blocked').length;
+            const initialCount = allStudents.filter(u => String(u.level || '').trim().toLowerCase() === 'initial').length;
+            const expiredCount = users.filter(u => u.status === 'expired').length;
+            const pendingCount = pendingUsers.length;
+            const pendingAttCount = attendanceData.filter(a => a.status === 'pending').length;
+
+            const rankedRows = buildAdminRankRows(users, learnBoard);
+            const paidRows = rankedRows.filter(r => r.isPaid);
+            const nonPaidRows = rankedRows.filter(r => !r.isPaid);
+            const topOverall = paidRows.length > 0 ? paidRows[0] : null;
+
+            const branchSummaryCards = ACADEMY_BRANCHES.map(b => {
+                const brPaid = paidRows.filter(r => String(r.branch || '').trim().toLowerCase() === b.toLowerCase());
+                const leader = brPaid.length > 0 ? brPaid[0] : null;
+                return `
+                <div class="min-w-[220px] md:min-w-[250px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-start">
+                        <div class="min-w-0 pr-2">
+                            <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider truncate">${escapeHtml(b)}</div>
+                            <div class="text-lg font-bold text-indigo-600 mt-1.5 truncate">${leader ? escapeHtml(leader.username) : 'No Leader'}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">${leader ? `#1 • ${leader.points} pts (${brPaid.length} paid)` : '0 paid students'}</div>
+                        </div>
+                        <div class="bg-indigo-50 p-2 rounded-lg text-indigo-500 flex-shrink-0"><i class="fas fa-medal text-lg"></i></div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            const branchFilterButtons = [
+                { value: 'all', label: 'All Branches' },
+                ...ACADEMY_BRANCHES.map(b => ({ value: b, label: b })),
+                { value: '__unassigned__', label: 'Unassigned' }
+            ].map(btn => {
+                const active = window.lbSelectedBranch === btn.value;
+                return `<button type="button" onclick="setBranchFilter('${escapeJs(btn.value)}')" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${active ? 'bg-brand-600 text-white border-brand-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-brand-400 hover:text-brand-600'}">${escapeHtml(btn.label)}</button>`;
+            }).join('');
+
+            const studentOptionsHtml = rankedRows.slice()
+                .sort((a, b) => String(a.username).localeCompare(String(b.username)))
+                .map(s => `<option value="${escapeHtml(s.username)}">${escapeHtml(s.username)} (${escapeHtml(s.branch || 'No Branch')} - ${s.points} pts)${!s.isPaid ? ' [Admin Only]' : ''}</option>`)
+                .join('');
+
+            return `
+            <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden fade-in shadow-2xl flex flex-col h-full md:h-[90vh]">
+                <div class="flex h-full relative">
+                    ${getAdminSidebar('learnBoardRank', unrankedCount, expiredCount, pendingCount, pendingAttCount, initialCount, tieupCount)}
+
+                    <div id="sidebarOverlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-40 hidden md:hidden fade-in"></div>
+
+                    <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden w-full">
+                        <header class="bg-white border-b border-slate-200 p-4 md:p-6 flex justify-between items-center sticky top-0 z-20 gap-2">
+                            <div class="flex items-center gap-3">
+                                <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-brand-600 p-2"><i class="fas fa-bars text-xl"></i></button>
+                                <div>
+                                    <h2 class="text-lg md:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                        <i class="fas fa-trophy text-brand-500"></i> Learn Board Rank
+                                    </h2>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="handleDeleteAllLearnBoard()" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-1.5">
+                                    <i class="fas fa-trash-alt"></i> <span class="hidden sm:inline">Delete All Rank Data</span>
+                                </button>
+                                <button onclick="refreshData()" class="text-brand-600 hover:bg-brand-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                                    <i class="fas fa-sync-alt mr-1"></i> <span class="hidden md:inline">Refresh</span>
+                                </button>
+                            </div>
+                        </header>
+
+                        <div class="flex-grow p-4 md:p-8 overflow-y-auto">
+
+                            <!-- TOP SUMMARY CARDS -->
+                            <div class="flex flex-nowrap overflow-x-auto gap-4 md:gap-6 mb-6 pb-4 snap-x-mandatory">
+                                <div class="min-w-[240px] md:min-w-[270px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="flex justify-between items-start">
+                                        <div class="min-w-0 pr-2">
+                                            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Overall CTA #1</div>
+                                            <div class="text-xl md:text-2xl font-bold text-brand-600 mt-1.5 truncate">${topOverall ? escapeHtml(topOverall.username) : 'No Data'}</div>
+                                            <div class="text-xs text-slate-400 mt-0.5">${topOverall ? `${topOverall.points} pts • ${escapeHtml(topOverall.branch || 'No Branch')}` : '0 points'}</div>
+                                        </div>
+                                        <div class="bg-yellow-50 p-2 rounded-lg text-yellow-500"><i class="fas fa-crown text-xl"></i></div>
+                                    </div>
+                                </div>
+                                <div class="min-w-[220px] md:min-w-[250px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Paid Ranked Students</div>
+                                            <div class="text-3xl font-bold text-emerald-600 mt-2">${paidRows.length}</div>
+                                        </div>
+                                        <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600"><i class="fas fa-user-check text-xl"></i></div>
+                                    </div>
+                                </div>
+                                <div class="min-w-[220px] md:min-w-[250px] flex-shrink-0 snap-center bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">Admin-Only (Unpaid/Exp)</div>
+                                            <div class="text-3xl font-bold text-amber-600 mt-2">${nonPaidRows.length}</div>
+                                        </div>
+                                        <div class="bg-amber-50 p-2 rounded-lg text-amber-600"><i class="fas fa-eye-slash text-xl"></i></div>
+                                    </div>
+                                </div>
+                                ${branchSummaryCards}
+                            </div>
+
+                            <!-- WRITE / MODIFY POINTS PANEL -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm md:text-base">
+                                        <i class="fas fa-edit text-brand-500"></i> Add / Modify Student Learn Board Points
+                                    </h3>
+                                    <div class="text-[11px] text-slate-400">
+                                        Auto Rules: ≤24h <b>+10</b> • >1d <b>+5</b> • >2d <b>+3</b> • Correct <b>+2</b> • Incorrect <b>-3</b>
+                                    </div>
+                                </div>
+                                <form id="learnBoardManageForm" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                                    <div class="md:col-span-5">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Student</label>
+                                        <select id="lbManageStudent" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none bg-white">
+                                            <option value="">Choose student...</option>
+                                            ${studentOptionsHtml}
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Action</label>
+                                        <select id="lbManageMode" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none bg-white">
+                                            <option value="add">Add Points (+)</option>
+                                            <option value="subtract">Deduct Points (-)</option>
+                                            <option value="set">Set Exact Points (=)</option>
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Points</label>
+                                        <input type="number" id="lbManagePoints" required placeholder="e.g. 10" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:border-brand-500 outline-none">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <button type="submit" id="btnSaveLbPoints" class="w-full bg-secondary-900 hover:bg-black text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+                                            Apply
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- VIEW SWITCHER (SEPARATE OVERALL CTA RANK VS BRANCH-WISE RANK) + SEARCH & BRANCH FILTER BUTTONS -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6 space-y-4">
+                                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                                    <!-- Separate Overall vs Branch Rank Tabs -->
+                                    <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-full lg:w-auto">
+                                        <button type="button" onclick="setLearnBoardView('overall')" class="flex-1 lg:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${window.lbActiveView === 'overall' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                                            <i class="fas fa-globe mr-1.5"></i> Overall CTA Rank
+                                        </button>
+                                        <button type="button" onclick="setLearnBoardView('branch')" class="flex-1 lg:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${window.lbActiveView === 'branch' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                                            <i class="fas fa-code-branch mr-1.5"></i> Branch-Wise Ranks
+                                        </button>
+                                    </div>
+
+                                    <!-- Search & Visibility Filter -->
+                                    <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                                        <div class="relative flex-grow sm:w-60">
+                                            <input type="text" id="lbSearchInput" value="${escapeHtml(window.lbSearchTerm)}" oninput="handleLearnBoardSearch(this.value)" placeholder="Search student name or level..." class="w-full pl-9 pr-4 py-2 text-xs rounded-full border border-slate-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none bg-slate-50 focus:bg-white transition-all">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        </div>
+                                        <select id="lbStatusFilterSelect" onchange="setStatusFilter(this.value)" class="text-xs rounded-full border border-slate-200 focus:border-brand-500 outline-none py-2 px-3 bg-white font-medium text-slate-600">
+                                            <option value="all" ${window.lbStatusFilter === 'all' ? 'selected' : ''}>All Students (Admin View)</option>
+                                            <option value="paid" ${window.lbStatusFilter === 'paid' ? 'selected' : ''}>Paid Active Only (Student View)</option>
+                                            <option value="nonpaid" ${window.lbStatusFilter === 'nonpaid' ? 'selected' : ''}>Unpaid / Expired / Unranked Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Branch Filter Buttons -->
+                                <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1"><i class="fas fa-filter mr-1"></i> Branch Filter:</span>
+                                    ${branchFilterButtons}
+                                </div>
+                            </div>
+
+                            <!-- RANK TABLES CONTAINER -->
+                            <div id="learnBoardContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        // --- FORM & FILTER HANDLERS ---
+        function attachEventListeners() {
+            const form = document.getElementById('learnBoardManageForm');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('lbManageStudent').value;
+                    const mode = document.getElementById('lbManageMode').value;
+                    const pointsVal = document.getElementById('lbManagePoints').value;
+                    const btn = document.getElementById('btnSaveLbPoints');
+
+                    if (!username || pointsVal === '') {
+                        showToast('Please select a student and enter points.', 'error');
+                        return;
+                    }
+
+                    const originalText = btn.innerHTML;
+                    setButtonLoading(btn, true);
+                    const res = await saveLearnBoardPointsAPI(username, pointsVal, mode);
+                    if (res && res.success) {
+                        showToast(`Updated ${username}: ${res.points} pts`, 'success');
+                        await refreshData(false);
+                    } else {
+                        showToast((res && res.message) || 'Failed to update points', 'error');
+                        setButtonLoading(btn, false, originalText);
+                    }
+                });
+            }
+        }
+
+        window.setLearnBoardView = function(view) {
+            window.lbActiveView = view;
+            if (window.cachedData) {
+                document.getElementById('app').innerHTML = renderLearnBoardPage(window.cachedData);
+                attachEventListeners();
+                renderLearnBoardContent();
+            }
+        };
+
+        window.setBranchFilter = function(branch) {
+            window.lbSelectedBranch = branch;
+            if (window.cachedData) {
+                document.getElementById('app').innerHTML = renderLearnBoardPage(window.cachedData);
+                attachEventListeners();
+                renderLearnBoardContent();
+            }
+        };
+
+        window.setStatusFilter = function(val) {
+            window.lbStatusFilter = val;
+            renderLearnBoardContent();
+        };
+
+        window.handleLearnBoardSearch = function(val) {
+            window.lbSearchTerm = val;
+            renderLearnBoardContent();
+        };
+
+        window.handleInlinePointsSave = async function(username, inputId, btn) {
+            const inputEl = document.getElementById(inputId);
+            if (!inputEl) return;
+            const newPoints = inputEl.value;
+            if (newPoints === '' || isNaN(Number(newPoints))) {
+                showToast('Enter a valid number.', 'error');
+                return;
+            }
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const res = await saveLearnBoardPointsAPI(username, Number(newPoints), 'set');
+            if (res && res.success) {
+                showToast(`${username} points saved (${res.points} pts)`, 'success');
+                await refreshData(false);
+            } else {
+                showToast((res && res.message) || 'Save failed', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        };
+
+        window.handleDeleteStudentRank = async function(username, btn) {
+            if (!confirm(`Delete Learn Board rank record for "${username}"?\n(This only removes their Learn Board rank/points and keeps their student account intact.)`)) return;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const res = await deleteLearnBoardUserAPI(username);
+            if (res && res.success) {
+                showToast(`Rank data deleted for ${username}`, 'success');
+                await refreshData(false);
+            } else {
+                showToast((res && res.message) || 'No saved rank record found for this student', 'info');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        };
+
+        window.handleDeleteAllLearnBoard = async function() {
+            const pass = prompt("ADMIN SECURITY CHECK:\nEnter Admin Password to delete ALL students' Learn Board rank data ONLY:");
+            if (!pass) return;
+            const users = await fetchUsers();
+            const admin = Array.isArray(users) ? users.find(u => u.role === 'admin') : null;
+            if (!admin || String(pass) !== String(admin.password)) {
+                alert("ACCESS DENIED. Incorrect Admin Password.");
+                return;
+            }
+            if (!confirm("Are you sure you want to delete ALL Learn Board rank data?\nStudent accounts, tasks, and submissions will NOT be affected.")) return;
+
+            showToast('Clearing Learn Board rank data...', 'info');
+            const res = await deleteAllLearnBoardAPI();
+            if (res && res.success) {
+                showToast('All Learn Board rank data deleted.', 'success');
+                await refreshData(false);
+            } else {
+                showToast((res && res.message) || 'Failed to delete rank data', 'error');
+            }
+        };
+
+        // --- NAVIGATION & SIDEBAR ---
+        window.navigateTo = function(viewName) {
+            if (ROUTES[viewName]) {
+                window.location.href = ROUTES[viewName];
+            }
+        };
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (!sidebar || !overlay) return;
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
+        window.handleLogout = function() {
+            window.currentUser = null;
+            sessionStorage.removeItem('cta_session_user');
+            showToast('Logged out', 'info');
+            setTimeout(() => {
+                window.location.href = ROUTES.login;
+            }, 300);
+        };
+
+        // --- DATA LOADER & SESSION GUARD ---
+        async function loadLearnBoardAdmin(showLoader = true, showRefreshToast = false) {
+            const rawSession = sessionStorage.getItem('cta_session_user');
+            if (!rawSession) {
+                window.location.href = ROUTES.login;
+                return;
+            }
+
+            let sessionUser;
+            try {
+                sessionUser = JSON.parse(rawSession);
+            } catch (e) {
+                sessionStorage.removeItem('cta_session_user');
+                window.location.href = ROUTES.login;
+                return;
+            }
+
+            if (sessionUser.role !== 'admin') {
+                window.location.href = sessionUser.status === 'tieup' ? ROUTES.adminAttendance : ROUTES.student;
+                return;
+            }
+
+            window.currentUser = sessionUser;
+            const app = document.getElementById('app');
+
+            if (showLoader) {
+                app.innerHTML = `
+                    <div class="text-brand-600 font-bold flex flex-col items-center">
+                        <div class="loader mb-2 w-8 h-8 border-4"></div>
+                        Connecting to Academy Server...
+                    </div>
+                `;
+            }
+
+            try {
+                const [users, attendance, learnBoard] = await Promise.all([
+                    fetchUsers(),
+                    fetchAttendance(),
+                    fetchLearnBoard()
+                ]);
+
+                if (!Array.isArray(users)) {
+                    app.innerHTML = `
+                        <div class="glass-panel rounded-xl p-8 text-center max-w-md mx-auto">
+                            <i class="fas fa-wifi text-3xl text-red-500 mb-3"></i>
+                            <h2 class="font-bold text-lg text-slate-800 mb-2">Connection Error</h2>
+                            <p class="text-slate-500 text-sm mb-4">Unable to reach Academy Server. Please check your connection and try again.</p>
+                            <button onclick="loadLearnBoardAdmin(true, false)" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">Retry</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                window.cachedData = {
+                    users: users || [],
+                    attendance: attendance || [],
+                    learnBoard: Array.isArray(learnBoard) ? learnBoard : []
+                };
+
+                app.innerHTML = renderLearnBoardPage(window.cachedData);
+                attachEventListeners();
+                renderLearnBoardContent();
+
+                if (showRefreshToast) {
+                    showToast("Learn Board Refreshed", "info");
+                }
+            } catch (err) {
+                console.error('loadLearnBoardAdmin error:', err);
+                showToast('Failed to load Learn Board', 'error');
+            }
+        }
+
+        window.refreshData = async function(notify = true) {
+            await loadLearnBoardAdmin(false, notify);
+        };
+
+        // Start Learn Board Admin Page
+        loadLearnBoardAdmin(true, false);
+    </script>
+</body>
+</html>
