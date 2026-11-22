@@ -248,14 +248,14 @@
         .control-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #ffcc99; }
         
-        select, button, input[type="text"], textarea {
+        select, button, input[type="text"], input[type="password"], textarea {
             width: 100%; padding: 12px; font-size: 16px;
             background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff; border-radius: 6px; cursor: pointer; margin-bottom: 10px;
             transition: background 0.2s; box-sizing: border-box;
         }
         
-        input[type="text"], textarea { cursor: text; font-family: monospace; }
+        input[type="text"], input[type="password"], textarea { cursor: text; font-family: monospace; }
         select:hover, button:hover { background: rgba(255, 255, 255, 0.2); }
         option { background: #333; color: #fff; }
 
@@ -303,13 +303,436 @@
         .spare-pieces-top img:hover, .spare-pieces-bottom img:hover {
             transform: scale(1.1);
         }
+
+        /* --- LOGIN OVERLAY (MATCHES EXISTING THEME) --- */
+        #loginOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            z-index: 6000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+            backdrop-filter: blur(6px);
+        }
+        .login-card {
+            background: rgba(25, 25, 25, 0.96);
+            border: 2px solid #f39c12;
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 0 25px rgba(243, 156, 18, 0.45);
+            text-align: center;
+        }
+        .login-card h2 {
+            margin: 0 0 5px 0;
+            color: #f1c40f;
+            font-size: 1.6rem;
+        }
+        .login-card p.login-sub {
+            margin: 0 0 18px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .login-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .login-tab-btn {
+            flex: 1;
+            margin-bottom: 0;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .login-tab-btn.active {
+            background: #e67e22;
+            border-color: #f1c40f;
+            box-shadow: 0 3px 0 #d35400;
+        }
+        .login-form-box {
+            text-align: left;
+        }
+        #loginError {
+            color: #e74c3c;
+            font-size: 13px;
+            font-weight: bold;
+            min-height: 18px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        /* --- SESSION BAR & SPECTATOR BANNER --- */
+        #userSessionBar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.5);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            gap: 8px;
+        }
+        #userSessionLabel {
+            font-weight: bold;
+            color: #f1c40f;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #logoutBtn {
+            width: auto;
+            margin: 0;
+            padding: 5px 10px;
+            font-size: 12px;
+            background: #c0392b;
+            border: none;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        #logoutBtn:hover { background: #e74c3c; }
+
+        #spectatorBanner {
+            display: none;
+            background: rgba(0, 0, 0, 0.78);
+            border: 2px solid #2ecc71;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        #spectatorBanner.review-mode {
+            border-color: #f1c40f;
+        }
+        .spectator-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .spectator-actions button {
+            width: auto;
+            margin: 0;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* --- ADMIN LIVE & MATCH HISTORY PANEL --- */
+        #adminMonitorPanel {
+            display: none;
+            width: 100%;
+            max-width: 940px;
+            margin: 10px auto 30px auto;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .admin-panel-box {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .admin-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 10px;
+        }
+        .admin-panel-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #f1c40f;
+        }
+        .admin-header-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .admin-header-controls button {
+            width: auto;
+            margin: 0;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        #activeStudentsSection {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+        }
+        .active-students-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #ffcc99;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        #activeStudentsList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .student-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(243, 156, 18, 0.5);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .student-chip button {
+            width: auto;
+            margin: 0;
+            padding: 3px 7px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #c0392b;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .student-chip button:hover {
+            background: #e74c3c;
+        }
+        .admin-subtabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .admin-subtab-btn {
+            flex: 1;
+            margin: 0;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .admin-subtab-btn.active {
+            background: #e67e22;
+            border-color: #f1c40f;
+        }
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+        }
+        .match-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .match-card.is-live {
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        .match-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+        .match-student-name {
+            font-weight: bold;
+            font-size: 15px;
+            color: #fff;
+        }
+        .match-badges {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .badge-live {
+            background: #e74c3c;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 7px;
+            border-radius: 10px;
+            animation: pulse-signal 1.5s infinite ease-in-out;
+        }
+        .badge-saved {
+            background: #34495e;
+            color: #f1c40f;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .badge-online {
+            background: #2980b9;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        .match-meta {
+            font-size: 12px;
+            color: #ddd;
+            line-height: 1.5;
+        }
+        .match-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .match-actions button {
+            flex: 1;
+            min-width: 75px;
+            margin: 0;
+            padding: 7px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+        }
+        .btn-watch { background: #27ae60; }
+        .btn-watch:hover { background: #2ecc71; }
+        .btn-review { background: #2980b9; }
+        .btn-review:hover { background: #3498db; }
+        .btn-copy-analysis { background: #e67e22; }
+        .btn-copy-analysis:hover { background: #f39c12; }
+        .btn-kick-student { background: #8e44ad; }
+        .btn-kick-student:hover { background: #9b59b6; }
+        .btn-delete-match { background: #c0392b; flex: 0 0 auto !important; min-width: 60px !important; }
+        .btn-delete-match:hover { background: #e74c3c; }
+        .empty-matches-msg {
+            text-align: center;
+            color: #ccc;
+            padding: 20px;
+            font-size: 14px;
+            grid-column: 1 / -1;
+        }
+
+        /* --- ADMIN ILLEGAL MOVE INTIMATION TOAST --- */
+        #adminIllegalAlert {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #c0392b;
+            color: #fff;
+            border: 3px solid #f1c40f;
+            border-radius: 10px;
+            padding: 12px 16px;
+            z-index: 7000;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            max-width: 92%;
+            width: 440px;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        #adminIllegalAlertText {
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+        .illegal-toast-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .illegal-toast-actions button {
+            width: auto;
+            margin: 0;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+        }
+        .badge-illegal-warn {
+            display: inline-block;
+            background: #c0392b;
+            color: #f1c40f;
+            border: 1px solid #f1c40f;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+        }
     </style>
 </head>
 <body>
 
+    <!-- ADMIN ILLEGAL MOVE INTIMATION BANNER -->
+    <div id="adminIllegalAlert">
+        <div id="adminIllegalAlertText">⚠️ Illegal Move Alert</div>
+        <div class="illegal-toast-actions">
+            <button type="button" id="adminIllegalWatchBtn" style="background:#f39c12; color:#fff;" onclick="openIllegalAlertMatch()">Watch</button>
+            <button type="button" style="background:rgba(0,0,0,0.4); color:#fff;" onclick="dismissAdminIllegalAlert()">×</button>
+        </div>
+    </div>
+
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>Chess Titans Academy</h2>
+            <p class="login-sub">Select Login Type to Continue</p>
+
+            <div class="login-tabs">
+                <button type="button" id="tabStudentBtn" class="login-tab-btn active" onclick="switchLoginTab('student')">Student Login</button>
+                <button type="button" id="tabAdminBtn" class="login-tab-btn" onclick="switchLoginTab('admin')">Admin Login</button>
+            </div>
+
+            <div id="loginError"></div>
+
+            <div id="studentLoginBox" class="login-form-box">
+                <label for="studentNameInput">Student Name</label>
+                <input type="text" id="studentNameInput" placeholder="Enter your full name" autocomplete="off">
+                <button type="button" id="studentLoginBtn" class="primary" onclick="handleStudentLogin()">Enter as Student</button>
+            </div>
+
+            <div id="adminLoginBox" class="login-form-box" style="display:none;">
+                <label for="adminUserInput">Admin Username</label>
+                <input type="text" id="adminUserInput" placeholder="Enter admin username" autocomplete="username">
+                <label for="adminPassInput">Admin Password</label>
+                <input type="password" id="adminPassInput" placeholder="Enter admin password" autocomplete="current-password">
+                <button type="button" id="adminLoginBtn" class="primary" onclick="handleAdminLogin()">Login as Admin</button>
+            </div>
+        </div>
+    </div>
+
     <div id="gameOverModal">
         <div class="modal-content">
-            <span class="close-modal-x" onclick="closeModalReview()" title="Close and Review Board">&times;</span>
+            <span class="close-modal-x" onclick="closeModalReview()" title="Close and Review Board">×</span>
             <h2 id="winnerText">Checkmate!</h2>
             <p id="winnerDesc">White Wins</p>
             <div style="display: flex; gap:10px; justify-content: center; flex-wrap:wrap;">
@@ -333,6 +756,15 @@
                     <img src="" id="promo-r" class="promo-piece" onclick="completePromotion('r')" title="Rook">
                     <img src="" id="promo-b" class="promo-piece" onclick="completePromotion('b')" title="Bishop">
                     <img src="" id="promo-n" class="promo-piece" onclick="completePromotion('n')" title="Knight">
+                </div>
+            </div>
+
+            <!-- ADMIN LIVE / REVIEW BANNER -->
+            <div id="spectatorBanner">
+                <div id="spectatorInfo">Watching Live...</div>
+                <div class="spectator-actions">
+                    <button type="button" class="btn-copy-analysis" onclick="copyCurrentSpectatorAnalysis()">Copy Analysis</button>
+                    <button type="button" style="background:#c0392b;" onclick="exitSpectatorMode()">Exit</button>
                 </div>
             </div>
 
@@ -360,10 +792,10 @@
                 <div id="clock-bottom" class="clock">10:00</div>
 
                 <div class="analysis-inline">
-                    <button class="nav-btn-sm" id="btnStart" disabled onclick="navStart()">|&lt;</button>
-                    <button class="nav-btn-sm" id="btnPrev" disabled onclick="navPrev()">&lt;</button>
-                    <button class="nav-btn-sm" id="btnNext" disabled onclick="navNext()">&gt;</button>
-                    <button class="nav-btn-sm" id="btnEnd" disabled onclick="navEnd()">&gt;|</button>
+                    <button class="nav-btn-sm" id="btnStart" disabled onclick="navStart()">|<</button>
+                    <button class="nav-btn-sm" id="btnPrev" disabled onclick="navPrev()"><</button>
+                    <button class="nav-btn-sm" id="btnNext" disabled onclick="navNext()">></button>
+                    <button class="nav-btn-sm" id="btnEnd" disabled onclick="navEnd()">>|</button>
                 </div>
 
                 <div class="material-container" id="material-bottom"></div>
@@ -373,6 +805,12 @@
         </div>
 
         <div class="sidebar">
+            <!-- LOGGED IN USER BAR -->
+            <div id="userSessionBar">
+                <span id="userSessionLabel"></span>
+                <button type="button" id="logoutBtn" onclick="handleLogout()">Logout</button>
+            </div>
+
             <div class="control-group" id="mainControls">
                 <label>Game Mode</label>
                 <button id="modeAiBtn" class="primary">Play vs Computer</button>
@@ -464,12 +902,46 @@
         </div>
     </div>
 
+    <!-- ADMIN LIVE MONITOR & SAVED MATCHES PANEL -->
+    <div id="adminMonitorPanel">
+        <div class="admin-panel-box">
+            <div class="admin-panel-header">
+                <h2>Admin Live Monitor & Saved Student Matches</h2>
+                <div class="admin-header-controls">
+                    <span id="adminSyncStatus" style="font-size:12px; color:#aaa;">Auto-refreshing...</span>
+                    <button type="button" class="primary" onclick="fetchAdminMatches(true)">Refresh Now</button>
+                </div>
+            </div>
+
+            <!-- ACTIVE LOGGED-IN STUDENTS (INSTANT REMOVE) -->
+            <div id="activeStudentsSection">
+                <div class="active-students-title">
+                    <span>Active Logged-In Students (<span id="activeStudentCountBadge">0</span>)</span>
+                    <span style="font-size:11px; color:#aaa;">Click Remove to log a student out instantly</span>
+                </div>
+                <div id="activeStudentsList">
+                    <span style="font-size:12px; color:#aaa;">No active students logged in.</span>
+                </div>
+            </div>
+
+            <div class="admin-subtabs">
+                <button type="button" id="adminTabLive" class="admin-subtab-btn active" onclick="switchAdminListTab('live')">Live Matches (<span id="liveCountBadge">0</span>)</button>
+                <button type="button" id="adminTabSaved" class="admin-subtab-btn" onclick="switchAdminListTab('saved')">Saved Matches (<span id="savedCountBadge">0</span>)</button>
+            </div>
+
+            <div id="adminMatchesGrid" class="matches-grid">
+                <div class="empty-matches-msg">Loading matches from Google Sheet...</div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script><script>
+        // --- GOOGLE APPS SCRIPT BACKEND URL ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXegKiByu42TiY0O5PO3TaEjXhaA14W4daAnbSkVk66gSrCA4UaUUrCrgI1l861EGMZA/exec";
 
-    <script>
         // --- VARIABLES ---
         var board = null;
         var game = new Chess();
@@ -502,6 +974,1200 @@
         const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
         const STARTING_PIECES = { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 };
 
+        // --- AUTH, REAL-TIME STREAM, SYNC QUEUE & ADMIN MONITOR VARS ---
+        var currentRole = null; // 'student' | 'admin' | 'guest'
+        var currentStudentName = '';
+        var currentSessionId = null;
+        var currentMatchId = null;
+        var currentMatchFinishedSynced = false;
+
+        // Online Friend Match Tracking
+        var isOnlineJoiner = false;
+        var onlineOpponentName = 'Friend';
+        var onlineHostIsStudent = false;
+
+        // Real-time PeerJS Admin Spectator Channels (Instant Move Reflection)
+        var adminSpectatorConns = []; // On Student side: connected Admin watchers
+        var adminWatchConn = null;    // On Admin side: live direct connection to watched student
+
+        // Fast Non-Overlapping Sync Queue (Prevents slow pile-ups)
+        var isSyncInFlight = false;
+        var pendingSyncPayload = null;
+        var studentSessionTimer = null;
+
+        // Admin Polling & Smart Diffing (Zero Flicker)
+        var adminListTab = 'live'; // 'live' | 'saved'
+        var allBackendMatches = [];
+        var allActiveStudents = [];
+        var adminPollTimeout = null;
+        var isAdminFetching = false;
+        var lastMatchesSignature = '';
+        var lastStudentsSignature = '';
+        var isWatchingLive = false;
+        var watchingMatchId = null;
+        var watchingMatchPeerId = '';
+        var currentSpectatorPgn = '';
+
+        // --- ADMIN ILLEGAL MOVE INTIMATION VARS ---
+        var lastSeenIllegalCounts = {};
+        var isFirstAdminFetch = true;
+        var lastIllegalAlertMatchId = null;
+        var adminIllegalAlertTimer = null;
+
+        function isBackendConfigured() {
+            return SCRIPT_URL && SCRIPT_URL.indexOf('YOUR_GOOGLE_APPS_SCRIPT') === -1 && SCRIPT_URL.startsWith('http');
+        }
+
+function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/&/g, '&' + 'amp;')
+                .replace(/</g, '&' + 'lt;')
+                .replace(/>/g, '&' + 'gt;')
+                .replace(/"/g, '&' + 'quot;')
+                .replace(/'/g, '&' + '#039;');
+        }
+        function encodeParam(val) {
+            return encodeURIComponent(val === null || val === undefined ? '' : String(val));
+        }
+
+        function generateSessionId() {
+            return 'SES_' + Date.now() + '_' + Math.floor(1000 + Math.random() * 9000);
+        }
+
+        // Determine if this client should sync the current match (Bot or Online Friend)
+        function shouldSyncCurrentMatch() {
+            if (currentRole !== 'student' || !currentStudentName) return false;
+            if (gameMode === 'ai') return true;
+            if (gameMode === 'online') {
+                // Host syncs if Host is a student; Joiner syncs only if Host is NOT a student
+                if (!isOnlineJoiner) return true;
+                if (isOnlineJoiner && !onlineHostIsStudent) return true;
+            }
+            return false;
+        }
+
+        // --- ILLEGAL MOVE PARSING & ADMIN INTIMATION HELPERS ---
+        function getMatchIllegalCount(match) {
+            if (!match || !match.result) return 0;
+            var resStr = String(match.result);
+            var m1 = resStr.match(/Illegal Moves?:\s*(\d+)/i);
+            if (m1) return parseInt(m1[1], 10) || 0;
+            var m2 = resStr.match(/(\d+)\s+Illegal\s+Moves?/i);
+            if (m2) return parseInt(m2[1], 10) || 0;
+            return 0;
+        }
+
+        function isOnlineMatchRecord(match) {
+            if (!match) return false;
+            if (String(match.matchType || '').toUpperCase() === 'ONLINE') return true;
+            return String(match.level || '').toLowerCase().indexOf('online') === 0;
+        }
+
+        function playAdminIllegalBeep() {
+            try {
+                var AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                var ctx = new AudioCtx();
+                [0, 0.22].forEach(function(delay) {
+                    var osc = ctx.createOscillator();
+                    var gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.18, ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.16);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + delay);
+                    osc.stop(ctx.currentTime + delay + 0.16);
+                });
+            } catch (e) {}
+        }
+
+        function triggerAdminIllegalIntimation(match, count) {
+            var safeName = escapeHtml(match.studentName || 'Student');
+            var safeLevel = escapeHtml(match.level || 'Bot');
+            var isLive = String(match.status).toUpperCase() === 'LIVE';
+            var suffix = count >= 2 ? ' (2/2 — Match Ended!)' : ' (' + count + '/2)';
+
+            lastIllegalAlertMatchId = match.matchId;
+            $('#adminIllegalAlertText').html(
+                '⚠️ ILLEGAL MOVE ALERT:<br><strong>' + safeName + '</strong> made an illegal move' + suffix +
+                '<div style="font-size:12px; font-weight:normal; color:#ffeaa7; margin-top:2px;">vs ' + safeLevel + '</div>'
+            );
+            $('#adminIllegalWatchBtn').text(isLive ? 'Watch' : 'Review');
+            $('#adminIllegalAlert').css('display', 'flex');
+
+            if (adminIllegalAlertTimer) clearTimeout(adminIllegalAlertTimer);
+            adminIllegalAlertTimer = setTimeout(function() {
+                $('#adminIllegalAlert').fadeOut(300);
+            }, 8000);
+
+            playAdminIllegalBeep();
+
+            if (watchingMatchId && String(watchingMatchId) === String(match.matchId)) {
+                showNotification('⚠️ ' + safeName + ' made an Illegal Move (' + count + '/2) ⚠️', true);
+            }
+        }
+
+        function dismissAdminIllegalAlert() {
+            if (adminIllegalAlertTimer) clearTimeout(adminIllegalAlertTimer);
+            $('#adminIllegalAlert').hide();
+        }
+
+        function openIllegalAlertMatch() {
+            dismissAdminIllegalAlert();
+            if (!lastIllegalAlertMatchId) return;
+            var match = findMatchById(lastIllegalAlertMatchId);
+            if (!match) return;
+            if (String(match.status).toUpperCase() === 'LIVE') {
+                watchLiveMatch(match.matchId);
+            } else {
+                reviewSavedMatch(match.matchId);
+            }
+        }
+
+        function checkAdminIllegalMoveAlerts(matches) {
+            if (currentRole !== 'admin' || !Array.isArray(matches)) return;
+
+            if (isFirstAdminFetch) {
+                matches.forEach(function(m) {
+                    var count = getMatchIllegalCount(m);
+                    var isLive = String(m.status).toUpperCase() === 'LIVE';
+                    lastSeenIllegalCounts[m.matchId] = count;
+                    if (isLive && count > 0) {
+                        triggerAdminIllegalIntimation(m, count);
+                    }
+                });
+                isFirstAdminFetch = false;
+                return;
+            }
+
+            matches.forEach(function(m) {
+                var count = getMatchIllegalCount(m);
+                var prev = lastSeenIllegalCounts[m.matchId] || 0;
+                if (count > prev) {
+                    lastSeenIllegalCounts[m.matchId] = count;
+                    triggerAdminIllegalIntimation(m, count);
+                } else if (lastSeenIllegalCounts[m.matchId] === undefined) {
+                    lastSeenIllegalCounts[m.matchId] = count;
+                }
+            });
+        }
+
+        function syncSpectatorIllegalCounter(match) {
+            illegalCount = { w: 0, b: 0 };
+            if (!match) return;
+            var count = getMatchIllegalCount(match);
+            if (count > 0) {
+                var c = (match.playerColor === 'Black') ? 'b' : 'w';
+                illegalCount[c] = count;
+            }
+        }
+
+        // --- REAL-TIME PEERJS LIVE BROADCAST (STUDENT -> ADMIN) ---
+        function sendLiveSnapshotToConn(specConn, statusOverride, resultOverride) {
+            if (!specConn || !specConn.open || !shouldSyncCurrentMatch()) return;
+            var payload = buildStudentSyncPayload(statusOverride, resultOverride);
+            try {
+                specConn.send({
+                    type: 'live_update',
+                    matchId: payload.matchId,
+                    studentName: payload.studentName,
+                    level: payload.level,
+                    matchType: payload.matchType,
+                    playerColor: payload.playerColor,
+                    fen: payload.fen,
+                    pgn: payload.pgn,
+                    movesCount: payload.movesCount,
+                    status: payload.status,
+                    result: payload.result,
+                    illegalCount: { w: illegalCount.w, b: illegalCount.b },
+                    timeWhite: timeWhite,
+                    timeBlack: timeBlack
+                });
+            } catch (e) {}
+        }
+
+        function broadcastLiveUpdateToAdmins(statusOverride, resultOverride) {
+            if (!adminSpectatorConns.length || !shouldSyncCurrentMatch()) return;
+            adminSpectatorConns = adminSpectatorConns.filter(function(c) { return c && c.open; });
+            adminSpectatorConns.forEach(function(c) {
+                sendLiveSnapshotToConn(c, statusOverride, resultOverride);
+            });
+        }
+
+        function closeAllAdminSpectatorConns() {
+            adminSpectatorConns.forEach(function(c) {
+                try { if (c && c.open) c.close(); } catch (e) {}
+            });
+            adminSpectatorConns = [];
+        }
+
+        function closeAdminWatchConn() {
+            if (adminWatchConn) {
+                try { adminWatchConn.close(); } catch (e) {}
+                adminWatchConn = null;
+            }
+            watchingMatchPeerId = '';
+        }
+
+        function connectAdminSpectatorPeer(match) {
+            if (currentRole !== 'admin' || !match || !match.peerId || !peer || !peer.open) return;
+            if (adminWatchConn && adminWatchConn.open && watchingMatchPeerId === match.peerId) return;
+
+            closeAdminWatchConn();
+            watchingMatchPeerId = match.peerId;
+
+            try {
+                var c = peer.connect(match.peerId, {
+                    metadata: { role: 'admin_spectator', matchId: match.matchId },
+                    reliable: true
+                });
+                adminWatchConn = c;
+
+                c.on('data', function(data) {
+                    if (!data || data.type !== 'live_update') return;
+                    if (!isWatchingLive || String(watchingMatchId) !== String(data.matchId)) return;
+                    applyInstantSpectatorUpdate(data);
+                });
+
+                c.on('close', function() {
+                    if (adminWatchConn === c) adminWatchConn = null;
+                });
+
+                c.on('error', function() {
+                    if (adminWatchConn === c) adminWatchConn = null;
+                });
+            } catch (e) {}
+        }
+
+        function applyInstantSpectatorUpdate(data) {
+            var newPgn = String(data.pgn || '');
+            var newFen = String(data.fen || '');
+            var changed = (newPgn !== currentSpectatorPgn) || (newFen && newFen !== game.fen());
+
+            if (data.illegalCount) {
+                illegalCount = {
+                    w: Number(data.illegalCount.w || 0),
+                    b: Number(data.illegalCount.b || 0)
+                };
+            } else {
+                syncSpectatorIllegalCounter(data);
+            }
+
+            if (changed) {
+                game.reset();
+                var loaded = false;
+                if (newPgn.trim() !== '') loaded = game.load_pgn(newPgn);
+                if (!loaded && newFen) game.load(newFen);
+                undoneMoves = [];
+                currentSpectatorPgn = game.pgn();
+                board.position(game.fen(), true);
+            }
+
+            var count = getMatchIllegalCount(data);
+            var prev = lastSeenIllegalCounts[data.matchId] || 0;
+            if (count > prev) {
+                lastSeenIllegalCounts[data.matchId] = count;
+                triggerAdminIllegalIntimation(data, count);
+            }
+
+            updateGameUI(true);
+
+            var modeTag = isOnlineMatchRecord(data) ? '<span class="badge-online" style="margin-right:4px;">ONLINE</span>' : '';
+            var illegalNote = count > 0 ? ' | ⚠️ Illegal: ' + count + '/2' : '';
+
+            if (String(data.status).toUpperCase() !== 'LIVE') {
+                isWatchingLive = false;
+                closeAdminWatchConn();
+                $('#spectatorBanner').addClass('review-mode');
+                $('#spectatorInfo').html(
+                    '<span class="badge-saved" style="margin-right:6px;">FINISHED</span> ' + modeTag + '<strong>' +
+                    escapeHtml(data.studentName) + '</strong> — ' + escapeHtml(data.result || 'Match Ended')
+                );
+                $status.html('Match Ended: ' + escapeHtml(data.result || 'Finished'));
+                updateGameUI(true);
+                fetchAdminMatches(false);
+            } else {
+                $('#spectatorInfo').html(
+                    '<span class="badge-live" style="margin-right:6px;">LIVE ⚡</span> ' + modeTag + '<strong>' +
+                    escapeHtml(data.studentName) + '</strong> vs ' + escapeHtml(data.level) +
+                    ' (' + escapeHtml(data.playerColor || 'White') + ')' + illegalNote
+                );
+                $status.html('LIVE: ' + escapeHtml(data.studentName) + ' — ' + (game.turn() === 'w' ? 'White' : 'Black') + ' to move');
+            }
+        }
+        
+        // --- STUDENT SESSION REGISTRATION & INSTANT KICK DETECTION ---
+        function registerStudentSession() {
+            if (currentRole !== 'student' || !currentStudentName || !currentSessionId) return;
+            if (!isBackendConfigured()) return;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'registerStudent',
+                    sessionId: currentSessionId,
+                    studentName: currentStudentName,
+                    peerId: myPeerId || ''
+                })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.kicked) {
+                    handleForcedLogoutByAdmin(data.message || 'Removed by Admin');
+                }
+            })
+            .catch(function() {});
+        }
+
+        function startStudentSessionHeartbeat() {
+            stopStudentSessionHeartbeat();
+            if (currentRole !== 'student' || !currentSessionId || !isBackendConfigured()) return;
+
+            function checkLoop() {
+                if (currentRole !== 'student' || !currentSessionId) return;
+                fetch(SCRIPT_URL + '?action=checkSession&sessionId=' + encodeURIComponent(currentSessionId) + '&t=' + Date.now())
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data && data.kicked) {
+                            handleForcedLogoutByAdmin(data.message || 'Removed by Admin');
+                            return;
+                        }
+                        if (currentRole === 'student') {
+                            studentSessionTimer = setTimeout(checkLoop, 2000);
+                        }
+                    })
+                    .catch(function() {
+                        if (currentRole === 'student') {
+                            studentSessionTimer = setTimeout(checkLoop, 3000);
+                        }
+                    });
+            }
+
+            studentSessionTimer = setTimeout(checkLoop, 2000);
+        }
+
+        function stopStudentSessionHeartbeat() {
+            if (studentSessionTimer) {
+                clearTimeout(studentSessionTimer);
+                studentSessionTimer = null;
+            }
+        }
+
+        function handleForcedLogoutByAdmin(reason) {
+            if (currentRole !== 'student') return;
+
+            stopStudentSessionHeartbeat();
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            stopPingLoop();
+            closeAllAdminSpectatorConns();
+
+            if (conn) {
+                try { conn.close(); } catch (e) {}
+                conn = null;
+            }
+
+            currentRole = null;
+            currentStudentName = '';
+            currentSessionId = null;
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+            pendingSyncPayload = null;
+            isSyncInFlight = false;
+
+            sessionStorage.removeItem('cta_chess_role');
+            sessionStorage.removeItem('cta_chess_student_name');
+            sessionStorage.removeItem('cta_chess_session_id');
+
+            game.reset();
+            undoneMoves = [];
+            touchedSquare = null;
+            illegalCount = { w: 0, b: 0 };
+            isGameActive = false;
+            if (board && typeof board.start === 'function') {
+                board.start(false);
+            }
+
+            $('#gameOverModal').hide();
+            $('#inviteLinkGroup').hide();
+            $('#timeControlGroup').hide();
+            $('#onlineSetupGroup').hide();
+            $('.clock').hide();
+            $('#spectatorBanner').hide();
+            $('#userSessionBar').hide();
+            $('#adminMonitorPanel').hide();
+            $('#resignBtn').hide();
+
+            $('#studentNameInput').val('');
+            switchLoginTab('student');
+            $('#loginError').text((reason ? reason + '. ' : '') + 'Please login again with your student name.');
+            $('#loginOverlay').css('display', 'flex');
+            setTimeout(function() { $('#studentNameInput').focus(); }, 80);
+        }
+
+        // --- LOGIN & SESSION LOGIC ---
+        function switchLoginTab(tab) {
+            $('#loginError').text('');
+            if (tab === 'student') {
+                $('#tabStudentBtn').addClass('active');
+                $('#tabAdminBtn').removeClass('active');
+                $('#studentLoginBox').show();
+                $('#adminLoginBox').hide();
+                setTimeout(() => $('#studentNameInput').focus(), 50);
+            } else {
+                $('#tabAdminBtn').addClass('active');
+                $('#tabStudentBtn').removeClass('active');
+                $('#adminLoginBox').show();
+                $('#studentLoginBox').hide();
+                setTimeout(() => $('#adminUserInput').focus(), 50);
+            }
+        }
+
+        function handleStudentLogin() {
+            var name = $('#studentNameInput').val().trim();
+            if (!name) {
+                $('#loginError').text('Please enter your student name.');
+                return;
+            }
+            currentRole = 'student';
+            currentStudentName = name;
+            currentSessionId = generateSessionId();
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+            isGameActive = true;
+
+            sessionStorage.setItem('cta_chess_role', 'student');
+            sessionStorage.setItem('cta_chess_student_name', name);
+            sessionStorage.setItem('cta_chess_session_id', currentSessionId);
+
+            $('#loginOverlay').hide();
+            $('#adminMonitorPanel').hide();
+            $('#userSessionBar').css('display', 'flex');
+            $('#userSessionLabel').text('Student: ' + currentStudentName);
+            $('#resignBtn').css('display', 'flex');
+            stopAdminPolling();
+
+            registerStudentSession();
+            startStudentSessionHeartbeat();
+        }
+
+        async function handleAdminLogin() {
+            var username = $('#adminUserInput').val().trim();
+            var password = $('#adminPassInput').val().trim();
+
+            if (!username || !password) {
+                $('#loginError').text('Please enter username and password.');
+                return;
+            }
+
+            if (!isBackendConfigured()) {
+                $('#loginError').text('Please set SCRIPT_URL to your Google Apps Script URL first.');
+                return;
+            }
+
+            $('#loginError').text('');
+            $('#adminLoginBtn').prop('disabled', true).text('Verifying...');
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'adminLogin',
+                        username: username,
+                        password: password
+                    })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success' && data.valid) {
+                    currentRole = 'admin';
+                    currentStudentName = '';
+                    currentSessionId = null;
+                    isFirstAdminFetch = true;
+                    lastSeenIllegalCounts = {};
+                    lastMatchesSignature = '';
+                    lastStudentsSignature = '';
+                    sessionStorage.setItem('cta_chess_role', 'admin');
+                    sessionStorage.removeItem('cta_chess_student_name');
+                    sessionStorage.removeItem('cta_chess_session_id');
+
+                    $('#loginOverlay').hide();
+                    $('#userSessionBar').css('display', 'flex');
+                    $('#userSessionLabel').text('Admin Panel');
+                    $('#adminMonitorPanel').show();
+                    $('#resignBtn').css('display', 'flex');
+                    startAdminPolling();
+                } else {
+                    $('#loginError').text(data.message || 'Invalid Admin Username or Password.');
+                }
+            } catch (err) {
+                console.error('Admin login error:', err);
+                $('#loginError').text('Connection error. Check Apps Script deployment.');
+            } finally {
+                $('#adminLoginBtn').prop('disabled', false).text('Login as Admin');
+            }
+        }
+
+        function handleLogout() {
+            if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0)) {
+                syncStudentMatchToBackend('FINISHED', 'Student Logged Out', true);
+            }
+            if (currentRole === 'student' && currentSessionId && isBackendConfigured()) {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'logoutStudent',
+                        sessionId: currentSessionId,
+                        studentName: currentStudentName
+                    }),
+                    keepalive: true
+                }).catch(function() {});
+            }
+
+            stopStudentSessionHeartbeat();
+            stopAdminPolling();
+            dismissAdminIllegalAlert();
+            closeAllAdminSpectatorConns();
+            closeAdminWatchConn();
+
+            isFirstAdminFetch = true;
+            lastSeenIllegalCounts = {};
+            lastIllegalAlertMatchId = null;
+            lastMatchesSignature = '';
+            lastStudentsSignature = '';
+            exitSpectatorMode(true);
+            currentRole = null;
+            currentStudentName = '';
+            currentSessionId = null;
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+            sessionStorage.removeItem('cta_chess_role');
+            sessionStorage.removeItem('cta_chess_student_name');
+            sessionStorage.removeItem('cta_chess_session_id');
+
+            $('#adminMonitorPanel').hide();
+            $('#userSessionBar').hide();
+            $('#studentNameInput').val('');
+            $('#adminUserInput').val('');
+            $('#adminPassInput').val('');
+            $('#loginError').text('');
+            switchLoginTab('student');
+            $('#loginOverlay').css('display', 'flex');
+        }
+
+        function initAuth() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasCustomFen = urlParams.has('customFen');
+            const hasAnalysis = urlParams.has('analysis');
+            const hasGameInvite = urlParams.has('game');
+
+            var savedRole = sessionStorage.getItem('cta_chess_role');
+            var savedName = sessionStorage.getItem('cta_chess_student_name');
+            var savedSessionId = sessionStorage.getItem('cta_chess_session_id');
+
+            // Bypass login overlay for Share Position Link, Analysis Link, and Online Friend Invite
+            if (hasCustomFen || hasAnalysis || hasGameInvite) {
+                if (hasGameInvite && savedRole === 'student' && savedName) {
+                    currentRole = 'student';
+                    currentStudentName = savedName;
+                    currentSessionId = savedSessionId || generateSessionId();
+                    sessionStorage.setItem('cta_chess_session_id', currentSessionId);
+                    $('#loginOverlay').hide();
+                    $('#userSessionBar').css('display', 'flex');
+                    $('#userSessionLabel').text('Student: ' + currentStudentName);
+                    $('#adminMonitorPanel').hide();
+                    registerStudentSession();
+                    startStudentSessionHeartbeat();
+                } else {
+                    currentRole = 'guest';
+                    $('#loginOverlay').hide();
+                    $('#userSessionBar').hide();
+                    $('#adminMonitorPanel').hide();
+                }
+                return;
+            }
+
+            // Restore active tab session if already logged in
+            if (savedRole === 'student' && savedName) {
+                currentRole = 'student';
+                currentStudentName = savedName;
+                currentSessionId = savedSessionId || generateSessionId();
+                sessionStorage.setItem('cta_chess_session_id', currentSessionId);
+                $('#loginOverlay').hide();
+                $('#userSessionBar').css('display', 'flex');
+                $('#userSessionLabel').text('Student: ' + currentStudentName);
+                $('#resignBtn').css('display', 'flex');
+                registerStudentSession();
+                startStudentSessionHeartbeat();
+            } else if (savedRole === 'admin') {
+                currentRole = 'admin';
+                isFirstAdminFetch = true;
+                lastSeenIllegalCounts = {};
+                $('#loginOverlay').hide();
+                $('#userSessionBar').css('display', 'flex');
+                $('#userSessionLabel').text('Admin Panel');
+                $('#adminMonitorPanel').show();
+                $('#resignBtn').css('display', 'flex');
+                startAdminPolling();
+            } else {
+                $('#loginOverlay').css('display', 'flex');
+                setTimeout(() => $('#studentNameInput').focus(), 100);
+            }
+        }
+
+        // --- STUDENT LIVE SYNC & SAVE TO GOOGLE SHEETS (BOT + ONLINE FRIEND) ---
+        function getSelectedLevelLabel() {
+            if (gameMode === 'online') {
+                var mins = $('#timeControl').val() || '10';
+                var opp = onlineOpponentName || 'Friend';
+                return 'Online vs ' + opp + ' (' + mins + 'm)';
+            }
+            return $('#difficulty option:selected').text() || ('Level ' + $('#difficulty').val());
+        }
+
+        function ensureMatchId() {
+            if (!currentMatchId) {
+                var prefix = (gameMode === 'online') ? 'ONLINE_' : 'MATCH_';
+                currentMatchId = prefix + Date.now() + '_' + Math.floor(1000 + Math.random() * 9000);
+                currentMatchFinishedSynced = false;
+            }
+            return currentMatchId;
+        }
+
+        function buildStudentSyncPayload(statusOverride, resultOverride) {
+            var studentColor = (gameMode === 'online') ? playerSide : $('#aiPlayerColor').val();
+            var studentIllegals = illegalCount[studentColor] || 0;
+            var totalIllegals = (gameMode === 'online')
+                ? Math.max(illegalCount.w || 0, illegalCount.b || 0)
+                : studentIllegals;
+            var finalStatus = statusOverride || 'LIVE';
+            var finalResult = resultOverride || 'In Progress';
+
+            if (finalStatus !== 'FINISHED' && totalIllegals > 0 && finalResult.indexOf('Illegal') === -1) {
+                finalResult = 'In Progress (Illegal Moves: ' + totalIllegals + '/2)';
+            }
+
+            return {
+                action: 'syncMatch',
+                matchId: ensureMatchId(),
+                sessionId: currentSessionId || '',
+                peerId: myPeerId || '',
+                matchType: (gameMode === 'online') ? 'ONLINE' : 'AI',
+                studentName: currentStudentName,
+                level: getSelectedLevelLabel(),
+                playerColor: studentColor === 'w' ? 'White' : 'Black',
+                fen: game.fen(),
+                pgn: game.pgn(),
+                movesCount: game.history().length,
+                status: finalStatus,
+                result: finalResult
+            };
+        }
+
+        function flushStudentSyncQueue() {
+            if (isSyncInFlight || !pendingSyncPayload) return;
+            var payload = pendingSyncPayload;
+            pendingSyncPayload = null;
+            isSyncInFlight = true;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload),
+                keepalive: payload.status === 'FINISHED'
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.kicked) {
+                    handleForcedLogoutByAdmin(data.message || 'Removed by Admin');
+                }
+            })
+            .catch(function(err) {
+                console.error('Match sync error:', err);
+            })
+            .finally(function() {
+                isSyncInFlight = false;
+                if (pendingSyncPayload) {
+                    flushStudentSyncQueue();
+                }
+            });
+        }
+
+        function syncStudentMatchToBackend(statusOverride, resultOverride, forceSync) {
+            if (!shouldSyncCurrentMatch()) return;
+
+            // 1. Instant PeerJS broadcast to any watching Admin (~30ms reflection)
+            broadcastLiveUpdateToAdmins(statusOverride, resultOverride);
+
+            // 2. Coalesced fast backend persistence (Google Sheets + Cache)
+            if (!isBackendConfigured()) return;
+            var hasIllegals = (illegalCount.w > 0 || illegalCount.b > 0);
+            if (!forceSync && !hasIllegals && game.history().length === 0 && statusOverride !== 'FINISHED') return;
+            if (statusOverride === 'FINISHED' && currentMatchFinishedSynced) return;
+
+            var payload = buildStudentSyncPayload(statusOverride, resultOverride);
+            if (statusOverride === 'FINISHED') {
+                currentMatchFinishedSynced = true;
+            }
+
+            pendingSyncPayload = payload;
+            flushStudentSyncQueue();
+        }
+
+        // --- ADMIN LIVE MONITOR, ACTIVE STUDENTS & MATCH HISTORY ---
+        function startAdminPolling() {
+            stopAdminPolling();
+            fetchAdminMatches(true);
+        }
+
+        function stopAdminPolling() {
+            if (adminPollTimeout) {
+                clearTimeout(adminPollTimeout);
+                adminPollTimeout = null;
+            }
+            isAdminFetching = false;
+        }
+
+        function scheduleNextAdminPoll() {
+            if (currentRole !== 'admin') return;
+            if (adminPollTimeout) clearTimeout(adminPollTimeout);
+            adminPollTimeout = setTimeout(function() {
+                if (currentRole === 'admin') {
+                    fetchAdminMatches(false);
+                }
+            }, 1500);
+        }
+
+        function switchAdminListTab(tab) {
+            adminListTab = tab;
+            if (tab === 'live') {
+                $('#adminTabLive').addClass('active');
+                $('#adminTabSaved').removeClass('active');
+            } else {
+                $('#adminTabSaved').addClass('active');
+                $('#adminTabLive').removeClass('active');
+            }
+            lastMatchesSignature = '';
+            renderAdminMatches();
+        }
+
+        async function fetchAdminMatches(showLoadingText) {
+            if (currentRole !== 'admin' || !isBackendConfigured()) return;
+            if (isAdminFetching) return;
+            isAdminFetching = true;
+
+            if (showLoadingText) {
+                $('#adminSyncStatus').text('Syncing...');
+            }
+            try {
+                const res = await fetch(SCRIPT_URL + '?action=getMatches&t=' + Date.now());
+                const data = await res.json();
+                if (data.status === 'success' && Array.isArray(data.matches)) {
+                    allBackendMatches = data.matches;
+                    allActiveStudents = Array.isArray(data.activeStudents) ? data.activeStudents : [];
+                    checkAdminIllegalMoveAlerts(allBackendMatches);
+                    renderActiveStudents();
+                    renderAdminMatches();
+                    updateLiveSpectatorIfActive();
+                    var nowStr = new Date().toLocaleTimeString();
+                    $('#adminSyncStatus').text('Live • ' + nowStr);
+                }
+            } catch (err) {
+                console.error('Admin fetch matches error:', err);
+                $('#adminSyncStatus').text('Sync failed');
+            } finally {
+                isAdminFetching = false;
+                scheduleNextAdminPoll();
+            }
+        }
+
+        function renderActiveStudents() {
+            var sig = JSON.stringify(allActiveStudents.map(function(s) {
+                return [s.sessionId, s.studentName, s.peerId];
+            }));
+            if (sig === lastStudentsSignature) return;
+            lastStudentsSignature = sig;
+
+            $('#activeStudentCountBadge').text(allActiveStudents.length);
+            var $list = $('#activeStudentsList');
+            $list.empty();
+
+            if (allActiveStudents.length === 0) {
+                $list.html('<span style="font-size:12px; color:#aaa;">No active students logged in.</span>');
+                return;
+            }
+
+            allActiveStudents.forEach(function(s) {
+                var safeName = escapeHtml(s.studentName);
+                var encSid = encodeParam(s.sessionId || '');
+                var encName = encodeParam(s.studentName || '');
+                var encPeer = encodeParam(s.peerId || '');
+                var chipHtml = `
+                    <div class="student-chip">
+                        <span>${safeName}</span>
+                        <button type="button" onclick="removeStudentByAdmin('${encSid}', '${encName}', '${encPeer}')">Remove</button>
+                    </div>
+                `;
+                $list.append(chipHtml);
+            });
+        }
+
+        function renderAdminMatches() {
+            var liveMatches = allBackendMatches.filter(m => String(m.status).toUpperCase() === 'LIVE');
+            var savedMatches = allBackendMatches.filter(m => String(m.status).toUpperCase() !== 'LIVE');
+
+            $('#liveCountBadge').text(liveMatches.length);
+            $('#savedCountBadge').text(savedMatches.length);
+
+            var list = adminListTab === 'live' ? liveMatches : savedMatches;
+
+            var sig = adminListTab + '|' + JSON.stringify(list.map(function(m) {
+                return [m.matchId, m.studentName, m.level, m.movesCount, m.status, m.result, m.lastUpdated, m.peerId, m.sessionId];
+            }));
+            if (sig === lastMatchesSignature) return;
+            lastMatchesSignature = sig;
+
+            var $grid = $('#adminMatchesGrid');
+            $grid.empty();
+
+            if (list.length === 0) {
+                var emptyText = adminListTab === 'live'
+                    ? 'No students are playing live right now.'
+                    : 'No saved student matches found yet.';
+                $grid.html('<div class="empty-matches-msg">' + emptyText + '</div>');
+                return;
+            }
+
+            list.forEach(function(m) {
+                var isLive = String(m.status).toUpperCase() === 'LIVE';
+                var isOnline = isOnlineMatchRecord(m);
+                var safeId = escapeHtml(m.matchId);
+                var encSid = encodeParam(m.sessionId || '');
+                var encName = encodeParam(m.studentName || '');
+                var encPeer = encodeParam(m.peerId || '');
+                var safeName = escapeHtml(m.studentName);
+                var safeLevel = escapeHtml(m.level);
+                var safeColor = escapeHtml(m.playerColor || 'White');
+                var safeResult = escapeHtml(m.result || (isLive ? 'In Progress' : 'Finished'));
+                var safeTime = m.lastUpdated ? escapeHtml(new Date(m.lastUpdated).toLocaleString()) : '';
+                var moves = m.movesCount || 0;
+                var illegals = getMatchIllegalCount(m);
+                var illegalBadgeHtml = illegals > 0
+                    ? `<div><span class="badge-illegal-warn">⚠️ Illegal Moves: ${illegals}/2</span></div>`
+                    : '';
+
+                var modeBadgeHtml = isOnline ? `<span class="badge-online">ONLINE</span>` : '';
+                var oppLabel = isOnline ? 'Mode' : 'Bot';
+
+                var primaryActionBtn = isLive
+                    ? `<button type="button" class="btn-watch" onclick="watchLiveMatch('${safeId}')">Watch Live</button>`
+                    : `<button type="button" class="btn-review" onclick="reviewSavedMatch('${safeId}')">Review Match</button>`;
+
+                var removeStudentBtn = isLive
+                    ? `<button type="button" class="btn-kick-student" onclick="removeStudentByAdmin('${encSid}', '${encName}', '${encPeer}')">Remove Student</button>`
+                    : '';
+
+                var cardHtml = `
+                    <div class="match-card ${isLive ? 'is-live' : ''}">
+                        <div class="match-card-top">
+                            <span class="match-student-name">${safeName}</span>
+                            <div class="match-badges">
+                                ${modeBadgeHtml}
+                                <span class="${isLive ? 'badge-live' : 'badge-saved'}">${isLive ? 'LIVE' : 'SAVED'}</span>
+                            </div>
+                        </div>
+                        <div class="match-meta">
+                            <div><strong>${oppLabel}:</strong> ${safeLevel}</div>
+                            <div><strong>Playing As:</strong> ${safeColor} | <strong>Moves:</strong> ${moves}</div>
+                            <div><strong>Result:</strong> ${safeResult}</div>
+                            ${illegalBadgeHtml}
+                            ${safeTime ? `<div style="color:#aaa; font-size:11px;">${safeTime}</div>` : ''}
+                        </div>
+                        <div class="match-actions">
+                            ${primaryActionBtn}
+                            <button type="button" class="btn-copy-analysis" onclick="copyMatchAnalysisLink('${safeId}')">Copy Analysis</button>
+                            ${removeStudentBtn}
+                            <button type="button" class="btn-delete-match" onclick="deleteSavedMatch('${safeId}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                $grid.append(cardHtml);
+            });
+        }
+
+        function findMatchById(matchId) {
+            return allBackendMatches.find(m => String(m.matchId) === String(matchId));
+        }
+
+        function ensureNormalBoardInstance(fen, orientation) {
+            var needsRecreate = (gameMode === 'setup') || !board;
+            if (gameMode === 'setup') {
+                $('#setupControls').hide();
+                $('#activeGameControls').show();
+                $('#aiControls').removeClass('hidden');
+            }
+            if (needsRecreate) {
+                if (board) board.destroy();
+                board = Chessboard('board', {
+                    draggable: true,
+                    position: fen || 'start',
+                    orientation: orientation || 'white',
+                    moveSpeed: 80,
+                    snapbackSpeed: 50,
+                    appearSpeed: 80,
+                    pieceTheme: PIECE_THEME_URL,
+                    onDragStart: onDragStart,
+                    onDrop: onDrop,
+                    onSnapEnd: onSnapEnd
+                });
+            } else {
+                board.orientation(orientation || 'white');
+                board.position(fen || 'start', false);
+            }
+        }
+
+        function loadMatchIntoBoard(match) {
+            game.reset();
+            var loaded = false;
+            if (match.pgn && String(match.pgn).trim() !== '') {
+                loaded = game.load_pgn(String(match.pgn));
+            }
+            if (!loaded && match.fen) {
+                game.load(String(match.fen));
+            }
+            undoneMoves = [];
+            currentSpectatorPgn = game.pgn();
+            syncSpectatorIllegalCounter(match);
+            var orient = (match.playerColor === 'Black') ? 'black' : 'white';
+            ensureNormalBoardInstance(game.fen(), orient);
+            updateGameUI(true);
+        }
+
+        function watchLiveMatch(matchId) {
+            var match = findMatchById(matchId);
+            if (!match) return;
+
+            isWatchingLive = true;
+            watchingMatchId = matchId;
+            gameMode = 'analysis';
+            isGameActive = false;
+            $('#resignBtn').hide();
+            $('#gameOverModal').hide();
+
+            loadMatchIntoBoard(match);
+            connectAdminSpectatorPeer(match);
+
+            var illegals = getMatchIllegalCount(match);
+            var illegalNote = illegals > 0 ? ' | ⚠️ Illegal: ' + illegals + '/2' : '';
+            var modeTag = isOnlineMatchRecord(match) ? '<span class="badge-online" style="margin-right:4px;">ONLINE</span>' : '';
+
+            $('#spectatorBanner').removeClass('review-mode').css('display', 'flex');
+            $('#spectatorInfo').html(
+                '<span class="badge-live" style="margin-right:6px;">LIVE</span> ' + modeTag + '<strong>' +
+                escapeHtml(match.studentName) + '</strong> vs ' + escapeHtml(match.level) +
+                ' (' + escapeHtml(match.playerColor || 'White') + ')' + illegalNote
+            );
+            $status.html('LIVE: ' + escapeHtml(match.studentName) + ' — ' + (game.turn() === 'w' ? 'White' : 'Black') + ' to move');
+
+            document.getElementById('game-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateLiveSpectatorIfActive() {
+            if (!isWatchingLive || !watchingMatchId) return;
+            var match = findMatchById(watchingMatchId);
+            if (!match) return;
+
+            // Ensure direct PeerJS stream is connected for instant updates
+            if (match.peerId && (!adminWatchConn || !adminWatchConn.open)) {
+                connectAdminSpectatorPeer(match);
+            }
+
+            var newPgn = String(match.pgn || '');
+            var newFen = String(match.fen || '');
+            var changed = (newPgn !== currentSpectatorPgn) || (newFen && newFen !== game.fen());
+
+            syncSpectatorIllegalCounter(match);
+
+            if (changed) {
+                game.reset();
+                var loaded = false;
+                if (newPgn.trim() !== '') loaded = game.load_pgn(newPgn);
+                if (!loaded && newFen) game.load(newFen);
+                undoneMoves = [];
+                currentSpectatorPgn = game.pgn();
+                board.position(game.fen(), true);
+            }
+            updateGameUI(true);
+
+            var illegals = getMatchIllegalCount(match);
+            var illegalNote = illegals > 0 ? ' | ⚠️ Illegal: ' + illegals + '/2' : '';
+            var modeTag = isOnlineMatchRecord(match) ? '<span class="badge-online" style="margin-right:4px;">ONLINE</span>' : '';
+
+            if (String(match.status).toUpperCase() !== 'LIVE') {
+                isWatchingLive = false;
+                closeAdminWatchConn();
+                $('#spectatorBanner').addClass('review-mode');
+                $('#spectatorInfo').html(
+                    '<span class="badge-saved" style="margin-right:6px;">FINISHED</span> ' + modeTag + '<strong>' +
+                    escapeHtml(match.studentName) + '</strong> — ' + escapeHtml(match.result || 'Match Ended')
+                );
+                $status.html('Match Ended: ' + escapeHtml(match.result || 'Finished'));
+                updateGameUI(true);
+            } else {
+                var liveBadgeText = (adminWatchConn && adminWatchConn.open) ? 'LIVE ⚡' : 'LIVE';
+                $('#spectatorInfo').html(
+                    '<span class="badge-live" style="margin-right:6px;">' + liveBadgeText + '</span> ' + modeTag + '<strong>' +
+                    escapeHtml(match.studentName) + '</strong> vs ' + escapeHtml(match.level) +
+                    ' (' + escapeHtml(match.playerColor || 'White') + ')' + illegalNote
+                );
+                $status.html('LIVE: ' + escapeHtml(match.studentName) + ' — ' + (game.turn() === 'w' ? 'White' : 'Black') + ' to move');
+            }
+        }
+
+        function reviewSavedMatch(matchId) {
+            var match = findMatchById(matchId);
+            if (!match) return;
+
+            isWatchingLive = false;
+            closeAdminWatchConn();
+            watchingMatchId = matchId;
+            gameMode = 'analysis';
+            isGameActive = false;
+            $('#resignBtn').hide();
+            $('#gameOverModal').hide();
+
+            loadMatchIntoBoard(match);
+
+            var modeTag = isOnlineMatchRecord(match) ? '<span class="badge-online" style="margin-right:4px;">ONLINE</span>' : '';
+            $('#spectatorBanner').addClass('review-mode').css('display', 'flex');
+            $('#spectatorInfo').html(
+                '<span class="badge-saved" style="margin-right:6px;">REVIEW</span> ' + modeTag + '<strong>' +
+                escapeHtml(match.studentName) + '</strong> vs ' + escapeHtml(match.level) +
+                ' — ' + escapeHtml(match.result || 'Finished')
+            );
+            $status.html('Reviewing: ' + escapeHtml(match.studentName) + ' (' + escapeHtml(match.result || 'Saved Match') + ')');
+
+            document.getElementById('game-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function exitSpectatorMode(silent) {
+            isWatchingLive = false;
+            closeAdminWatchConn();
+            watchingMatchId = null;
+            currentSpectatorPgn = '';
+            illegalCount = { w: 0, b: 0 };
+            $('#spectatorBanner').hide();
+            if (!silent) {
+                $('#modeAiBtn').click();
+            }
+        }
+
+        function copyMatchAnalysisLink(matchId) {
+            var match = findMatchById(matchId);
+            if (!match) return;
+            var pgnText = match.pgn || '';
+            var baseUrl = window.location.href.split('?')[0];
+            var link = baseUrl + '?analysis=' + encodeURIComponent(pgnText);
+            navigator.clipboard.writeText(link).then(function() {
+                showNotification('Analysis Link Copied for ' + escapeHtml(match.studentName) + '!', false);
+            });
+        }
+
+        function copyCurrentSpectatorAnalysis() {
+            var pgnText = currentSpectatorPgn || game.pgn() || '';
+            var baseUrl = window.location.href.split('?')[0];
+            var link = baseUrl + '?analysis=' + encodeURIComponent(pgnText);
+            navigator.clipboard.writeText(link).then(function() {
+                showNotification('Analysis Link Copied!', false);
+            });
+        }
+
+        async function removeStudentByAdmin(encSessionId, encStudentName, encPeerId) {
+            var sessionId = decodeURIComponent(encSessionId || '');
+            var studentName = decodeURIComponent(encStudentName || '');
+            var peerId = decodeURIComponent(encPeerId || '');
+
+            if (!confirm('Remove student "' + studentName + '" instantly and send them back to Student Login?')) return;
+
+            // 1. Instant PeerJS kick signal (<50ms on student screen)
+            if (adminWatchConn && adminWatchConn.open && peerId && watchingMatchPeerId === peerId) {
+                try {
+                    adminWatchConn.send({ type: 'force_logout', sessionId: sessionId, studentName: studentName, reason: 'Removed by Admin' });
+                } catch (e) {}
+            } else if (peer && peer.open && peerId) {
+                try {
+                    var ctrlConn = peer.connect(peerId, { metadata: { role: 'admin_control' }, reliable: true });
+                    ctrlConn.on('open', function() {
+                        ctrlConn.send({ type: 'force_logout', sessionId: sessionId, studentName: studentName, reason: 'Removed by Admin' });
+                        setTimeout(function() { try { ctrlConn.close(); } catch (e) {} }, 500);
+                    });
+                } catch (e) {}
+            }
+
+            // 2. Persistent backend kick (clears student + ends live match + catches via heartbeat)
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'removeStudent',
+                        sessionId: sessionId,
+                        studentName: studentName
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showNotification('Student "' + escapeHtml(studentName) + '" removed instantly.', false);
+                    lastMatchesSignature = '';
+                    lastStudentsSignature = '';
+                    fetchAdminMatches(true);
+                } else {
+                    alert('Failed to remove student: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Remove student error:', err);
+                alert('Error connecting to backend to remove student.');
+            }
+        }
+
+        async function deleteSavedMatch(matchId) {
+            var match = findMatchById(matchId);
+            var label = match ? match.studentName : matchId;
+            if (!confirm('Delete match record for "' + label + '" from Google Sheet?')) return;
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'deleteMatch',
+                        matchId: matchId
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    delete lastSeenIllegalCounts[matchId];
+                    if (watchingMatchId === matchId) {
+                        exitSpectatorMode(false);
+                    }
+                    showNotification('Match deleted successfully.', false);
+                    lastMatchesSignature = '';
+                    fetchAdminMatches(true);
+                } else {
+                    alert('Failed to delete match: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Delete match error:', err);
+                alert('Error connecting to backend to delete match.');
+            }
+        }
+
         // --- LOCAL STORAGE HELPERS ---
         function saveLocalState() {
             if(myPeerId) localStorage.setItem('chess_my_id', myPeerId);
@@ -528,6 +2194,9 @@
                     board.position(game.fen());
                     updateGameUI();
                     saveLocalState();
+                    if (isGameActive && !game.game_over()) {
+                        syncStudentMatchToBackend('LIVE', 'In Progress');
+                    }
                 }
                 if (line.includes('score cp')) {
                     let score = line.split('score cp ')[1].split(' ')[0];
@@ -603,9 +2272,10 @@
         // --- 3. CONTROLS ---
         function showGameOver(winner, reason) {
             isGameActive = false; // Flag game as ended for analysis
+            var finalResultText = reason ? reason : (winner + " Wins!");
             $('#gameOverModal').css('display', 'flex');
             $('#winnerText').text("Game Over!");
-            $('#winnerDesc').text(reason ? reason : (winner + " Wins!"));
+            $('#winnerDesc').text(finalResultText);
             clearInterval(timerInterval);
             stopPingLoop(); 
             $('#shareGameGroup').show();
@@ -614,6 +2284,11 @@
             touchedSquare = null; 
             $('.square-55d63').removeClass('touched-square');
             updateGameUI(); // Trigger UI update for buttons
+
+            // Save completed student match (AI or Online Friend) to Google Sheets backend
+            if (shouldSyncCurrentMatch()) {
+                syncStudentMatchToBackend('FINISHED', finalResultText, true);
+            }
         }
         
         function restartGame() { $('#gameOverModal').hide(); $('#startBtn').click(); }
@@ -710,7 +2385,7 @@
             $('#pgnOutput').val(game.pgn());
             
             // NAVIGATION BUTTON STATE
-            if (!isGameActive) {
+            if (!isGameActive && !isWatchingLive) {
                 var hasHistory = game.history().length > 0;
                 $('#btnStart, #btnPrev').prop('disabled', !hasHistory);
                 var hasUndone = undoneMoves.length > 0;
@@ -755,7 +2430,12 @@
             var colorName = color === 'w' ? 'White' : 'Black';
             showNotification(`⚠️ Illegal Move by ${colorName} (${illegalCount[color]}/2) ⚠️`, true);
             updateMaterial();
-            if(illegalCount[color] >= 2) { endGameByIllegal(color); }
+            if(illegalCount[color] >= 2) {
+                endGameByIllegal(color);
+            } else if (shouldSyncCurrentMatch()) {
+                // Immediately intimate Admin via PeerJS + Google Sheet live sync
+                syncStudentMatchToBackend('LIVE', 'In Progress (Illegal Moves: ' + illegalCount[color] + '/2)', true);
+            }
             return illegalCount[color];
         }
 
@@ -800,11 +2480,21 @@
                 if (conn && conn.open) {
                     conn.send({ type: 'move', from: source, to: target, promotion: promotionPiece, timeWhite: timeWhite, timeBlack: timeBlack, fen: game.fen() }); 
                 }
+                if (isGameActive && !game.game_over()) {
+                    syncStudentMatchToBackend('LIVE', 'In Progress');
+                }
             } 
-            else if (gameMode === 'ai') { makeEngineMove(); }
+            else if (gameMode === 'ai') {
+                if (isGameActive && !game.game_over()) {
+                    syncStudentMatchToBackend('LIVE', 'In Progress');
+                }
+                makeEngineMove();
+            }
         }
 
         function onDragStart (source, piece, position, orientation) {
+            if (isWatchingLive) return false;
+
             // Setup Mode Dragging
             if (gameMode === 'setup') {
                 return true;
@@ -897,7 +2587,7 @@
             stockfish.postMessage('position fen ' + game.fen()); stockfish.postMessage('go depth ' + depth);
         }
 
-        // --- 6. MULTIPLAYER ---
+        // --- 6. MULTIPLAYER & REAL-TIME PEER CHANNEL ---
         function setConnectionStatus(status, color) { $('#connectionStatus').text(status).css('color', color); }
         
         function initMultiplayer() {
@@ -908,29 +2598,26 @@
 
             // 1. Check for Custom Position from Setup Mode
             if (customFen) {
-                // Load Custom Game Immediately
                 var decodedFen = decodeURIComponent(customFen);
                 var loadResult = game.load(decodedFen);
                 
                 if (!loadResult) { alert("Error loading custom position."); return; }
                 
-                // Set Mode to AI and force level 4
                 gameMode = 'ai';
                 isGameActive = true;
                 $('#difficulty').val('14'); 
                 
-                // Hide Setup Button (so they can't edit, only play)
                 $('#modeSetupBtn').hide();
                 $('#modeFriendBtn').hide();
                 
-                // Determine player color based on turn
                 var turn = game.turn();
                 $('#aiPlayerColor').val(turn);
                 
-                // Initialize Board
                 board = Chessboard('board', {
                     draggable: true,
                     position: decodedFen,
+                    moveSpeed: 80,
+                    snapbackSpeed: 50,
                     onDragStart: onDragStart, 
                     onDrop: onDrop, 
                     onSnapEnd: onSnapEnd,
@@ -939,12 +2626,13 @@
                 });
                 
                 updateGameUI();
-                return; // Stop other init logic
+                $('#resignBtn').css('display', 'flex');
+                return;
             }
 
             if (analysisPgn) {
                 gameMode = 'analysis';
-                isGameActive = false; // Analysis starts inactive
+                isGameActive = false;
                 $('#aiControls').hide(); $('#modeAiBtn').hide(); $('#modeFriendBtn').hide(); $('#modeSetupBtn').hide();
                 $('#shareGameGroup').show(); enableAnalysisButtons(true); 
                 try { game.load_pgn(decodeURIComponent(analysisPgn)); board.position(game.fen()); updateGameUI(); } catch(e) {}
@@ -954,13 +2642,30 @@
             peer = new Peer(); 
             peer.on('open', function(id) { 
                 myPeerId = id; localStorage.setItem('chess_my_id', myPeerId); 
-                if(gameMode === 'online' && !joinId) updateInviteLink(); 
+                if (currentRole === 'student' && currentSessionId) {
+                    registerStudentSession();
+                }
+                if (currentRole === 'admin' && isWatchingLive && watchingMatchId) {
+                    var watched = findMatchById(watchingMatchId);
+                    if (watched) connectAdminSpectatorPeer(watched);
+                }
+                if (gameMode === 'online' && !joinId) updateInviteLink(); 
             });
-            peer.on('error', function(err) { setConnectionStatus("Connection Error (Refresh)", "#e74c3c"); });
-            peer.on('disconnected', function() { setConnectionStatus("Disconnected", "#e74c3c"); stopPingLoop(); });
+            peer.on('error', function(err) {
+                if (gameMode === 'online') setConnectionStatus("Connection Error (Refresh)", "#e74c3c");
+            });
+            peer.on('disconnected', function() {
+                if (gameMode === 'online') {
+                    setConnectionStatus("Disconnected", "#e74c3c");
+                    stopPingLoop();
+                }
+            });
 
             if (joinId) {
                 gameMode = 'online'; 
+                isOnlineJoiner = true;
+                onlineOpponentName = 'Friend';
+                onlineHostIsStudent = false;
                 var hostColorParam = urlParams.get('hostColor'); 
                 if(hostColorParam === 'b') playerSide = 'w'; else playerSide = 'b';
                 if(urlParams.get('time')) $('#timeControl').val(urlParams.get('time'));
@@ -972,28 +2677,100 @@
             }
 
             peer.on('connection', function(c) {
-                conn = c; setConnectionStatus("Connected!", "#2ecc71"); setupConnection();
-                setTimeout(() => { conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack }); }, 1000);
+                var metaRole = (c.metadata && c.metadata.role) ? c.metadata.role : '';
+
+                // A. Admin Live Spectator Channel (does not disturb Online Friend conn)
+                if (metaRole === 'admin_spectator') {
+                    adminSpectatorConns.push(c);
+                    if (c.open) {
+                        sendLiveSnapshotToConn(c);
+                    } else {
+                        c.on('open', function() {
+                            sendLiveSnapshotToConn(c);
+                        });
+                    }
+                    c.on('data', function(data) {
+                        if (data && data.type === 'force_logout') {
+                            handleForcedLogoutByAdmin(data.reason || 'Removed by Admin');
+                        }
+                    });
+                    c.on('close', function() {
+                        adminSpectatorConns = adminSpectatorConns.filter(function(item) { return item !== c; });
+                    });
+                    c.on('error', function() {
+                        adminSpectatorConns = adminSpectatorConns.filter(function(item) { return item !== c; });
+                    });
+                    return;
+                }
+
+                // B. Admin Instant Control Channel (Force Logout)
+                if (metaRole === 'admin_control') {
+                    c.on('data', function(data) {
+                        if (data && data.type === 'force_logout') {
+                            handleForcedLogoutByAdmin(data.reason || 'Removed by Admin');
+                        }
+                    });
+                    return;
+                }
+
+                // C. Standard Online Friend Game Connection
+                isOnlineJoiner = false;
+                onlineOpponentName = 'Friend';
+                conn = c;
+                setConnectionStatus("Connected!", "#2ecc71");
+                setupConnection();
+                setTimeout(() => {
+                    if (conn && conn.open) {
+                        conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack });
+                    }
+                }, 400);
             });
         }
 
         function setupConnection() {
             conn.on('open', function() { 
                 setConnectionStatus("Connected!", "#2ecc71"); startPingLoop(); 
-                if (game.history().length > 0) { conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack }); }
+                // Exchange player identity so Online Friend match shows cleanly in Admin Monitor
+                conn.send({
+                    type: 'player_meta',
+                    isStudent: (currentRole === 'student'),
+                    studentName: currentStudentName || '',
+                    isHost: !isOnlineJoiner
+                });
+                if (game.history().length > 0) {
+                    conn.send({ type: 'sync', fen: game.fen(), timeWhite: timeWhite, timeBlack: timeBlack });
+                }
+                if (shouldSyncCurrentMatch()) {
+                    syncStudentMatchToBackend('LIVE', 'In Progress', true);
+                }
             });
             
             conn.on('close', function() { 
                 setConnectionStatus("Opponent Disconnected", "#e74c3c"); 
                 stopPingLoop(); 
-                clearInterval(timerInterval); // Stop the clock
-                isGameActive = false; // Freeze board
+                clearInterval(timerInterval);
+                var wasActive = isGameActive;
+                isGameActive = false;
                 isTimerRunning = false;
                 $('.clock').removeClass('active');
-                showNotification("Opponent Disconnected", true); // Alert user
+                showNotification("Opponent Disconnected", true);
+                if (wasActive && shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0)) {
+                    syncStudentMatchToBackend('FINISHED', 'Opponent Disconnected', true);
+                }
             });
             
             conn.on('data', function(data) {
+                if (data.type === 'player_meta') {
+                    if (data.studentName && data.studentName.trim() !== '') {
+                        onlineOpponentName = data.studentName.trim();
+                    }
+                    if (data.isHost) {
+                        onlineHostIsStudent = !!data.isStudent;
+                    }
+                    if (shouldSyncCurrentMatch()) {
+                        syncStudentMatchToBackend('LIVE', 'In Progress', true);
+                    }
+                }
                 if (data.type === 'move') {
                     var moveCfg = { from: data.from, to: data.to, promotion: data.promotion || 'q' };
                     game.move(moveCfg);
@@ -1002,7 +2779,10 @@
                     undoneMoves = []; touchedSquare = null;
                     $('.square-55d63').removeClass('touched-square');
                     if(!isTimerRunning) startTimer();
-                    updateGameUI(); 
+                    updateGameUI();
+                    if (isGameActive && !game.game_over() && shouldSyncCurrentMatch()) {
+                        syncStudentMatchToBackend('LIVE', 'In Progress');
+                    }
                 }
                 if (data.type === 'sync') {
                     game.load(data.fen); timeWhite = data.timeWhite; timeBlack = data.timeBlack;
@@ -1021,6 +2801,12 @@
         
         window.addEventListener('beforeunload', function() {
             if (conn) conn.close();
+            if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0) && isBackendConfigured()) {
+                var payload = buildStudentSyncPayload('FINISHED', 'Left Match');
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(SCRIPT_URL, new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=utf-8' }));
+                }
+            }
         });
 
         function startPingLoop() {
@@ -1055,6 +2841,7 @@
         }
 
         function switchToOnlineUI(skipReset) {
+            exitSpectatorMode(true);
             $('#aiControls').addClass('hidden'); $('#inviteLinkGroup').show(); $('#timeControlGroup').show(); $('#onlineSetupGroup').show(); $('#setupControls').hide();
             $('#activeGameControls').show();
             $('.clock').css('display', 'block');
@@ -1074,36 +2861,41 @@
         // --- 7. SETUP MODE FUNCTIONS ---
 
         function enterSetupMode() {
+            if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0)) {
+                syncStudentMatchToBackend('FINISHED', 'Switched Mode', true);
+            }
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+            exitSpectatorMode(true);
+
             gameMode = 'setup';
             isGameActive = false;
             
-            // Hide/Show Controls
             $('#aiControls').addClass('hidden'); 
             $('#inviteLinkGroup').hide(); 
             $('#timeControlGroup').hide(); 
             $('#onlineSetupGroup').hide(); 
             $('.clock').hide();
-            $('#activeGameControls').hide(); // Hide normal game buttons
-            $('#setupControls').show(); // Show setup specific buttons
+            $('#activeGameControls').hide();
+            $('#setupControls').show();
             $('#resignBtn').hide();
 
-            // Highlight button
             $('#modeAiBtn').css('opacity', '0.5'); $('#modeAiBtn').css('border', 'none');
             $('#modeFriendBtn').css('opacity', '0.5'); $('#modeFriendBtn').css('border', 'none');
             $('#modeSetupBtn').css('opacity', '1'); $('#modeSetupBtn').css('border', '2px solid #fff');
 
-            // Re-Initialize Board with Spare Pieces
-            // We must destroy the old board to change the 'sparePieces' config
             board.destroy();
             board = Chessboard('board', {
                 draggable: true,
                 dropOffBoard: 'trash',
                 sparePieces: true,
                 position: 'start',
+                moveSpeed: 80,
+                snapbackSpeed: 50,
                 onDragStart: onDragStart, 
                 onDrop: onDrop, 
                 onSnapEnd: onSnapEnd,
-                pieceTheme: PIECE_THEME_URL // FIXED: Added Piece Theme
+                pieceTheme: PIECE_THEME_URL
             });
             
             $status.html("Setup Mode: Drag pieces to board.");
@@ -1125,14 +2917,13 @@
                 return;
             }
 
-            // If valid, switch to AI mode logic
             gameMode = 'ai';
             isGameActive = true;
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
             
-            // Set Difficulty to 4 (Titan)
             $('#difficulty').val('14');
             
-            // Update UI
             $('#setupControls').hide();
             $('#activeGameControls').show();
             $('#aiControls').removeClass('hidden');
@@ -1140,11 +2931,12 @@
             $('#modeSetupBtn').css('opacity', '0.5'); $('#modeSetupBtn').css('border', 'none');
             $('#modeAiBtn').css('opacity', '1'); $('#modeAiBtn').css('border', '2px solid #fff');
             
-            // IMPORTANT: Re-init board WITHOUT spare pieces to play
             board.destroy();
             board = Chessboard('board', {
                 draggable: true,
                 position: fullFen,
+                moveSpeed: 80,
+                snapbackSpeed: 50,
                 onDragStart: onDragStart, 
                 onDrop: onDrop, 
                 onSnapEnd: onSnapEnd,
@@ -1170,7 +2962,18 @@
         }
 
         // --- EVENT BINDINGS ---
+        $('#studentNameInput').on('keypress', function(e) { if (e.which === 13) handleStudentLogin(); });
+        $('#adminPassInput').on('keypress', function(e) { if (e.which === 13) handleAdminLogin(); });
+
         $('#modeAiBtn').click(function() {
+            if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0)) {
+                syncStudentMatchToBackend('FINISHED', 'Started New Game', true);
+            }
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+            exitSpectatorMode(true);
+
+            var wasSetup = (gameMode === 'setup');
             gameMode = 'ai';
             isGameActive = true;
             $('#aiControls').removeClass('hidden'); $('#inviteLinkGroup').hide(); $('#timeControlGroup').hide(); $('#onlineSetupGroup').hide(); $('.clock').hide(); $('#setupControls').hide(); $('#activeGameControls').show();
@@ -1182,9 +2985,12 @@
             window.history.pushState({}, document.title, window.location.pathname);
             touchedSquare = null; stopPingLoop(); 
             
-            // Re-init board normal
-            board.destroy();
-            board = Chessboard('board', { draggable: true, position: 'start', onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd, pieceTheme: PIECE_THEME_URL });
+            if (wasSetup) {
+                board.destroy();
+                board = Chessboard('board', { draggable: true, position: 'start', moveSpeed: 80, snapbackSpeed: 50, onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd, pieceTheme: PIECE_THEME_URL });
+            } else {
+                board.start(false);
+            }
             
             game.reset(); clearInterval(timerInterval); isTimerRunning = false; 
             
@@ -1193,14 +2999,26 @@
             
             illegalCount = { w: 0, b: 0 }; updateGameUI(); enableAnalysisButtons(false);
             $('#resignBtn').css('display', 'flex');
+            if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
         });
 
-        $('#modeFriendBtn').click(function() { 
+        $('#modeFriendBtn').click(function() {
+            if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0)) {
+                syncStudentMatchToBackend('FINISHED', 'Switched Mode', true);
+            }
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+            isOnlineJoiner = false;
+            onlineOpponentName = 'Friend';
+            onlineHostIsStudent = false;
+
             if(!peer) initMultiplayer(); 
+            var wasSetup = (gameMode === 'setup');
             gameMode = 'online'; 
-            // Re-init board normal if coming from setup
-             board.destroy();
-            board = Chessboard('board', { draggable: true, position: 'start', onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd, pieceTheme: PIECE_THEME_URL });
+            if (wasSetup) {
+                board.destroy();
+                board = Chessboard('board', { draggable: true, position: 'start', moveSpeed: 80, snapbackSpeed: 50, onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd, pieceTheme: PIECE_THEME_URL });
+            }
             
             switchToOnlineUI(false); if(myPeerId) updateInviteLink(); 
         });
@@ -1226,16 +3044,40 @@
         $('#lichessBtn').click(function() { window.open("https://lichess.org/analysis/pgn/" + encodeURIComponent(game.pgn()), '_blank'); });
 
         $('#startBtn').on('click', function() {
-            if (gameMode === 'online') { if(conn) conn.send({ type: 'reset' }); location.reload(); return; }
-            if (gameMode === 'analysis') { window.location.href = window.location.href.split('?')[0]; return; }
+            if (gameMode === 'online') {
+                if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0) && isBackendConfigured()) {
+                    var payload = buildStudentSyncPayload('FINISHED', 'Restarted Online Game');
+                    currentMatchFinishedSynced = true;
+                    if (navigator.sendBeacon) {
+                        navigator.sendBeacon(SCRIPT_URL, new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=utf-8' }));
+                    }
+                }
+                if(conn) conn.send({ type: 'reset' });
+                location.reload();
+                return;
+            }
+            if (gameMode === 'analysis') {
+                if (currentRole === 'admin') {
+                    exitSpectatorMode(false);
+                    return;
+                }
+                window.location.href = window.location.href.split('?')[0];
+                return;
+            }
+            if (shouldSyncCurrentMatch() && currentMatchId && !currentMatchFinishedSynced && (game.history().length > 0 || illegalCount.w > 0 || illegalCount.b > 0)) {
+                syncStudentMatchToBackend('FINISHED', 'Restarted Game', true);
+            }
+            currentMatchId = null;
+            currentMatchFinishedSynced = false;
+
             game.reset(); undoneMoves = []; $evaluation.text("0.0");
             touchedSquare = null; illegalCount = { w: 0, b: 0 }; 
             isGameActive = true;
             $('.square-55d63').removeClass('touched-square');
             var pColor = $('#aiPlayerColor').val();
             board.orientation(pColor === 'w' ? 'white' : 'black');
-            board.start(); updateGameUI(); enableAnalysisButtons(false);
-            if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 100);
+            board.start(false); updateGameUI(); enableAnalysisButtons(false);
+            if (pColor === 'b') setTimeout(() => { makeEngineMove(); }, 80);
             $('#resignBtn').css('display', 'flex'); 
         });
         
@@ -1262,11 +3104,14 @@
 
         $('#flipBtn').on('click', function() { board.flip(); updateGameUI(); });
 
-        var config = { draggable: true, position: 'start', moveSpeed: 'fast', snapbackSpeed: 'fast', pieceTheme: PIECE_THEME_URL, onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd }
+        var config = { draggable: true, position: 'start', moveSpeed: 80, snapbackSpeed: 50, appearSpeed: 80, pieceTheme: PIECE_THEME_URL, onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd }
         board = Chessboard('board', config);
         $(window).resize(function() { board.resize(); });
         
-        initStockfish(); restoreLocalState(); initMultiplayer();    
+        initAuth();
+        initStockfish();
+        restoreLocalState();
+        initMultiplayer();    
     </script>
 </body>
 </html>
