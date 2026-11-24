@@ -143,10 +143,10 @@
         .lb-trophy-group { animation: lbTrophyTake 4.2s ease-in-out infinite; }
         .lb-sparkles { animation: lbSparklePop 4.2s ease-in-out infinite; transform-origin: 92px 6px; }
 
-        /* 3D Learn Board Login Rank Notification (Empty Background + Glowing Light + Animated Trophy + Gold 3D Number) */
+        /* 3D Learn Board Login Rank Notification (Realistic 3D Gold Trophy + Engraved Pedestal + Overall & Branch Rank) */
         @keyframes rank3dPopIn {
-            0% { opacity: 0; transform: scale(0.35) translateY(35px); }
-            65% { opacity: 1; transform: scale(1.08) translateY(-6px); }
+            0% { opacity: 0; transform: scale(0.35) translateY(40px); }
+            65% { opacity: 1; transform: scale(1.06) translateY(-6px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes rank3dPopOut {
@@ -154,22 +154,18 @@
             100% { opacity: 0; transform: scale(0.6) translateY(-20px); }
         }
         @keyframes rank3dGlowPulse {
-            0%, 100% { opacity: 0.78; transform: scale(0.95); }
-            50% { opacity: 1; transform: scale(1.12); }
+            0%, 100% { opacity: 0.78; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
         @keyframes rank3dRaysSpin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        @keyframes rank3dTrophyFloat {
-            0%, 100% { transform: translateZ(-36px) translateY(0px) rotateY(-18deg) rotateX(6deg) scale(1); }
-            25% { transform: translateZ(-36px) translateY(-9px) rotateY(0deg) rotateX(-4deg) scale(1.04); }
-            50% { transform: translateZ(-36px) translateY(-3px) rotateY(18deg) rotateX(5deg) scale(1.02); }
-            75% { transform: translateZ(-36px) translateY(-10px) rotateY(0deg) rotateX(-5deg) scale(1.05); }
-        }
-        @keyframes rank3dNumFloat {
-            0%, 100% { transform: translateZ(34px) translateY(10px) rotateY(-12deg) rotateX(5deg); }
-            50% { transform: translateZ(34px) translateY(2px) rotateY(12deg) rotateX(-4deg); }
+        @keyframes rank3dSceneFloat {
+            0%, 100% { transform: translateY(0px) rotateY(-10deg) rotateX(4deg); }
+            25% { transform: translateY(-7px) rotateY(0deg) rotateX(-2deg); }
+            50% { transform: translateY(-2px) rotateY(10deg) rotateX(4deg); }
+            75% { transform: translateY(-8px) rotateY(0deg) rotateX(-3deg); }
         }
         @keyframes rank3dNumCelebrate {
             0% { transform: scale(1); }
@@ -186,6 +182,12 @@
             0%, 100% { background-position: -180% 0; }
             50% { background-position: 180% 0; }
         }
+        @keyframes rank3dPlaqueSweep {
+            0% { transform: translateX(-140%) skewX(-24deg); opacity: 0; }
+            20% { opacity: 0.65; }
+            50% { transform: translateX(240%) skewX(-24deg); opacity: 0; }
+            100% { transform: translateX(240%) skewX(-24deg); opacity: 0; }
+        }
         @keyframes rank3dCloseIn {
             0% { opacity: 0; transform: scale(0.4) rotate(-90deg); }
             100% { opacity: 1; transform: scale(1) rotate(0deg); }
@@ -199,15 +201,17 @@
             justify-content: center;
             background: transparent;
             pointer-events: none;
+            padding: 12px;
         }
         .rank3d-stage {
             position: relative;
-            width: 280px;
-            height: 280px;
+            width: 340px;
+            max-width: 94vw;
+            height: 410px;
             display: flex;
             align-items: center;
             justify-content: center;
-            perspective: 900px;
+            perspective: 1150px;
             pointer-events: auto;
             animation: rank3dPopIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
             user-select: none;
@@ -217,46 +221,84 @@
         }
         .rank3d-light-aura {
             position: absolute;
-            inset: -26px;
+            inset: -24px;
             border-radius: 9999px;
-            background: radial-gradient(circle, rgba(255, 224, 102, 0.85) 0%, rgba(251, 191, 36, 0.45) 36%, rgba(249, 115, 22, 0.16) 58%, rgba(255, 215, 0, 0) 74%);
-            filter: blur(12px);
+            background: radial-gradient(circle, rgba(255, 224, 102, 0.88) 0%, rgba(251, 191, 36, 0.45) 36%, rgba(249, 115, 22, 0.18) 58%, rgba(255, 215, 0, 0) 74%);
+            filter: blur(14px);
             animation: rank3dGlowPulse 2.4s ease-in-out infinite;
             pointer-events: none;
         }
         .rank3d-light-rays {
             position: absolute;
-            inset: -34px;
+            inset: -38px;
             border-radius: 9999px;
             background: repeating-conic-gradient(
                 from 0deg,
-                rgba(255, 240, 150, 0.34) 0deg 10deg,
-                rgba(255, 240, 150, 0) 10deg 24deg
+                rgba(255, 240, 150, 0.34) 0deg 9deg,
+                rgba(255, 240, 150, 0) 9deg 22deg
             );
             -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 42%, rgba(0,0,0,0) 70%);
             mask-image: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 42%, rgba(0,0,0,0) 70%);
-            animation: rank3dRaysSpin 16s linear infinite;
+            animation: rank3dRaysSpin 18s linear infinite;
             pointer-events: none;
+        }
+        .rank3d-tilt-rig {
+            position: relative;
+            width: 320px;
+            max-width: 100%;
+            height: 390px;
+            transform-style: preserve-3d;
+            transition: transform 0.18s ease-out;
         }
         .rank3d-scene {
             position: relative;
-            width: 240px;
-            height: 240px;
+            width: 100%;
+            height: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             transform-style: preserve-3d;
+            animation: rank3dSceneFloat 5.2s ease-in-out infinite;
         }
         .rank3d-trophy-back {
-            position: absolute;
-            inset: 0;
+            position: relative;
+            width: 300px;
+            height: 360px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transform: translateZ(-12px);
             transform-style: preserve-3d;
-            animation: rank3dTrophyFloat 4.4s ease-in-out infinite;
-            filter: drop-shadow(0 0 18px rgba(250, 204, 21, 0.85)) drop-shadow(0 12px 16px rgba(180, 83, 9, 0.45));
+            filter: drop-shadow(0 0 22px rgba(250, 204, 21, 0.72)) drop-shadow(0 22px 24px rgba(15, 10, 5, 0.55));
             pointer-events: none;
+        }
+        .rank3d-cup-overlay {
+            position: absolute;
+            top: 86px;
+            left: 50%;
+            transform: translateX(-50%) translateZ(42px);
+            transform-style: preserve-3d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            text-align: center;
+        }
+        .rank3d-overall-pill {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #fffbeb;
+            background: linear-gradient(135deg, rgba(120, 53, 15, 0.92), rgba(180, 83, 9, 0.92));
+            border: 1px solid rgba(254, 240, 138, 0.85);
+            padding: 2px 10px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            margin-bottom: 4px;
+            white-space: nowrap;
         }
         .rank3d-number-wrap {
             position: relative;
@@ -264,8 +306,6 @@
             align-items: center;
             justify-content: center;
             transform-style: preserve-3d;
-            animation: rank3dNumFloat 3.6s ease-in-out infinite;
-            margin-top: 32px;
         }
         .rank3d-number-inner {
             position: relative;
@@ -288,13 +328,107 @@
         .rank3d-front {
             position: relative;
             display: inline-block;
-            background: linear-gradient(180deg, #fffde7 0%, #fef08a 18%, #facc15 44%, #d97706 72%, #fef08a 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #fef9c3 18%, #facc15 46%, #b45309 74%, #fef08a 100%);
             background-size: 200% 100%;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            filter: drop-shadow(0 0 14px rgba(255, 224, 102, 0.95)) drop-shadow(0 4px 8px rgba(120, 53, 15, 0.65));
+            filter: drop-shadow(0 0 12px rgba(255, 232, 128, 0.95)) drop-shadow(0 5px 8px rgba(45, 20, 4, 0.8));
             animation: rank3dShineSweep 3s ease-in-out infinite;
+        }
+        .rank3d-pedestal-plaque {
+            position: absolute;
+            bottom: 34px;
+            left: 50%;
+            transform: translateX(-50%) translateZ(34px);
+            width: 224px;
+            border-radius: 10px;
+            padding: 8px 12px 9px;
+            background: linear-gradient(160deg, #271b14 0%, #140d09 55%, #090604 100%);
+            border: 1.5px solid #d97706;
+            box-shadow:
+                0 12px 22px rgba(0, 0, 0, 0.65),
+                0 0 18px rgba(250, 204, 21, 0.45),
+                inset 0 1px 0 rgba(254, 240, 138, 0.55),
+                inset 0 -2px 6px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            pointer-events: none;
+            text-align: center;
+        }
+        .rank3d-pedestal-plaque::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: 45%;
+            background: linear-gradient(90deg, transparent, rgba(255, 250, 220, 0.35), transparent);
+            animation: rank3dPlaqueSweep 4.2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .rank3d-brass-plate {
+            position: relative;
+            background: linear-gradient(135deg, #fef08a 0%, #eab308 32%, #fffbeb 52%, #ca8a04 78%, #fef08a 100%);
+            border-radius: 6px;
+            padding: 4px 10px;
+            border: 1px solid #fef9c3;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.85), 0 2px 5px rgba(0, 0, 0, 0.6);
+            margin-bottom: 7px;
+        }
+        .rank3d-rivet {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 35% 35%, #fffbeb, #78350f);
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+        }
+        .rank3d-student-name {
+            color: #451a03;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 0.03em;
+            line-height: 1.2;
+            text-shadow: 0 1px 0 rgba(255, 251, 235, 0.75);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 8px;
+        }
+        .rank3d-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .rank3d-stat-chip {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+            border: 1px solid rgba(250, 204, 21, 0.38);
+            border-radius: 7px;
+            padding: 4px 6px;
+        }
+        .rank3d-stat-label {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: #fde68a;
+            line-height: 1.1;
+        }
+        .rank3d-stat-val {
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+            text-shadow: 0 0 8px rgba(250, 204, 21, 0.65);
+        }
+        .rank3d-stat-sub {
+            font-size: 8.5px;
+            color: #fed7aa;
+            line-height: 1.1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 1px;
         }
         .rank3d-glitter-dot {
             position: absolute;
@@ -306,7 +440,7 @@
             position: absolute;
             top: 4px;
             right: 4px;
-            z-index: 20;
+            z-index: 30;
             width: 34px;
             height: 34px;
             border-radius: 9999px;
@@ -469,6 +603,8 @@
                 myBranch: myBranch,
                 myPoints: myOverallEntry ? myOverallEntry.points : 0,
                 myOverallRank: myOverallEntry ? myOverallEntry.rank : null,
+                myOverallEntry: myOverallEntry,
+                overallTop5: overallList.slice(0, 5),
                 totalOverallStudents: overallList.length,
                 myBranchRank: myBranchEntry ? myBranchEntry.rank : null,
                 totalBranchStudents: branchList.length,
@@ -541,7 +677,7 @@
             }
         }
 
-        // --- 3D LEARN BOARD RANK LOGIN NOTIFICATION (PAID STUDENTS ONLY) ---
+        // --- 3D LEARN BOARD RANK LOGIN NOTIFICATION (REALISTIC 3D TROPHY FOR OVERALL CTA RANK, BRANCH RANK & STUDENT NAME) ---
         window.closeLearnBoardRankNotification = function() {
             const overlay = document.getElementById('rank3dNotification');
             if (!overlay) return;
@@ -559,28 +695,33 @@
             const summary = window.cachedLearnBoardSummary;
             if (!user || !summary || !isStudentEligibleForLearnBoard(user)) return;
 
-            const actualRank = summary.myBranchRank || summary.myOverallRank;
-            if (!actualRank) return;
+            const overallRank = summary.myOverallRank;
+            const branchRank = summary.myBranchRank;
+            if (!overallRank && !branchRank) return;
 
             const existing = document.getElementById('rank3dNotification');
             if (existing) existing.remove();
 
-            const rankStr = `#${actualRank}`;
-            const numSizeClass = rankStr.length >= 4 ? 'text-5xl md:text-6xl' : 'text-6xl md:text-7xl';
+            const heroRankVal = overallRank || branchRank;
+            const overallRankStr = overallRank ? `#${overallRank}` : 'N/A';
+            const branchRankStr = branchRank ? `#${branchRank}` : 'N/A';
+            const studentNameSafe = escapeHtml(user.username || 'Student');
+            const branchNameSafe = escapeHtml(summary.myBranch || 'Branch');
+            const numSizeClass = overallRankStr.length >= 4 ? 'text-4xl md:text-5xl' : 'text-5xl md:text-6xl';
 
             const glitters = [
-                { top: '8%', left: '22%', size: 16, dur: '1.7s', delay: '0s', color: '#fffbeb' },
-                { top: '14%', left: '72%', size: 18, dur: '2.0s', delay: '0.3s', color: '#fde047' },
-                { top: '30%', left: '8%', size: 14, dur: '1.6s', delay: '0.6s', color: '#fef08a' },
-                { top: '28%', left: '86%', size: 15, dur: '1.9s', delay: '0.2s', color: '#fffbeb' },
-                { top: '54%', left: '4%', size: 17, dur: '2.1s', delay: '0.5s', color: '#facc15' },
-                { top: '58%', left: '88%', size: 16, dur: '1.8s', delay: '0.8s', color: '#fde047' },
-                { top: '78%', left: '18%', size: 15, dur: '1.7s', delay: '0.4s', color: '#fffbeb' },
-                { top: '80%', left: '76%', size: 17, dur: '2.2s', delay: '0.1s', color: '#fef08a' },
-                { top: '42%', left: '16%', size: 11, dur: '1.4s', delay: '0.9s', color: '#f59e0b' },
-                { top: '44%', left: '80%', size: 12, dur: '1.5s', delay: '0.7s', color: '#fffbeb' },
-                { top: '18%', left: '48%', size: 13, dur: '1.6s', delay: '0.45s', color: '#fef9c3' },
-                { top: '88%', left: '48%', size: 14, dur: '1.85s', delay: '0.25s', color: '#fde047' }
+                { top: '6%', left: '20%', size: 16, dur: '1.7s', delay: '0s', color: '#fffbeb' },
+                { top: '10%', left: '74%', size: 18, dur: '2.0s', delay: '0.3s', color: '#fde047' },
+                { top: '26%', left: '6%', size: 14, dur: '1.6s', delay: '0.6s', color: '#fef08a' },
+                { top: '24%', left: '88%', size: 15, dur: '1.9s', delay: '0.2s', color: '#fffbeb' },
+                { top: '48%', left: '4%', size: 17, dur: '2.1s', delay: '0.5s', color: '#facc15' },
+                { top: '52%', left: '90%', size: 16, dur: '1.8s', delay: '0.8s', color: '#fde047' },
+                { top: '74%', left: '12%', size: 15, dur: '1.7s', delay: '0.4s', color: '#fffbeb' },
+                { top: '76%', left: '82%', size: 17, dur: '2.2s', delay: '0.1s', color: '#fef08a' },
+                { top: '38%', left: '15%', size: 11, dur: '1.4s', delay: '0.9s', color: '#f59e0b' },
+                { top: '40%', left: '81%', size: 12, dur: '1.5s', delay: '0.7s', color: '#fffbeb' },
+                { top: '14%', left: '48%', size: 13, dur: '1.6s', delay: '0.45s', color: '#fef9c3' },
+                { top: '90%', left: '48%', size: 14, dur: '1.85s', delay: '0.25s', color: '#fde047' }
             ];
 
             const glitterHtml = glitters.map(g => `
@@ -594,14 +735,16 @@
                 { z: -4, y: 2, color: '#ca8a04' },
                 { z: -6, y: 3, color: '#b45309' },
                 { z: -8, y: 4, color: '#92400e' },
-                { z: -10, y: 5, color: '#78350f' }
+                { z: -10, y: 5, color: '#78350f' },
+                { z: -12, y: 6, color: '#581c0c' },
+                { z: -14, y: 7, color: '#3b1106' }
             ].map(l => `
-                <span class="rank3d-layer rank3d-num-val" style="transform: translateZ(${l.z}px) translateY(${l.y}px); color:${l.color};" aria-hidden="true">${rankStr}</span>
+                <span class="rank3d-layer rank3d-num-val" style="transform: translateZ(${l.z}px) translateY(${l.y}px); color:${l.color};" aria-hidden="true">${overallRankStr}</span>
             `).join('');
 
             const notifHtml = `
-                <div id="rank3dNotification" class="rank3d-overlay" role="dialog" aria-label="Learn Board Rank">
-                    <div class="rank3d-stage">
+                <div id="rank3dNotification" class="rank3d-overlay" role="dialog" aria-label="Learn Board Overall CTA and Branch Rank">
+                    <div class="rank3d-stage" id="rank3dStage">
                         <button type="button" onclick="closeLearnBoardRankNotification()" aria-label="Close rank notification" class="rank3d-close-btn">
                             <i class="fas fa-times text-sm"></i>
                         </button>
@@ -613,60 +756,197 @@
                         <!-- Glittering Sparkles -->
                         ${glitterHtml}
 
-                        <!-- 3D Trophy Backside + 3D Gold Rank Number Front -->
-                        <div class="rank3d-scene">
-                            <div class="rank3d-trophy-back">
-                                <svg viewBox="0 0 220 220" class="w-56 h-56 md:w-60 md:h-60" aria-hidden="true">
-                                    <defs>
-                                        <linearGradient id="rank3dGoldCup" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#fffde7" />
-                                            <stop offset="22%" stop-color="#fde047" />
-                                            <stop offset="52%" stop-color="#f59e0b" />
-                                            <stop offset="82%" stop-color="#b45309" />
-                                            <stop offset="100%" stop-color="#fef08a" />
-                                        </linearGradient>
-                                        <linearGradient id="rank3dGoldRim" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stop-color="#d97706" />
-                                            <stop offset="35%" stop-color="#fffbeb" />
-                                            <stop offset="65%" stop-color="#facc15" />
-                                            <stop offset="100%" stop-color="#92400e" />
-                                        </linearGradient>
-                                        <linearGradient id="rank3dGoldBase" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#fde047" />
-                                            <stop offset="50%" stop-color="#d97706" />
-                                            <stop offset="100%" stop-color="#78350f" />
-                                        </linearGradient>
-                                    </defs>
+                        <!-- Interactive 3D Tilt Rig -->
+                        <div class="rank3d-tilt-rig" id="rank3dTiltRig">
+                            <div class="rank3d-scene">
+                                <!-- Photorealistic Multi-Layer Metallic 3D Gold Championship Trophy -->
+                                <div class="rank3d-trophy-back">
+                                    <svg viewBox="0 0 320 390" class="w-full h-full" aria-hidden="true">
+                                        <defs>
+                                            <!-- Studio Metallic Gold Cup Reflection Gradient -->
+                                            <linearGradient id="realGoldBody" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#4e2605" />
+                                                <stop offset="10%" stop-color="#b4690e" />
+                                                <stop offset="22%" stop-color="#fef08a" />
+                                                <stop offset="30%" stop-color="#ffffff" />
+                                                <stop offset="42%" stop-color="#eab308" />
+                                                <stop offset="58%" stop-color="#9a5308" />
+                                                <stop offset="72%" stop-color="#fde047" />
+                                                <stop offset="82%" stop-color="#fffbeb" />
+                                                <stop offset="92%" stop-color="#92400e" />
+                                                <stop offset="100%" stop-color="#3f1d04" />
+                                            </linearGradient>
 
-                                    <!-- Left & Right 3D Sculpted Trophy Handles -->
-                                    <path d="M62 56 C28 56 26 112 68 118" fill="none" stroke="url(#rank3dGoldCup)" stroke-width="11" stroke-linecap="round" />
-                                    <path d="M62 56 C35 58 34 104 68 112" fill="none" stroke="#fffbeb" stroke-opacity="0.55" stroke-width="2.5" stroke-linecap="round" />
-                                    <path d="M158 56 C192 56 194 112 152 118" fill="none" stroke="url(#rank3dGoldCup)" stroke-width="11" stroke-linecap="round" />
-                                    <path d="M158 56 C185 58 186 104 152 112" fill="none" stroke="#fffbeb" stroke-opacity="0.55" stroke-width="2.5" stroke-linecap="round" />
+                                            <!-- Vertical Specular Shading for Curved Depth -->
+                                            <linearGradient id="realGoldDepth" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stop-color="#fffbeb" stop-opacity="0.45" />
+                                                <stop offset="25%" stop-color="#facc15" stop-opacity="0.08" />
+                                                <stop offset="70%" stop-color="#78350f" stop-opacity="0.25" />
+                                                <stop offset="100%" stop-color="#2e1102" stop-opacity="0.65" />
+                                            </linearGradient>
 
-                                    <!-- Trophy Cup Body -->
-                                    <path d="M58 42 H162 L152 106 C148 134 132 152 110 152 C88 152 72 134 68 106 Z" fill="url(#rank3dGoldCup)" stroke="#fef08a" stroke-width="2" />
-                                    <!-- Specular 3D Highlight on Cup -->
-                                    <path d="M72 52 H88 L83 108 C82 122 86 134 94 142 C80 135 72 121 70 105 Z" fill="#ffffff" fill-opacity="0.35" />
-                                    <!-- Top Elliptical 3D Rim -->
-                                    <ellipse cx="110" cy="42" rx="52" ry="10" fill="url(#rank3dGoldRim)" stroke="#fffbeb" stroke-width="1.5" />
-                                    <ellipse cx="110" cy="42" rx="44" ry="5.5" fill="#92400e" fill-opacity="0.48" />
+                                            <!-- Inner Bowl Deep Recessed Shadow -->
+                                            <radialGradient id="realCupInner" cx="50%" cy="60%" r="55%">
+                                                <stop offset="0%" stop-color="#2c1203" />
+                                                <stop offset="55%" stop-color="#6b3407" />
+                                                <stop offset="85%" stop-color="#b45309" />
+                                                <stop offset="100%" stop-color="#f59e0b" />
+                                            </radialGradient>
 
-                                    <!-- Center Crown Star Emblem on Cup -->
-                                    <path d="M110 64 L114.5 74.5 L126 75.8 L117.2 83.2 L119.8 94.5 L110 88.5 L100.2 94.5 L102.8 83.2 L94 75.8 L105.5 74.5 Z" fill="#fffbeb" fill-opacity="0.88" />
+                                            <!-- Beveled Rim Metallic Gradient -->
+                                            <linearGradient id="realGoldRim" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#78350f" />
+                                                <stop offset="18%" stop-color="#fef08a" />
+                                                <stop offset="34%" stop-color="#ffffff" />
+                                                <stop offset="52%" stop-color="#d97706" />
+                                                <stop offset="76%" stop-color="#fef9c3" />
+                                                <stop offset="100%" stop-color="#451a03" />
+                                            </linearGradient>
 
-                                    <!-- Stem & Pedestal -->
-                                    <path d="M98 150 H122 L126 176 H94 Z" fill="url(#rank3dGoldBase)" />
-                                    <ellipse cx="110" cy="176" rx="28" ry="6" fill="#fde047" />
-                                    <path d="M74 178 H146 L154 196 H66 Z" fill="url(#rank3dGoldBase)" stroke="#fef08a" stroke-width="1.5" />
-                                    <rect x="64" y="195" width="92" height="10" rx="5" fill="#92400e" stroke="#facc15" stroke-width="1.5" />
-                                </svg>
-                            </div>
+                                            <!-- Sculpted Handle Metallic Gradient -->
+                                            <linearGradient id="realHandleGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="#fffbeb" />
+                                                <stop offset="25%" stop-color="#facc15" />
+                                                <stop offset="55%" stop-color="#b45309" />
+                                                <stop offset="80%" stop-color="#fde047" />
+                                                <stop offset="100%" stop-color="#451a03" />
+                                            </linearGradient>
 
-                            <div class="rank3d-number-wrap">
-                                <div id="rank3dNumberInner" class="rank3d-number-inner ${numSizeClass}">
-                                    ${depthLayers}
-                                    <span class="rank3d-front rank3d-num-val">${rankStr}</span>
+                                            <!-- Lathe-Turned Stem Gradient -->
+                                            <linearGradient id="realStemGold" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#3b1904" />
+                                                <stop offset="22%" stop-color="#d97706" />
+                                                <stop offset="38%" stop-color="#fffde7" />
+                                                <stop offset="56%" stop-color="#b45309" />
+                                                <stop offset="78%" stop-color="#fde047" />
+                                                <stop offset="100%" stop-color="#2c1203" />
+                                            </linearGradient>
+
+                                            <!-- Dark Polished Obsidian-Mahogany Pedestal Gradient -->
+                                            <linearGradient id="realPedestal" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#090605" />
+                                                <stop offset="18%" stop-color="#2c1d15" />
+                                                <stop offset="35%" stop-color="#422c20" />
+                                                <stop offset="65%" stop-color="#1a110c" />
+                                                <stop offset="88%" stop-color="#2b1c14" />
+                                                <stop offset="100%" stop-color="#070504" />
+                                            </linearGradient>
+
+                                            <!-- Pedestal Top Bevel -->
+                                            <linearGradient id="realPedestalTop" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="#573928" />
+                                                <stop offset="50%" stop-color="#1f140e" />
+                                                <stop offset="100%" stop-color="#090605" />
+                                            </linearGradient>
+
+                                            <!-- Soft Ground Cast Shadow -->
+                                            <radialGradient id="realBaseShadow" cx="50%" cy="50%" r="50%">
+                                                <stop offset="0%" stop-color="#000000" stop-opacity="0.58" />
+                                                <stop offset="60%" stop-color="#000000" stop-opacity="0.22" />
+                                                <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                                            </radialGradient>
+                                        </defs>
+
+                                        <!-- Realistic Ambient Contact Shadow -->
+                                        <ellipse cx="160" cy="366" rx="115" ry="16" fill="url(#realBaseShadow)" />
+
+                                        <!-- Left Ornate Sculpted 3D Scroll Handle -->
+                                        <path d="M88 78 C36 66 20 120 44 166 C56 188 82 198 106 196" fill="none" stroke="#451a03" stroke-width="18" stroke-linecap="round" />
+                                        <path d="M88 78 C36 66 20 120 44 166 C56 188 82 198 106 196" fill="none" stroke="url(#realHandleGold)" stroke-width="13.5" stroke-linecap="round" />
+                                        <path d="M84 79 C42 70 30 118 50 160 C60 180 82 190 103 190" fill="none" stroke="#fffbeb" stroke-opacity="0.7" stroke-width="2.6" stroke-linecap="round" />
+                                        <!-- Left Handle Mount Collar -->
+                                        <ellipse cx="90" cy="79" rx="7" ry="11" fill="url(#realStemGold)" stroke="#fef08a" stroke-width="1" />
+                                        <ellipse cx="106" cy="195" rx="6" ry="8" fill="url(#realStemGold)" stroke="#fef08a" stroke-width="0.9" />
+
+                                        <!-- Right Ornate Sculpted 3D Scroll Handle -->
+                                        <path d="M232 78 C284 66 300 120 276 166 C264 188 238 198 214 196" fill="none" stroke="#451a03" stroke-width="18" stroke-linecap="round" />
+                                        <path d="M232 78 C284 66 300 120 276 166 C264 188 238 198 214 196" fill="none" stroke="url(#realHandleGold)" stroke-width="13.5" stroke-linecap="round" />
+                                        <path d="M236 79 C278 70 290 118 270 160 C260 180 238 190 217 190" fill="none" stroke="#fffbeb" stroke-opacity="0.7" stroke-width="2.6" stroke-linecap="round" />
+                                        <!-- Right Handle Mount Collar -->
+                                        <ellipse cx="230" cy="79" rx="7" ry="11" fill="url(#realStemGold)" stroke="#fef08a" stroke-width="1" />
+                                        <ellipse cx="214" cy="195" rx="6" ry="8" fill="url(#realStemGold)" stroke="#fef08a" stroke-width="0.9" />
+
+                                        <!-- Main Sculpted Championship Cup Body -->
+                                        <path d="M84 52 H236 L225 144 C218 192 193 218 160 218 C127 218 102 192 95 144 Z" fill="url(#realGoldBody)" />
+                                        <path d="M84 52 H236 L225 144 C218 192 193 218 160 218 C127 218 102 192 95 144 Z" fill="url(#realGoldDepth)" />
+
+                                        <!-- Curved Studio Light Reflections on Metallic Cup -->
+                                        <path d="M104 64 H126 L120 144 C118 174 126 196 140 209 C117 198 103 175 99 144 Z" fill="#ffffff" fill-opacity="0.34" />
+                                        <path d="M132 64 H139 L136 146 C135 170 140 192 148 206 C137 194 130 172 130 146 Z" fill="#fffbeb" fill-opacity="0.48" />
+                                        <path d="M204 64 H216 L209 144 C205 172 194 195 178 208 C191 193 199 171 202 144 Z" fill="#fef08a" fill-opacity="0.32" />
+
+                                        <!-- Fluted Ornamental Ribs near Lower Cup -->
+                                        <path d="M114 166 Q128 202 160 210 Q192 202 206 166" fill="none" stroke="#fffbeb" stroke-opacity="0.45" stroke-width="2" />
+                                        <path d="M104 156 Q124 196 160 205 Q196 196 216 156" fill="none" stroke="#78350f" stroke-opacity="0.4" stroke-width="2.5" />
+
+                                        <!-- Subtle Laurel Wreath Engraving on Cup -->
+                                        <path d="M115 112 C110 142 126 168 152 176" fill="none" stroke="#fffbeb" stroke-opacity="0.35" stroke-width="3" stroke-dasharray="4 4" stroke-linecap="round" />
+                                        <path d="M205 112 C210 142 194 168 168 176" fill="none" stroke="#fffbeb" stroke-opacity="0.35" stroke-width="3" stroke-dasharray="4 4" stroke-linecap="round" />
+
+                                        <!-- Thick 3D Beveled Top Rim + Recessed Inner Cup -->
+                                        <ellipse cx="160" cy="52" rx="79" ry="16" fill="url(#realGoldRim)" stroke="#fffbeb" stroke-width="1.6" />
+                                        <ellipse cx="160" cy="52" rx="69" ry="11.5" fill="url(#realCupInner)" stroke="#78350f" stroke-width="1.2" />
+                                        <path d="M96 54 A68 11 0 0 0 224 54" fill="none" stroke="#fffbeb" stroke-opacity="0.7" stroke-width="1.8" />
+
+                                        <!-- Ornamental Crown Crest Sitting Above Rim -->
+                                        <g transform="translate(160, 26)">
+                                            <path d="M-16 10 L-20 -4 L-8 3 L0 -10 L8 3 L20 -4 L16 10 Z" fill="url(#realGoldRim)" stroke="#fffbeb" stroke-width="1.1" />
+                                            <circle cx="0" cy="-11" r="2.6" fill="#fffbeb" />
+                                            <circle cx="-20" cy="-5" r="2.1" fill="#fef08a" />
+                                            <circle cx="20" cy="-5" r="2.1" fill="#fef08a" />
+                                        </g>
+
+                                        <!-- Lathe-Turned Chalice Stem & Decorative Collar Rings -->
+                                        <ellipse cx="160" cy="218" rx="28" ry="6.5" fill="url(#realGoldRim)" stroke="#78350f" stroke-width="0.9" />
+                                        <path d="M139 220 H181 L174 236 C172 241 182 246 184 252 H136 C138 246 148 241 146 236 Z" fill="url(#realStemGold)" />
+                                        <ellipse cx="160" cy="237" rx="22" ry="5.5" fill="url(#realGoldRim)" stroke="#fffbeb" stroke-width="0.9" />
+                                        <path d="M132 252 H188 L206 270 H114 Z" fill="url(#realStemGold)" stroke="#fef08a" stroke-width="0.9" />
+                                        <ellipse cx="160" cy="270" rx="48" ry="8" fill="url(#realGoldRim)" stroke="#78350f" stroke-width="1" />
+
+                                        <!-- Stepped 3D Obsidian & Gold Pedestal Plinth -->
+                                        <!-- Upper Gold Trim Ring -->
+                                        <path d="M92 272 H228 L236 282 H84 Z" fill="url(#realGoldRim)" stroke="#fffbeb" stroke-width="0.8" />
+                                        <!-- Upper Obsidian Block -->
+                                        <polygon points="84,282 236,282 246,348 74,348" fill="url(#realPedestal)" stroke="#d97706" stroke-width="1.2" />
+                                        <!-- Top Glossy Bevel Edge -->
+                                        <polygon points="86,283 234,283 238,291 82,291" fill="url(#realPedestalTop)" opacity="0.85" />
+                                        <!-- Lower Gold Footing Molding -->
+                                        <path d="M68 348 H252 L258 358 H62 Z" fill="url(#realGoldRim)" stroke="#fffbeb" stroke-width="1" />
+                                        <!-- Bottom Obsidian Plinth -->
+                                        <rect x="60" y="358" width="200" height="10" rx="4" fill="#0d0806" stroke="#b45309" stroke-width="1.2" />
+                                    </svg>
+                                </div>
+
+                                <!-- Floating 3D Extruded Overall CTA Rank on the Trophy Cup -->
+                                <div class="rank3d-cup-overlay">
+                                    <div class="rank3d-overall-pill"><i class="fas fa-crown text-yellow-300 mr-1"></i> Overall CTA Rank</div>
+                                    <div class="rank3d-number-wrap">
+                                        <div id="rank3dNumberInner" class="rank3d-number-inner ${numSizeClass}">
+                                            ${depthLayers}
+                                            <span class="rank3d-front rank3d-num-val">${overallRankStr}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3D Pedestal Engraved Brushed-Gold Nameplate + Overall & Branch Rank Display -->
+                                <div class="rank3d-pedestal-plaque">
+                                    <div class="rank3d-brass-plate">
+                                        <span class="rank3d-rivet" style="left:5px;"></span>
+                                        <span class="rank3d-rivet" style="right:5px;"></span>
+                                        <div class="rank3d-student-name" title="${studentNameSafe}">${studentNameSafe}</div>
+                                    </div>
+                                    <div class="rank3d-stats-grid">
+                                        <div class="rank3d-stat-chip">
+                                            <div class="rank3d-stat-label"><i class="fas fa-globe mr-0.5 text-yellow-400"></i> Overall CTA</div>
+                                            <div class="rank3d-stat-val rank3d-overall-badge">${overallRankStr}</div>
+                                            <div class="rank3d-stat-sub">Academy Rank</div>
+                                        </div>
+                                        <div class="rank3d-stat-chip">
+                                            <div class="rank3d-stat-label"><i class="fas fa-map-marker-alt mr-0.5 text-brand-500"></i> Branch Rank</div>
+                                            <div class="rank3d-stat-val">${branchRankStr}</div>
+                                            <div class="rank3d-stat-sub" title="${branchNameSafe}">${branchNameSafe}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -678,35 +958,53 @@
             tempDiv.innerHTML = notifHtml;
             document.getElementById('global-modals').appendChild(tempDiv.firstElementChild);
 
-            // Animate the rank number revealing from bottom rank up to the student's actual rank
-            const totalPool = Math.max(
-                summary.myBranchRank ? (summary.totalBranchStudents || actualRank) : (summary.totalOverallStudents || actualRank),
-                actualRank + 6
-            );
-            const startRank = Math.min(totalPool, actualRank + 15);
-            const numNodes = document.querySelectorAll('#rank3dNotification .rank3d-num-val');
-            const numInner = document.getElementById('rank3dNumberInner');
+            // Subtle interactive 3D metallic tilt on pointer hover
+            const stageEl = document.getElementById('rank3dStage');
+            const tiltRig = document.getElementById('rank3dTiltRig');
+            if (stageEl && tiltRig) {
+                stageEl.addEventListener('mousemove', (e) => {
+                    const rect = stageEl.getBoundingClientRect();
+                    const relX = (e.clientX - rect.left) / rect.width - 0.5;
+                    const relY = (e.clientY - rect.top) / rect.height - 0.5;
+                    const rotY = relX * 22;
+                    const rotX = -relY * 16;
+                    tiltRig.style.transform = `rotateY(${rotY.toFixed(1)}deg) rotateX(${rotX.toFixed(1)}deg)`;
+                });
+                stageEl.addEventListener('mouseleave', () => {
+                    tiltRig.style.transform = 'rotateY(0deg) rotateX(0deg)';
+                });
+            }
 
-            if (startRank > actualRank && numNodes.length > 0) {
-                const duration = 950;
-                const startTime = performance.now();
-                const step = (nowTs) => {
-                    const overlayCheck = document.getElementById('rank3dNotification');
-                    if (!overlayCheck) return;
-                    const progress = Math.min((nowTs - startTime) / duration, 1);
-                    const eased = 1 - Math.pow(1 - progress, 3);
-                    const currentVal = Math.max(actualRank, Math.round(startRank - (startRank - actualRank) * eased));
-                    const label = `#${currentVal}`;
-                    numNodes.forEach(el => { el.textContent = label; });
-                    if (progress < 1) {
-                        requestAnimationFrame(step);
-                    } else if (numInner) {
-                        numInner.classList.add('celebrate');
-                    }
-                };
-                requestAnimationFrame(step);
-            } else if (numInner) {
-                numInner.classList.add('celebrate');
+            // Animate the Overall CTA rank number revealing from bottom rank up to the student's actual Overall CTA rank
+            if (overallRank) {
+                const totalPool = Math.max(summary.totalOverallStudents || overallRank, overallRank + 6);
+                const startRank = Math.min(totalPool, overallRank + 15);
+                const numNodes = document.querySelectorAll('#rank3dNotification .rank3d-num-val');
+                const overallBadgeNode = document.querySelector('#rank3dNotification .rank3d-overall-badge');
+                const numInner = document.getElementById('rank3dNumberInner');
+
+                if (startRank > overallRank && numNodes.length > 0) {
+                    const duration = 950;
+                    const startTime = performance.now();
+                    const step = (nowTs) => {
+                        const overlayCheck = document.getElementById('rank3dNotification');
+                        if (!overlayCheck) return;
+                        const progress = Math.min((nowTs - startTime) / duration, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        const currentVal = Math.max(overallRank, Math.round(startRank - (startRank - overallRank) * eased));
+                        const label = `#${currentVal}`;
+                        numNodes.forEach(el => { el.textContent = label; });
+                        if (overallBadgeNode) overallBadgeNode.textContent = label;
+                        if (progress < 1) {
+                            requestAnimationFrame(step);
+                        } else if (numInner) {
+                            numInner.classList.add('celebrate');
+                        }
+                    };
+                    requestAnimationFrame(step);
+                } else if (numInner) {
+                    numInner.classList.add('celebrate');
+                }
             }
         };
 
@@ -750,21 +1048,26 @@
 
             const currentKey = String(user.username || '').trim().toLowerCase();
 
+            const renderRankBadge = (rank) => {
+                if (rank === 1) {
+                    return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs border border-yellow-300"><i class="fas fa-crown text-[10px] mr-0.5"></i>1</span>`;
+                }
+                if (rank === 2) {
+                    return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300">2</span>`;
+                }
+                if (rank === 3) {
+                    return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-orange-700 font-bold text-xs border border-orange-300">3</span>`;
+                }
+                return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-50 text-slate-600 font-bold text-xs border border-slate-200">#${rank}</span>`;
+            };
+
             const branchRowsHtml = summary.branchList.length === 0
                 ? `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 italic text-xs md:text-sm">${summary.myBranch ? 'No ranked paid students found in your branch yet.' : 'No branch assigned to your account yet. Please contact admin.'}</td></tr>`
                 : summary.branchList.map(entry => {
                     const isMe = String(entry.username || '').trim().toLowerCase() === currentKey;
-                    const rankBadge = entry.rank === 1
-                        ? `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs border border-yellow-300"><i class="fas fa-crown text-[10px] mr-0.5"></i>1</span>`
-                        : entry.rank === 2
-                        ? `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300">2</span>`
-                        : entry.rank === 3
-                        ? `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-orange-700 font-bold text-xs border border-orange-300">3</span>`
-                        : `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-50 text-slate-600 font-bold text-xs border border-slate-200">#${entry.rank}</span>`;
-
                     return `
                         <tr class="${isMe ? 'bg-brand-50 border-l-4 border-l-brand-600 font-bold' : 'hover:bg-slate-50'} transition-colors">
-                            <td class="px-4 py-3 whitespace-nowrap">${rankBadge}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">${renderRankBadge(entry.rank)}</td>
                             <td class="px-4 py-3 text-slate-800">
                                 <div class="flex items-center gap-2">
                                     <span>${escapeHtml(entry.username)}</span>
@@ -776,6 +1079,52 @@
                         </tr>
                     `;
                 }).join('');
+
+            const overallTop5 = summary.overallTop5 || [];
+            const isMeInTop5 = overallTop5.some(entry => String(entry.username || '').trim().toLowerCase() === currentKey);
+
+            let overallRowsHtml = '';
+            if (overallTop5.length === 0) {
+                overallRowsHtml = `<tr><td colspan="3" class="px-4 py-8 text-center text-slate-400 italic text-xs md:text-sm">No overall CTA rankings available yet.</td></tr>`;
+            } else {
+                overallRowsHtml = overallTop5.map(entry => {
+                    const isMe = String(entry.username || '').trim().toLowerCase() === currentKey;
+                    return `
+                        <tr class="${isMe ? 'bg-brand-50 border-l-4 border-l-brand-600 font-bold' : 'hover:bg-slate-50'} transition-colors">
+                            <td class="px-4 py-3 whitespace-nowrap">${renderRankBadge(entry.rank)}</td>
+                            <td class="px-4 py-3 text-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span>${escapeHtml(entry.username)}</span>
+                                    ${isMe ? `<span class="bg-brand-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">You</span>` : ''}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-600">
+                                <span class="inline-flex items-center gap-1"><i class="fas fa-map-marker-alt text-brand-500 text-[10px]"></i> ${escapeHtml(entry.branch || 'N/A')}</span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (!isMeInTop5 && summary.myOverallEntry) {
+                    overallRowsHtml += `
+                        <tr class="bg-slate-50/80">
+                            <td colspan="3" class="px-4 py-1.5 text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">Your Overall CTA Position</td>
+                        </tr>
+                        <tr class="bg-brand-50 border-l-4 border-l-brand-600 font-bold transition-colors">
+                            <td class="px-4 py-3 whitespace-nowrap">${renderRankBadge(summary.myOverallEntry.rank)}</td>
+                            <td class="px-4 py-3 text-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span>${escapeHtml(summary.myOverallEntry.username)}</span>
+                                    <span class="bg-brand-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">You</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-700">
+                                <span class="inline-flex items-center gap-1"><i class="fas fa-map-marker-alt text-brand-500 text-[10px]"></i> ${escapeHtml(summary.myOverallEntry.branch || 'N/A')}</span>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
 
             const modalHtml = `
                 <div id="learnBoardModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm fade-in">
@@ -843,9 +1192,9 @@
                                 </div>
                             </div>
 
-                            <!-- TAB 2: OVERALL CHESS TITANS ACADEMY RANK (CURRENT STUDENT ONLY) -->
+                            <!-- TAB 2: OVERALL CHESS TITANS ACADEMY RANK (TOP 5 LEADING + LOGGED-IN STUDENT RANK) -->
                             <div id="lbPanelOverall" class="hidden">
-                                <div class="bg-gradient-to-br from-secondary-900 to-secondary-800 text-white rounded-2xl p-6 text-center shadow-lg relative overflow-hidden">
+                                <div class="bg-gradient-to-br from-secondary-900 to-secondary-800 text-white rounded-2xl p-6 text-center shadow-lg relative overflow-hidden mb-4">
                                     <div class="absolute -right-4 -bottom-4 text-white/5 text-8xl pointer-events-none"><i class="fas fa-chess-king"></i></div>
                                     <div class="relative z-10">
                                         <span class="inline-block bg-brand-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">Chess Titans Academy Overall</span>
@@ -865,6 +1214,29 @@
                                                 <div class="text-xl font-bold text-brand-500 mt-0.5">${summary.myBranchRank ? '#' + summary.myBranchRank : 'N/A'}</div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                    <div class="bg-orange-50/70 px-4 py-2.5 border-b border-orange-100 flex items-center justify-between">
+                                        <div class="font-bold text-slate-800 text-xs md:text-sm flex items-center gap-2">
+                                            <i class="fas fa-trophy text-yellow-500"></i> Top 5 Overall CTA Leaders
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full">Top 5 Leading</span>
+                                    </div>
+                                    <div class="overflow-x-auto max-h-72">
+                                        <table class="w-full text-left text-xs md:text-sm text-slate-600">
+                                            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] md:text-xs tracking-wider sticky top-0 border-b border-slate-100">
+                                                <tr>
+                                                    <th class="px-4 py-3">Rank</th>
+                                                    <th class="px-4 py-3">Student Name</th>
+                                                    <th class="px-4 py-3">Branch</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100">
+                                                ${overallRowsHtml}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
